@@ -1,0 +1,18 @@
+{
+  "name": "thermo-tutor-mock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Throwaway ChatGPT-style mock of a thermodynamics tutor, backed by DeepSeek. Local use only.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.15",
+    "katex": "^0.18.7",
+    "marked": "^18.0.13"
+  }
+}
