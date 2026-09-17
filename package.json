@@ -8,7 +8,11 @@
     "start": "node server.js",
     "build": "node scripts/copy-vendor.mjs && node scripts/build-knowledge.mjs",
     "knowledge": "node scripts/build-knowledge.mjs",
-    "postinstall": "node scripts/copy-vendor.mjs"
+    "postinstall": "node scripts/copy-vendor.mjs",
+    "kb:plan": "node scripts/kb/plan.mjs",
+    "kb:ingest": "node scripts/kb/ingest.mjs",
+    "kb:ingest:dry": "node scripts/kb/ingest.mjs --dry-run",
+    "kb:test": "node scripts/kb/ingest.test.mjs"
   },
   "engines": {
     "node": "24.x"
@@ -22,6 +26,7 @@
     "mammoth": "^1.12.3",
     "marked": "^18.0.13",
     "pg": "^8.23.0",
-    "unpdf": "^1.8.1"
+    "unpdf": "^1.8.1",
+    "yaml": "^2.9.1"
   }
 }

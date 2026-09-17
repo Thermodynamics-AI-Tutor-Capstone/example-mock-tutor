@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-17T19:32:56.211Z",
+  "k": 5,
+  "budget": 8,
+  "corpus": {
+    "files": 0,
+    "chunks": 0,
+    "cards": 65,
+    "sha256": "ca07e6b14f5239e38c477422a4c837cb5badaa115a8e79081cf6174d33430a9d"
+  },
+  "questions": {
+    "count": 10,
+    "placeholders": 10,
+    "sha256": "0c7f5735217f9a3965d66993d3c8f2b0207bed2608c4e781829d7280c702d55c"
+  },
+  "arms": {
+    "A": {
+      "arm": "A — flat 1500-char BM25 (today)",
+      "questions": 10,
+      "scorableCards": 10,
+      "scorableSources": 10,
+      "cardRecallAt5": 0,
+      "sourceRecallAt5": 0,
+      "meanCardsOpenedToGold": null,
+      "goldReachedByPolicy": 0,
+      "meanTokensToFirstGold": null,
+      "anyCardHits": false,
+      "byType": {
+        "lookup": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        },
+        "procedure": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        },
+        "conceptual": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        },
+        "course-admin": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        },
+        "misconception": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        }
+      }
+    },
+    "B": {
+      "arm": "B — KB-1",
+      "questions": 10,
+      "scorableCards": 10,
+      "scorableSources": 10,
+      "cardRecallAt5": 0.6,
+      "sourceRecallAt5": 0,
+      "meanCardsOpenedToGold": 1.8333333333333333,
+      "goldReachedByPolicy": 6,
+      "meanTokensToFirstGold": 2299.8333333333335,
+      "anyCardHits": true,
+      "byType": {
+        "lookup": {
+          "n": 2,
+          "cardRecall": 1,
+          "sourceRecall": 0
+        },
+        "procedure": {
+          "n": 2,
+          "cardRecall": 0,
+          "sourceRecall": 0
+        },
+        "conceptual": {
+          "n": 2,
+          "cardRecall": 1,
+          "sourceRecall": 0
+        },
+        "course-admin": {
+          "n": 2,
+          "cardRecall": 2,
+          "sourceRecall": 0
+        },
+        "misconception": {
+          "n": 2,
+          "cardRecall": 2,
+          "sourceRecall": 0
+        }
+      }
+    }
+  },
+  "unscorable": [
+    {
+      "id": "q01",
+      "missingCards": [],
+      "missingSource": "lectures/lec13-multiphase.pptx"
+    },
+    {
+      "id": "q02",
+      "missingCards": [],
+      "missingSource": "lectures/lec30-nozzles-diffusers-throttles.pptx"
+    },
+    {
+      "id": "q03",
+      "missingCards": [],
+      "missingSource": "lectures/lec22-closed-system-energy.pptx"
+    },
+    {
+      "id": "q04",
+      "missingCards": [],
+      "missingSource": "lectures/lec37-entropy-balances.pptx"
+    },
+    {
+      "id": "q05",
+      "missingCards": [],
+      "missingSource": "lectures/lec42-isentropic-polytropic.pptx"
+    },
+    {
+      "id": "q06",
+      "missingCards": [],
+      "missingSource": "lectures/lec34-second-law-kelvin-planck.pptx"
+    },
+    {
+      "id": "q07",
+      "missingCards": [],
+      "missingSource": "syllabus/me300-syllabus.pdf"
+    },
+    {
+      "id": "q08",
+      "missingCards": [],
+      "missingSource": "syllabus/me300-syllabus.pdf"
+    },
+    {
+      "id": "q09",
+      "missingCards": [],
+      "missingSource": "lectures/lec36-carnot-and-entropy.pptx"
+    },
+    {
+      "id": "q10",
+      "missingCards": [],
+      "missingSource": "lectures/lec22-closed-system-energy.pptx"
+    }
+  ],
+  "note": "Committed baseline for scripts/kb/eval.mjs. The eval fails only on a >10% relative regression in arm B source recall@5 against this file, and only while the question set and the source corpus are unchanged. Regenerate with `node scripts/kb/eval.mjs --update-baseline` and say in the PR why the numbers moved."
+}

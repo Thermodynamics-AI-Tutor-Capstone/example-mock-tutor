@@ -1,0 +1,234 @@
+name: Kelvin AI — ingest course materials
+
+# The only place in this project where an LLM writes to the knowledge base.
+#
+# It never commits to main. It commits generated cards to kb/auto-<short-sha>,
+# opens a pull request whose body is the review surface, and stops. A human
+# merges. That review step is deliberately not automated: LLM classification of
+# course content is wrong often enough that an unreviewed merge would put
+# confident errors in front of students.
+#
+# Required secret:   DEEPSEEK_API_KEY  (missing → the run explains itself and exits 0)
+# Automatic token:   GITHUB_TOKEN      (needs contents: write + pull-requests: write, below)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agent/knowledge/**'
+  workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Re-ingest every course file, ignoring content hashes'
+        type: boolean
+        default: false
+      max_spend:
+        description: 'Hard USD cap for this run, budgeted at peak cache-miss rates. "none" disables the guard.'
+        type: string
+        default: '2.00'
+
+# Never cancel a run in progress: it may already have spent money.
+concurrency:
+  group: kelvin-kb-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    name: Ingest course materials and open a review PR
+    runs-on: ubuntu-latest
+    env:
+      FULL_REBUILD: ${{ inputs.full_rebuild && 'true' || 'false' }}
+      MAX_SPEND: ${{ inputs.max_spend || '2.00' }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Work out the review branch name
+        id: branch
+        run: |
+          short="$(git rev-parse --short=7 HEAD)"
+          branch="kb/auto-$short"
+          case "$branch" in
+            kb/auto-*) ;;
+            *)
+              echo "::error::refusing to run: computed branch \"$branch\" is not a kb/auto-* branch"
+              exit 1
+              ;;
+          esac
+          {
+            echo "short=$short"
+            echo "name=$branch"
+          } >> "$GITHUB_OUTPUT"
+
+      # Re-using an existing branch is what makes a re-run for the same sha
+      # idempotent, and it means a human's fixups on the PR are built on rather
+      # than force-pushed over.
+      - name: Check out (or create) the review branch
+        run: |
+          branch="${{ steps.branch.outputs.name }}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Re-using the existing review branch $branch"
+            git fetch --no-tags origin "$branch"
+            git checkout -B "$branch" "origin/$branch"
+          else
+            echo "Creating review branch $branch"
+            git checkout -B "$branch"
+          fi
+
+      - name: Stage 0 — plan the work
+        id: plan
+        run: |
+          args=(--out build/kb)
+          if [ "$FULL_REBUILD" = "true" ]; then
+            args+=(--force)
+          fi
+          node scripts/kb/plan.mjs "${args[@]}"
+          count="$(node -e '
+            const fs = require("node:fs");
+            let plan = { work: [] };
+            try { plan = JSON.parse(fs.readFileSync("build/kb/plan.json", "utf8")); } catch {}
+            process.stdout.write(String(Array.isArray(plan.work) ? plan.work.length : 0));
+          ')"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Planned $count file(s) for ingest."
+
+      - name: Nothing to ingest
+        if: steps.plan.outputs.count == '0'
+        run: |
+          {
+            echo "## Kelvin AI — ingest"
+            echo ""
+            echo "Nothing to do: no course file under \`agent/knowledge/\` is new, changed, or affected by a pipeline or prompt version bump."
+            echo ""
+            echo "Re-run this workflow from the Actions tab with **full_rebuild** ticked to re-ingest everything."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Explain the missing DeepSeek key
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY == ''
+        run: |
+          {
+            echo "## Kelvin AI — ingest skipped: no DEEPSEEK_API_KEY secret"
+            echo ""
+            echo "${{ steps.plan.outputs.count }} course file(s) are waiting to be ingested, but this repository has no \`DEEPSEEK_API_KEY\` secret, so no cards were generated and no pull request was opened."
+            echo ""
+            echo "To turn ingest on: **Settings → Secrets and variables → Actions → New repository secret**, name it \`DEEPSEEK_API_KEY\`."
+            echo ""
+            echo "Nothing else in the project needs the key. Vercel builds the knowledge index offline and never calls DeepSeek."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stage 1 — split course files on structure (no LLM)
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/extract.mjs --out build/kb
+
+      - name: Stage 2 — situate each chunk
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/situate.mjs --out build/kb --max-spend "$MAX_SPEND"
+
+      - name: Stage 3 — classify into the committed taxonomy
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/classify.mjs --out build/kb --max-spend "$MAX_SPEND"
+
+      - name: Stage 4 — extract entities per topic
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/entities.mjs --out build/kb --max-spend "$MAX_SPEND"
+
+      - name: Stage 5 — merge and write cards (no LLM)
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/write-cards.mjs --out build/kb --report build/kb-report.json --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Stage 6 — validate the knowledge base
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: node scripts/kb/validate.mjs --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Compile the knowledge index
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: npm run knowledge
+
+      - name: Offline retrieval eval (informational)
+        id: eval
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        continue-on-error: true
+        run: node scripts/kb/eval.mjs --json build/kb-eval.json --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit the generated cards
+        id: commit
+        if: steps.plan.outputs.count != '0' && env.DEEPSEEK_API_KEY != ''
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- agent/kb
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "The pipeline produced no change to agent/kb/."
+            exit 0
+          fi
+          outside="$(git diff --cached --name-only -- . ':(exclude)agent/kb/**')"
+          if [ -n "$outside" ]; then
+            echo "::error::refusing to commit files outside agent/kb/: $outside"
+            exit 1
+          fi
+          branch="$(git rev-parse --abbrev-ref HEAD)"
+          case "$branch" in
+            kb/auto-*) ;;
+            *)
+              echo "::error::refusing to commit: HEAD is on \"$branch\", not a kb/auto-* branch"
+              exit 1
+              ;;
+          esac
+          git commit -m "kb: regenerate cards from agent/knowledge at ${{ steps.branch.outputs.short }}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push the review branch
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          branch="${{ steps.branch.outputs.name }}"
+          if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+            echo "::error::refusing to push to $branch"
+            exit 1
+          fi
+          git push origin "HEAD:refs/heads/$branch"
+
+      - name: Open or update the review pull request
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          branch="${{ steps.branch.outputs.name }}"
+          node .github/scripts/kb-pr-body.mjs \
+            --report build/kb-report.json \
+            --eval build/kb-eval.json \
+            --sha "${{ github.sha }}" \
+            --out /tmp/kb-pr-body.md
+          existing="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "Updating pull request #$existing"
+            gh pr edit "$existing" --body-file /tmp/kb-pr-body.md
+            url="$(gh pr view "$existing" --json url --jq .url)"
+          else
+            url="$(gh pr create \
+              --base main \
+              --head "$branch" \
+              --title "kb: generated cards from agent/knowledge (${{ steps.branch.outputs.short }})" \
+              --body-file /tmp/kb-pr-body.md)"
+          fi
+          {
+            echo "## Kelvin AI — review pull request"
+            echo ""
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"

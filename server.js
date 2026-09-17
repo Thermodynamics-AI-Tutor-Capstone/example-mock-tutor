@@ -95,8 +95,16 @@ async function serveStatic(res, pathname) {
   }
   if (decoded.includes('\0')) return sendText(res, 400, 'Bad path');
   const root = path.resolve(PUBLIC_DIR);
-  const full = path.resolve(root, '.' + path.sep + decoded);
+  let full = path.resolve(root, '.' + path.sep + decoded);
   if (!full.startsWith(root + path.sep)) return sendText(res, 404, 'Not found');
+  // Vercel serves public/browse.html at /browse by default; match that locally so links
+  // written as /browse work in both places.
+  if (!path.extname(full)) {
+    try {
+      const withHtml = full + '.html';
+      if ((await fsp.stat(withHtml)).isFile()) full = withHtml;
+    } catch { /* fall through to the 404 below */ }
+  }
   try {
     const stat = await fsp.stat(full);
     if (!stat.isFile()) throw new Error('not a file');

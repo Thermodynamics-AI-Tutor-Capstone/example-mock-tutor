@@ -9,22 +9,31 @@
 | Skills | [`agent/skills/`](agent/skills/README.md) |
 | Connections (model, database, tools) | [`agent/connections/`](agent/connections/README.md) |
 | Course materials — **drop course files here** | [`agent/knowledge/`](agent/knowledge/README.md) |
+| Knowledge brain — **correct what the tutor believes** | [`agent/kb/`](agent/kb/README.md) |
 
 ---
 
 A throwaway example of a ChatGPT-style thermodynamics tutor, built for the Penn State ME 300
-capstone team to poke at. **This is not the product.** It has no pedagogy research behind it
-beyond a short system prompt and a few unreviewed starter skills, no evaluation, and no user
-accounts. It only knows course content that the team adds to `agent/knowledge/`.
+capstone team to poke at. **This is not the product.** It has no evaluation and no user accounts,
+and it only knows course content that the team adds to `agent/knowledge/`.
+
+[`agent/kb/`](agent/kb/README.md) is the first piece with any research behind it: a committed set
+of markdown cards — the course, its five exam blocks, a hand-authored ME 300 symbol table, and
+fourteen misconception cards drawn from a 2025 ASEE systematic review of 32 studies. It is a
+knowledge structure, not a teaching result: **nothing in it has been checked by an ME 300
+instructor, and there is still no evidence that any of it makes the tutor teach better.** The
+system prompt and the starter skills remain unreviewed drafts.
 
 > **Warning: every chat is visible to everyone who can open the app.** There are no user accounts
 > and nothing is separated per person. If anyone other than the team uses it, the database may
 > hold student data, and the capstone has IRB constraints. Keep `APP_PASSCODE` set on any
 > deployment, and do not share the link or passcode outside the team.
 
-> **Warning: this repository is public.** Anything in `agent/knowledge/` is visible to the whole
-> internet, and chat messages plus any course text the tutor reads are sent to DeepSeek's API.
-> See [`agent/knowledge/README.md`](agent/knowledge/README.md) before uploading anything.
+> **Warning: this repository is public.** Anything in `agent/knowledge/` or `agent/kb/` is
+> visible to the whole internet, and chat messages plus any course text the tutor reads are sent
+> to DeepSeek's API. See [`agent/knowledge/README.md`](agent/knowledge/README.md) before
+> uploading anything, and note that cards in `agent/kb/` quote and summarise whatever is in
+> `agent/knowledge/`.
 
 ## Run locally
 
@@ -91,24 +100,35 @@ With no key the app still starts; sending a message returns an error explaining 
 key can list models: a key with an empty balance still passes, and every chat message then fails
 with `DeepSeek returned 402: Insufficient Balance`.
 
-## Agent: prompt, skills, course materials
+## Agent: prompt, skills, course materials, knowledge brain
 
 The tutor's behaviour is set by [`agent/system-prompt.md`](agent/system-prompt.md), re-read on
-every message. The app appends a generated list of skills from `agent/skills/*/SKILL.md` and a
-summary of the indexed course materials, and gives the model tools to search and read those files
-and load skills. See [`agent/README.md`](agent/README.md).
+every message. The app appends a generated list of skills from `agent/skills/*/SKILL.md`, a
+summary of the indexed course materials, and the knowledge map rendered from
+[`agent/kb/INDEX.md`](agent/kb/README.md); it gives the model tools to search files and cards,
+open a card, list a card's siblings, read a course file, and load a skill. See
+[`agent/README.md`](agent/README.md).
 
-Course files are read from a prebuilt index, `build/knowledge-index.json` (gitignored). On Vercel
-the index is built by `npm run build` during each deploy. Locally, `npm start` rebuilds it every
+Two folders feed the tutor and they do different jobs:
+
+- **[`agent/knowledge/`](agent/knowledge/README.md)** — raw uploaded course files. Humans only.
+- **[`agent/kb/`](agent/kb/README.md)** — the knowledge brain: short, committed, human-editable
+  markdown cards about the course, each citing the file and page it came from. AI drafts are
+  proposed by pull request; a human edit is never overwritten.
+
+Both are read from a prebuilt index, `build/knowledge-index.json` (gitignored). On Vercel the
+index is built by `npm run build` during each deploy, by a script that makes **no AI calls** —
+the build is deterministic and works without an API key. Locally, `npm start` rebuilds it every
 time the server starts and keeps it in memory, so **restart the server** after adding or changing
-files. To see what gets indexed and skipped without starting the server:
+files or cards. To see what gets indexed and skipped without starting the server:
 
 ```sh
 npm run knowledge
 ```
 
-`GET /api/knowledge` (passcode-gated) lists indexed and skipped files; `GET /api/health` includes
-an `agent` block with counts and `indexBuiltAt`.
+`GET /api/knowledge` (passcode-gated) lists indexed and skipped files; `GET /api/kb` returns the
+knowledge map and the student-visible cards; `GET /api/kb/card?id=…` returns one card;
+`GET /api/health` includes an `agent` block with counts and `indexBuiltAt`.
 
 ## Deploy to Vercel
 

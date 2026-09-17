@@ -33,6 +33,19 @@ jobs:
       - name: Build knowledge index
         run: npm run knowledge -- --summary "$GITHUB_STEP_SUMMARY"
 
+      # Hard gate. A broken cross-reference in agent/kb/ means the model can be
+      # handed a card id that resolves to nothing, so this must stop the deploy.
+      # No LLM, no API key: it runs on forks too.
+      - name: Validate the knowledge base
+        run: node scripts/kb/validate.mjs --summary "$GITHUB_STEP_SUMMARY"
+
+      # Informational. Retrieval quality is a number to watch, not a reason to
+      # block a deploy — except for the one regression check the eval itself
+      # enforces, which is reported here and does not gate this workflow.
+      - name: Offline retrieval eval
+        continue-on-error: true
+        run: node scripts/kb/eval.mjs --summary "$GITHUB_STEP_SUMMARY"
+
   deploy:
     name: Deploy to Vercel
     needs: index

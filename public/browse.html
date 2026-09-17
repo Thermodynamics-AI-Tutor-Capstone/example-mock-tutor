@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kelvin AI — Course map</title>
+<link rel="stylesheet" href="/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="/browse.css">
+<script src="/vendor/marked.umd.js"></script>
+<script src="/vendor/purify.min.js"></script>
+<script src="/vendor/katex/katex.min.js"></script>
+<script src="/browse.js" defer></script>
+</head>
+<body>
+<div id="app" class="app">
+  <div id="backdrop" class="backdrop"></div>
+
+  <aside id="rail" class="rail">
+    <div class="rail-top">
+      <a class="brand" href="/">Kelvin AI</a>
+      <button id="closeRail" class="icon-btn only-mobile" title="Close menu" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="rail-search">
+      <input id="search" type="search" placeholder="Search the course map" aria-label="Search cards" autocomplete="off">
+    </div>
+    <nav id="tree" class="tree" aria-label="Course map"></nav>
+    <div class="rail-foot">
+      <a href="/">&larr; Back to chat</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="openRail" class="icon-btn only-mobile" title="Open menu" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div id="crumbs" class="crumbs"></div>
+    </header>
+    <div id="pane" class="pane" tabindex="-1"></div>
+  </main>
+</div>
+
+<div id="gate" class="gate" hidden>
+  <form id="gateForm" class="gate-card" autocomplete="off" novalidate>
+    <h1 class="gate-title">Kelvin AI</h1>
+    <p class="gate-sub">Enter the team passcode to continue</p>
+    <input id="gateInput" class="gate-input" type="password" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode" required>
+    <div id="gateError" class="gate-error" role="alert" hidden>Incorrect passcode</div>
+    <button id="gateBtn" type="submit" class="gate-btn">Continue</button>
+  </form>
+</div>
+</body>
+</html>
