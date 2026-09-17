@@ -3,6 +3,7 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "public",
+  "cleanUrls": true,
   "functions": {
     "api/handler.js": {
       "maxDuration": 300,
@@ -12,6 +13,9 @@
     }
   },
   "rewrites": [
-    { "source": "/api/:route*", "destination": "/api/handler?route=:route" }
+    {
+      "source": "/api/:route*",
+      "destination": "/api/handler?route=:route"
+    }
   ]
 }
