@@ -55,9 +55,9 @@ function loadDotenv() {
   return loaded;
 }
 
-function resolveKey(dotenvKeys) {
-  const fromEnv = (process.env.DEEPSEEK_API_KEY || '').trim();
-  if (fromEnv) return { key: fromEnv, source: dotenvKeys.has('DEEPSEEK_API_KEY') ? 'dotenv' : 'env' };
+function resolveKey(dotenvKeys, envVar) {
+  const fromEnv = (process.env[envVar] || '').trim();
+  if (fromEnv) return { key: fromEnv, source: dotenvKeys.has(envVar) ? 'dotenv' : 'env' };
   try {
     const obj = JSON.parse(fs.readFileSync(OPENCODE_AUTH_PATH, 'utf8'));
     const v = obj?.deepseek?.key;
@@ -67,9 +67,13 @@ function resolveKey(dotenvKeys) {
 }
 
 const dotenvKeys = loadDotenv();
-const resolvedKey = resolveKey(dotenvKeys);
 
 const { handle, configure } = await import('./lib/app.js');
+const { llmConfig } = await import('./lib/agent.js');
+const { listSkills } = await import('./lib/skills.js');
+const { loadKnowledge } = await import('./lib/knowledge.js');
+const llm = llmConfig();
+const resolvedKey = resolveKey(dotenvKeys, llm.apiKeyEnvVar);
 const { ensureSchema, closeDb, dbKind } = await import('./lib/db.js');
 const { copyVendor, vendorReady } = await import('./scripts/copy-vendor.mjs');
 
@@ -143,10 +147,25 @@ async function shutdown(signal) {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
+console.log('Indexing course materials…');
+const [skills, knowledge] = await Promise.all([
+  listSkills(),
+  loadKnowledge().catch((e) => {
+    console.error(`Course materials not loaded: ${e.message}`);
+    return null;
+  }),
+]);
+
 server.listen(PORT, HOST, () => {
-  console.log(`Thermo tutor mock running at http://${HOST}:${PORT}`);
-  console.log(`Model: ${process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'}`);
-  console.log(`API key source: ${resolvedKey.source ?? 'none (set DEEPSEEK_API_KEY)'}`);
+  console.log(`Kelvin AI running at http://${HOST}:${PORT}`);
+  console.log(`Model: ${llm.model} (${llm.provider})`);
+  console.log(`API key source: ${resolvedKey.source ?? `none (set ${llm.apiKeyEnvVar})`}`);
+  console.log(`Skills: ${skills.length}${skills.length ? ` (${skills.map((s) => s.name).join(', ')})` : ''}`);
+  console.log(
+    knowledge
+      ? `Knowledge files: ${knowledge.fileCount} indexed, ${knowledge.skippedCount} skipped`
+      : 'Knowledge files: 0 (index failed to load)'
+  );
   console.log(`Database: ${dbKind()}`);
   console.log(`Passcode gate: ${process.env.APP_PASSCODE ? 'on' : 'off'}`);
   ensureSchema().then(

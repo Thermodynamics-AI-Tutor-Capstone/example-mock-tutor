@@ -1,0 +1,104 @@
+name: Kelvin AI — index course materials & deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: kelvin-ai-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  index:
+    name: Index course materials
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build knowledge index
+        run: npm run knowledge -- --summary "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to Vercel
+    needs: index
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Explain missing Vercel token
+        if: env.VERCEL_TOKEN == ''
+        run: |
+          {
+            echo "## Deploy skipped: no VERCEL_TOKEN secret"
+            echo ""
+            echo "The course materials were indexed, but nothing was deployed because this repository has no \`VERCEL_TOKEN\` secret."
+            echo ""
+            echo "To turn on automatic deploys:"
+            echo ""
+            echo "1. Create a token at https://vercel.com/account/tokens"
+            echo "2. In this repository go to **Settings → Secrets and variables → Actions → New repository secret**, name it \`VERCEL_TOKEN\`, and paste the token."
+            echo "3. On the **Variables** tab of the same page, add repository variables \`VERCEL_ORG_ID\` and \`VERCEL_PROJECT_ID\` (from \`.vercel/project.json\` after running \`vercel link\`)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check Vercel project variables
+        if: env.VERCEL_TOKEN != '' && (env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '')
+        run: |
+          {
+            echo "## Deploy failed: missing Vercel project variables"
+            echo ""
+            echo "\`VERCEL_TOKEN\` is set, but the repository variables \`VERCEL_ORG_ID\` and \`VERCEL_PROJECT_ID\` must both be set too."
+            echo "Add them under **Settings → Secrets and variables → Actions → Variables** (values are \`orgId\` and \`projectId\` in \`.vercel/project.json\` after running \`vercel link\`)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::VERCEL_ORG_ID and VERCEL_PROJECT_ID repository variables are required when VERCEL_TOKEN is set"
+          exit 1
+
+      - name: Check out repository
+        if: env.VERCEL_TOKEN != ''
+        uses: actions/checkout@v7
+
+      - name: Set up Node 24
+        if: env.VERCEL_TOKEN != ''
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Vercel CLI
+        if: env.VERCEL_TOKEN != ''
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment information
+        if: env.VERCEL_TOKEN != ''
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build project artifacts
+        if: env.VERCEL_TOKEN != ''
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy project artifacts to Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          url="$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
+          echo "Deployed: $url"
+          {
+            echo "## Deployed to Vercel"
+            echo ""
+            echo "Production deployment: $url"
+          } >> "$GITHUB_STEP_SUMMARY"

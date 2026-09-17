@@ -257,7 +257,7 @@
   }
 
   function updateTitle(conv) {
-    document.title = conv && conv.title && conv.title !== 'New chat' ? conv.title + ' | ThermoTutor' : 'ThermoTutor';
+    document.title = conv && conv.title && conv.title !== 'New chat' ? conv.title + ' | Kelvin AI' : 'Kelvin AI';
   }
 
   async function deleteConversation(id) {
@@ -463,6 +463,55 @@
     row.appendChild(dot);
     scrollToBottom();
 
+    const steps = [];
+    let statusEl = null;
+    let statusLabel = null;
+    const showStatus = (message) => {
+      const msg = String(message || '').trim();
+      if (!msg || !row.isConnected) return;
+      const past = pastTense(msg);
+      if (steps[steps.length - 1] !== past) steps.push(past);
+      if (gotDelta) {
+        renderSteps();
+        return;
+      }
+      dot.remove();
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.className = 'tool-status live';
+        statusEl.setAttribute('role', 'status');
+        statusEl.setAttribute('aria-live', 'polite');
+        const spin = document.createElement('span');
+        spin.className = 'tool-spin';
+        statusLabel = document.createElement('span');
+        statusLabel.className = 'tool-label';
+        statusEl.append(spin, statusLabel);
+        row.insertBefore(statusEl, md);
+      }
+      statusLabel.textContent = msg;
+      statusLabel.title = msg;
+      if (nearBottom()) scrollToBottom();
+      updateScrollBtn();
+    };
+    const renderSteps = () => {
+      if (!row.isConnected) return;
+      if (!steps.length) {
+        if (statusEl) { statusEl.remove(); statusEl = null; }
+        return;
+      }
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        row.insertBefore(statusEl, md);
+      }
+      statusEl.className = 'tool-status steps';
+      statusEl.removeAttribute('aria-live');
+      statusEl.removeAttribute('role');
+      const text = steps.join(' · ');
+      statusEl.textContent = text;
+      statusEl.title = text;
+      statusLabel = null;
+    };
+
     const controller = new AbortController();
     state.controller = controller;
     let text2 = '';
@@ -491,10 +540,12 @@
         renderSidebar();
         if (state.currentId === convId) updateTitle({ title: ev.title });
       } else if (ev.type === 'delta') {
-        if (!gotDelta) { gotDelta = true; dot.remove(); }
+        if (!gotDelta) { gotDelta = true; dot.remove(); renderSteps(); }
         text2 += ev.content || '';
         row._text = text2;
         schedule();
+      } else if (ev.type === 'status') {
+        showStatus(ev.message);
       } else if (ev.type === 'error') {
         dot.remove();
         showError(row, ev.message);
@@ -545,6 +596,7 @@
       }
     } finally {
       dot.remove();
+      if (!gotDelta) renderSteps();
       if (row.isConnected) {
         flush();
         if (text2) addActions(row);
@@ -555,6 +607,13 @@
       refreshList();
       if (row.isConnected) input.focus();
     }
+  }
+
+  const PAST_TENSE = { Searching: 'Searched', Reading: 'Read', Loading: 'Loaded', Listing: 'Listed', Looking: 'Looked', Checking: 'Checked', Opening: 'Opened', Fetching: 'Fetched', Running: 'Ran', Using: 'Used', Calling: 'Called' };
+  function pastTense(msg) {
+    const m = msg.match(/^(\S+)(.*)$/);
+    const out = m && PAST_TENSE[m[1]] ? PAST_TENSE[m[1]] + m[2] : msg;
+    return out.replace(/(?:\u2026|\.\.\.)$/, '');
   }
 
   function openMobileSidebar() { app.classList.add('mobile-open'); }

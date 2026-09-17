@@ -1,12 +1,13 @@
 {
-  "name": "thermo-tutor-mock",
+  "name": "kelvin-ai",
   "version": "0.1.0",
   "private": true,
-  "description": "Throwaway ChatGPT-style mock of a thermodynamics tutor, backed by DeepSeek. Runs locally or on Vercel.",
+  "description": "Kelvin AI: a ChatGPT-style thermodynamics tutor for the Penn State ME 300 capstone, backed by DeepSeek. Its system prompt, skills, connections and course materials live in agent/. Runs locally or on Vercel.",
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build": "node scripts/copy-vendor.mjs",
+    "build": "node scripts/copy-vendor.mjs && node scripts/build-knowledge.mjs",
+    "knowledge": "node scripts/build-knowledge.mjs",
     "postinstall": "node scripts/copy-vendor.mjs"
   },
   "engines": {
@@ -16,8 +17,11 @@
     "@electric-sql/pglite": "^0.5.8",
     "@vercel/functions": "^3.9.8",
     "dompurify": "^3.4.15",
+    "jszip": "^3.10.2",
     "katex": "^0.18.7",
+    "mammoth": "^1.12.3",
     "marked": "^18.0.13",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "unpdf": "^1.8.1"
   }
 }

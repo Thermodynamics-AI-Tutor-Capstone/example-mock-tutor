@@ -1,13 +1,30 @@
-# thermo-tutor mock
+# Kelvin AI (mock)
+
+## Where things are
+
+| What | Where |
+|---|---|
+| Start here — map of everything that defines the tutor | [`agent/README.md`](agent/README.md) |
+| System prompt | [`agent/system-prompt.md`](agent/system-prompt.md) |
+| Skills | [`agent/skills/`](agent/skills/README.md) |
+| Connections (model, database, tools) | [`agent/connections/`](agent/connections/README.md) |
+| Course materials — **drop course files here** | [`agent/knowledge/`](agent/knowledge/README.md) |
+
+---
 
 A throwaway example of a ChatGPT-style thermodynamics tutor, built for the Penn State ME 300
 capstone team to poke at. **This is not the product.** It has no pedagogy research behind it
-beyond a short system prompt, no evaluation, no user accounts, and no course content.
+beyond a short system prompt and a few unreviewed starter skills, no evaluation, and no user
+accounts. It only knows course content that the team adds to `agent/knowledge/`.
 
 > **Warning: every chat is visible to everyone who can open the app.** There are no user accounts
 > and nothing is separated per person. If anyone other than the team uses it, the database may
 > hold student data, and the capstone has IRB constraints. Keep `APP_PASSCODE` set on any
 > deployment, and do not share the link or passcode outside the team.
+
+> **Warning: this repository is public.** Anything in `agent/knowledge/` is visible to the whole
+> internet, and chat messages plus any course text the tutor reads are sent to DeepSeek's API.
+> See [`agent/knowledge/README.md`](agent/knowledge/README.md) before uploading anything.
 
 ## Run locally
 
@@ -53,6 +70,11 @@ win over `.env`.
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL; point it at a local fake server for offline testing. |
 | `PORT` | `3300` | Local port (local server only). |
 | `PGLITE_DIR` | `data/pglite` | Optional. Where the embedded database lives, relative to this folder. |
+| `KNOWLEDGE_DIR` | `agent/knowledge` | Optional. Course-materials folder, absolute or relative to this folder. Used by both `npm run knowledge` and the server (handy for testing with throwaway files). |
+
+The model settings (`model`, `baseUrl`, `temperature`, `maxToolRounds`) default to
+[`agent/connections/connections.json`](agent/connections/connections.json). `DEEPSEEK_MODEL` and
+`DEEPSEEK_BASE_URL` override the file. The API key never goes in that file.
 
 ### DeepSeek API key
 
@@ -69,7 +91,24 @@ With no key the app still starts; sending a message returns an error explaining 
 key can list models: a key with an empty balance still passes, and every chat message then fails
 with `DeepSeek returned 402: Insufficient Balance`.
 
-The tutor's behaviour is set by `system-prompt.md`, re-read on every message.
+## Agent: prompt, skills, course materials
+
+The tutor's behaviour is set by [`agent/system-prompt.md`](agent/system-prompt.md), re-read on
+every message. The app appends a generated list of skills from `agent/skills/*/SKILL.md` and a
+summary of the indexed course materials, and gives the model tools to search and read those files
+and load skills. See [`agent/README.md`](agent/README.md).
+
+Course files are read from a prebuilt index, `build/knowledge-index.json` (gitignored). On Vercel
+the index is built by `npm run build` during each deploy. Locally, `npm start` rebuilds it every
+time the server starts and keeps it in memory, so **restart the server** after adding or changing
+files. To see what gets indexed and skipped without starting the server:
+
+```sh
+npm run knowledge
+```
+
+`GET /api/knowledge` (passcode-gated) lists indexed and skipped files; `GET /api/health` includes
+an `agent` block with counts and `indexBuiltAt`.
 
 ## Deploy to Vercel
 
@@ -97,7 +136,11 @@ for local runs.
    `vercel deploy --prod`. The build runs `npm run build`, which copies the vendor libraries into
    `public/vendor/`.
 5. **Check it.** Open `https://<project>.vercel.app/api/health` and confirm `db` is
-   `"postgres"`, there is no `dbError`, and `passcodeRequired` is `true`.
+   `"postgres"`, there is no `dbError`, `passcodeRequired` is `true`, and the `agent` counts match
+   what you expect.
+
+A GitHub Action rebuilds the knowledge index and deploys on every push to `main` once the
+repository has a `VERCEL_TOKEN` secret. Until then, deploy manually as above.
 
 `.vercelignore` keeps `.env`, `data/` and `node_modules/` out of CLI uploads. Vercel's built-in
 ignore list covers `.env.local` but not `.env`.

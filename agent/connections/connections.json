@@ -1,0 +1,22 @@
+{
+  "llm": {
+    "provider": "DeepSeek",
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-v4-pro",
+    "temperature": null,
+    "maxToolRounds": 6,
+    "apiKeyEnvVar": "DEEPSEEK_API_KEY"
+  },
+  "chatHistory": {
+    "provider": "Postgres (Neon on Vercel, embedded PGlite locally)",
+    "urlEnvVar": "DATABASE_URL"
+  },
+  "courseMaterials": {
+    "folder": "agent/knowledge",
+    "tools": ["list_course_files", "search_course_files", "read_course_file"]
+  },
+  "skills": {
+    "folder": "agent/skills",
+    "tool": "load_skill"
+  }
+}

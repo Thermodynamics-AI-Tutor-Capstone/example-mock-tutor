@@ -6,3 +6,4 @@ public/vendor/
 .vercel/
 .vercel
 .env*
+build/
