@@ -2,17 +2,22 @@
   "name": "thermo-tutor-mock",
   "version": "0.1.0",
   "private": true,
-  "description": "Throwaway ChatGPT-style mock of a thermodynamics tutor, backed by DeepSeek. Local use only.",
+  "description": "Throwaway ChatGPT-style mock of a thermodynamics tutor, backed by DeepSeek. Runs locally or on Vercel.",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node scripts/copy-vendor.mjs",
+    "postinstall": "node scripts/copy-vendor.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@vercel/functions": "^3.9.8",
     "dompurify": "^3.4.15",
     "katex": "^0.18.7",
-    "marked": "^18.0.13"
+    "marked": "^18.0.13",
+    "pg": "^8.23.0"
   }
 }

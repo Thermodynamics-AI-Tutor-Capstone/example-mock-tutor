@@ -139,13 +139,71 @@
     decorateCode(el);
   }
 
+  const PASSCODE_KEY = 'thermoTutorPasscode';
+  const gate = $('gate');
+  const gateForm = $('gateForm');
+  const gateInput = $('gateInput');
+  const gateError = $('gateError');
+  const gateBtn = $('gateBtn');
+  let memPasscode = '';
+
+  function getPasscode() {
+    try { return localStorage.getItem(PASSCODE_KEY) || ''; } catch (e) { return ''; }
+  }
+  function setPasscode(value) {
+    try { localStorage.setItem(PASSCODE_KEY, value); } catch (e) {}
+    memPasscode = value;
+  }
+
+  function isPasscodeError(e) {
+    return !!(e && e.code === 'passcode_required');
+  }
+
+  function showGate() {
+    if (!gate.hidden) return;
+    gate.hidden = false;
+    gateError.hidden = true;
+    gateInput.classList.remove('invalid');
+    gateInput.value = '';
+    gateBtn.disabled = false;
+    gateInput.focus();
+  }
+
+  function hideGate() {
+    gate.hidden = true;
+    gateError.hidden = true;
+    gateInput.classList.remove('invalid');
+    gateInput.value = '';
+  }
+
+  async function apiFetch(url, opts) {
+    const o = Object.assign({}, opts || {});
+    const headers = Object.assign({}, o.headers || {});
+    const code = memPasscode || getPasscode();
+    if (code) headers['x-app-passcode'] = code;
+    o.headers = headers;
+    const res = await fetch(url, o);
+    if (res.status === 401) {
+      let data = null;
+      try { data = await res.clone().json(); } catch (e) {}
+      if (data && data.error === 'passcode_required') {
+        showGate();
+        const err = new Error('passcode_required');
+        err.status = 401;
+        err.code = 'passcode_required';
+        throw err;
+      }
+    }
+    return res;
+  }
+
   async function api(method, url, body) {
     const opts = { method, headers: {} };
     if (body !== undefined) {
       opts.headers['Content-Type'] = 'application/json';
       opts.body = JSON.stringify(body);
     }
-    const res = await fetch(url, opts);
+    const res = await apiFetch(url, opts);
     if (res.status === 204) return null;
     let data = null;
     try { data = await res.json(); } catch (e) {}
@@ -187,12 +245,15 @@
   }
 
   async function refreshList() {
+    let ok = true;
     try {
       state.conversations = await api('GET', '/api/conversations') || [];
     } catch (e) {
-      console.error(e);
+      ok = false;
+      if (!isPasscodeError(e)) console.error(e);
     }
     renderSidebar();
+    return ok;
   }
 
   function updateTitle(conv) {
@@ -203,6 +264,7 @@
     try {
       await api('DELETE', '/api/conversations/' + id);
     } catch (e) {
+      if (isPasscodeError(e)) return;
       if (e.status !== 404) { console.error(e); return; }
     }
     state.conversations = state.conversations.filter((c) => c.id !== id);
@@ -291,6 +353,11 @@
       conv = await api('GET', '/api/conversations/' + id);
     } catch (e) {
       if (token !== state.loadToken) return;
+      if (isPasscodeError(e)) {
+        state.currentId = null;
+        renderSidebar();
+        return;
+      }
       if (e.status === 404) {
         state.conversations = state.conversations.filter((c) => c.id !== id);
         goEmpty(true);
@@ -379,6 +446,7 @@
         input.value = content;
         autoGrow();
         updateSendBtn();
+        if (isPasscodeError(e)) return;
         setThreadMode(true);
         const row = addAssistantMessage('', false);
         showError(row, 'Could not create conversation: ' + e.message);
@@ -434,7 +502,7 @@
     };
 
     try {
-      const res = await fetch('/api/conversations/' + convId + '/messages', {
+      const res = await apiFetch('/api/conversations/' + convId + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
         body: JSON.stringify({ content }),
@@ -468,7 +536,10 @@
         try { handleEvent(JSON.parse(line.slice(6))); } catch (e) {}
       }
     } catch (e) {
-      if (e.name !== 'AbortError') {
+      if (isPasscodeError(e)) {
+        dot.remove();
+        showError(row, 'Passcode required. Enter the team passcode and try again.');
+      } else if (e.name !== 'AbortError') {
         dot.remove();
         showError(row, e.message || 'Network error');
       }
@@ -535,9 +606,45 @@
   window.addEventListener('hashchange', route);
   window.addEventListener('popstate', route);
 
+  gateInput.addEventListener('input', () => {
+    gateError.hidden = true;
+    gateInput.classList.remove('invalid');
+  });
+
+  gateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = gateInput.value;
+    if (!value || gateBtn.disabled) return;
+    gateBtn.disabled = true;
+    gateError.hidden = true;
+    gateInput.classList.remove('invalid');
+    setPasscode(value);
+    let list;
+    try {
+      list = await api('GET', '/api/conversations');
+    } catch (err) {
+      gateBtn.disabled = false;
+      gateError.textContent = isPasscodeError(err) ? 'Incorrect passcode' : ('Could not connect: ' + err.message);
+      gateError.hidden = false;
+      if (isPasscodeError(err)) gateInput.classList.add('invalid');
+      gateInput.select();
+      gateInput.focus();
+      return;
+    }
+    gateBtn.disabled = false;
+    hideGate();
+    state.conversations = list || [];
+    renderSidebar();
+    state.currentId = null;
+    const id = parseHash();
+    if (id) openConversation(id);
+    else goEmpty(false);
+  });
+
   placeComposer();
   updateSendBtn();
-  refreshList().then(() => {
+  refreshList().then((ok) => {
+    if (!ok && !gate.hidden) return;
     const id = parseHash();
     if (id) openConversation(id);
     else input.focus();

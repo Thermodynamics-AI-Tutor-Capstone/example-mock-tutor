@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "functions": {
+    "api/handler.js": {
+      "maxDuration": 300,
+      "supportsCancellation": true,
+      "includeFiles": "system-prompt.md",
+      "excludeFiles": "node_modules/@electric-sql/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:route*", "destination": "/api/handler?route=:route" }
+  ]
+}
