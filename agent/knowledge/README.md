@@ -45,7 +45,7 @@ then commit. Upload the new version the same way as above.
 
 - **GitHub Actions:** open the **Actions** tab → the latest deploy run → its summary lists every
   indexed file and every skipped file with the reason.
-- **Live site:** `GET /api/knowledge` (needs the app passcode) returns the same list.
+- **Live site:** `GET /api/knowledge` (needs you to be signed in) returns the same list.
 - **Locally:** `npm run knowledge` prints every indexed and skipped file. A running local server
   only picks up new files after a restart.
 

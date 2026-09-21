@@ -1,0 +1,35 @@
+/* Login, onboarding and settings pages. Uses the colour tokens from /style.css. */
+body.account-page { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; background: var(--bg); }
+.acct-card { width: 100%; max-width: 440px; }
+.acct-brand { font-size: 15px; font-weight: 600; margin-bottom: 28px; text-align: center; }
+.acct-title { font-size: 28px; font-weight: 600; margin: 0 0 8px; text-align: center; }
+.acct-sub { color: var(--text2); margin: 0 0 24px; text-align: center; font-size: 15px; line-height: 1.45; }
+.acct-form { display: flex; flex-direction: column; gap: 14px; }
+.acct-field { display: flex; flex-direction: column; gap: 6px; }
+.acct-field label { font-size: 13.5px; font-weight: 500; }
+.acct-field .opt { color: var(--text2); font-weight: 400; }
+.acct-field input, .acct-field select {
+  font: inherit; font-size: 15px; color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; outline: none;
+}
+.acct-field input:focus, .acct-field select:focus { border-color: var(--text2); }
+.acct-field input[readonly] { color: var(--text2); background: var(--hover); }
+.acct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.acct-btn {
+  font: inherit; font-size: 15px; font-weight: 500; border: 0; border-radius: 999px; padding: 12px 16px; cursor: pointer;
+  background: var(--send-bg); color: var(--send-fg); margin-top: 6px;
+}
+.acct-btn:disabled { opacity: .5; cursor: default; }
+.acct-btn.secondary { background: none; color: var(--text); border: 1px solid var(--border); }
+.acct-error { color: var(--error-text); font-size: 14px; min-height: 1em; }
+.acct-error:empty { display: none; }
+.acct-ok { color: #15803d; font-size: 14px; }
+.acct-ok:empty { display: none; }
+.acct-switch { text-align: center; font-size: 14px; color: var(--text2); margin-top: 18px; }
+.acct-switch button, .acct-link { background: none; border: 0; font: inherit; color: var(--text); text-decoration: underline; cursor: pointer; padding: 0; }
+.acct-note { font-size: 13px; color: var(--text2); line-height: 1.5; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px; }
+.acct-section { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; margin: 10px 0 -4px; }
+.acct-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 14px; }
+.acct-top a { color: var(--text2); text-decoration: none; }
+.acct-top a:hover { color: var(--text); }
+@media (max-width: 420px) { .acct-row { grid-template-columns: 1fr; } }

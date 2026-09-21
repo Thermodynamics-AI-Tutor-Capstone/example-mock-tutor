@@ -9,6 +9,7 @@
 <script src="/vendor/marked.umd.js"></script>
 <script src="/vendor/purify.min.js"></script>
 <script src="/vendor/katex/katex.min.js"></script>
+<script src="/account.js"></script>
 <script src="/app.js" defer></script>
 </head>
 <body>
@@ -27,9 +28,17 @@
     </button>
     <div class="sb-label">Chats</div>
     <nav id="convList" class="conv-list"></nav>
-    <div class="sb-user">
-      <div class="avatar">ME</div>
-      <div class="user-name">Student</div>
+    <div class="sb-user-wrap">
+      <div id="userMenu" class="user-menu" role="menu" hidden>
+        <div id="userMenuEmail" class="user-menu-head"></div>
+        <a class="user-menu-item" role="menuitem" href="/settings">Settings</a>
+        <a class="user-menu-item" role="menuitem" href="/browse">Course map</a>
+        <button id="signOutBtn" class="user-menu-item" role="menuitem" type="button">Sign out</button>
+      </div>
+    <button id="userBtn" class="sb-user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+      <div id="userAvatar" class="avatar"></div>
+      <div id="userName" class="user-name"></div>
+    </button>
     </div>
   </aside>
 

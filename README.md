@@ -24,10 +24,11 @@ knowledge structure, not a teaching result: **nothing in it has been checked by 
 instructor, and there is still no evidence that any of it makes the tutor teach better.** The
 system prompt and the starter skills remain unreviewed drafts.
 
-> **Warning: every chat is visible to everyone who can open the app.** There are no user accounts
-> and nothing is separated per person. If anyone other than the team uses it, the database may
-> hold student data, and the capstone has IRB constraints. Keep `APP_PASSCODE` set on any
-> deployment, and do not share the link or passcode outside the team.
+> **Warning: accounts link identities to chats.** Each person signs up with an email and sees
+> only their own chats, but the capstone team can see everything in the database: emails, profile
+> answers and chat logs. That is identifiable student data if anyone outside the team signs up,
+> and the capstone's IRB determination is still pending. Keep the link within the team until it
+> is in hand. Sign-up is currently open to any email address.
 
 > **Warning: this repository is public.** Anything in `agent/knowledge/` or `agent/kb/` is
 > visible to the whole internet, and chat messages plus any course text the tutor reads are sent
@@ -74,7 +75,7 @@ win over `.env`.
 |---|---|---|
 | `DEEPSEEK_API_KEY` | none | DeepSeek API key. Never logged or returned by the API. |
 | `DATABASE_URL` | none | Postgres connection string. `POSTGRES_URL` is used if this is unset. With neither, PGlite in `data/pglite/`. |
-| `APP_PASSCODE` | none (no gate) | Shared passcode. When set, every `/api/*` route except `/api/health` needs the header `x-app-passcode` to match, or it returns `401 {"error":"passcode_required"}`. Use ASCII characters only. |
+| `NEON_AUTH_BASE_URL` | none | Neon Auth endpoint for this database (set automatically by the Neon integration once Auth is enabled in the Neon console). Without it nobody can sign in, and every `/api/*` route except `/api/health` returns `401 {"error":"auth_required"}`. Locally, add it to `.env`. |
 | `DEEPSEEK_MODEL` | `deepseek-v4-pro` | Model name sent to DeepSeek. |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL; point it at a local fake server for offline testing. |
 | `PORT` | `3300` | Local port (local server only). |
@@ -126,7 +127,7 @@ files or cards. To see what gets indexed and skipped without starting the server
 npm run knowledge
 ```
 
-`GET /api/knowledge` (passcode-gated) lists indexed and skipped files; `GET /api/kb` returns the
+`GET /api/knowledge` (sign-in required) lists indexed and skipped files; `GET /api/kb` returns the
 knowledge map and the student-visible cards; `GET /api/kb/card?id=…` returns one card;
 `GET /api/health` includes an `agent` block with counts and `indexBuiltAt`.
 
@@ -149,14 +150,15 @@ for local runs.
 3. **Set the secrets.**
    ```sh
    vercel env add DEEPSEEK_API_KEY
-   vercel env add APP_PASSCODE
    ```
-   Add both to every environment you deploy (production and preview).
+   Add it to every environment you deploy (production and preview). For accounts, enable
+   **Auth** on the database in the Neon console (Project → Branch → Auth); the integration then
+   provides `NEON_AUTH_BASE_URL`.
 4. **Deploy.** Push to the connected Git branch, or run `vercel deploy` (preview) or
    `vercel deploy --prod`. The build runs `npm run build`, which copies the vendor libraries into
    `public/vendor/`.
 5. **Check it.** Open `https://<project>.vercel.app/api/health` and confirm `db` is
-   `"postgres"`, there is no `dbError`, `passcodeRequired` is `true`, and the `agent` counts match
+   `"postgres"`, there is no `dbError`, `accounts` is `true`, and the `agent` counts match
    what you expect.
 
 A GitHub Action rebuilds the knowledge index and deploys on every push to `main` once the

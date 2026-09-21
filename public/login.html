@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — Kelvin AI</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/account.css">
+<script src="/account.js"></script>
+</head>
+<body class="account-page">
+<main class="acct-card">
+  <div class="acct-brand">Kelvin AI</div>
+  <h1 id="title" class="acct-title">Welcome back</h1>
+  <p id="sub" class="acct-sub">Sign in to your thermodynamics tutor.</p>
+  <form id="form" class="acct-form" novalidate>
+    <div id="nameField" class="acct-field" hidden>
+      <label for="name">Your name</label>
+      <input id="name" name="name" autocomplete="name" maxlength="120">
+    </div>
+    <div class="acct-field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+    </div>
+    <div class="acct-field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+    </div>
+    <div id="error" class="acct-error" role="alert"></div>
+    <button id="submit" class="acct-btn" type="submit">Sign in</button>
+  </form>
+  <p class="acct-switch"><span id="switchText">New here?</span> <button id="switchBtn" type="button">Create an account</button></p>
+</main>
+<script>
+(function () {
+  const A = window.KelvinAccount;
+  let mode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin';
+  const $ = (id) => document.getElementById(id);
+  function render() {
+    const up = mode === 'signup';
+    $('title').textContent = up ? 'Create your account' : 'Welcome back';
+    $('sub').textContent = up ? 'A few quick questions come next so Kelvin can tailor examples to your course.' : 'Sign in to your thermodynamics tutor.';
+    $('nameField').hidden = !up;
+    $('password').autocomplete = up ? 'new-password' : 'current-password';
+    $('submit').textContent = up ? 'Create account' : 'Sign in';
+    $('switchText').textContent = up ? 'Already have an account?' : 'New here?';
+    $('switchBtn').textContent = up ? 'Sign in' : 'Create an account';
+    $('error').textContent = '';
+  }
+  $('switchBtn').addEventListener('click', () => { mode = mode === 'signup' ? 'signin' : 'signup'; render(); (mode === 'signup' ? $('name') : $('email')).focus(); });
+  $('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('email').value.trim();
+    const password = $('password').value;
+    const name = $('name').value.trim();
+    if (mode === 'signup' && !name) { $('error').textContent = 'Please enter your name.'; $('name').focus(); return; }
+    if (!email || !password) { $('error').textContent = 'Enter your email and password.'; return; }
+    if (password.length < 8) { $('error').textContent = 'Password must be at least 8 characters.'; return; }
+    $('submit').disabled = true;
+    $('error').textContent = '';
+    try {
+      if (mode === 'signup') {
+        await A.signUp(name, email, password);
+        location.replace('/onboarding');
+      } else {
+        await A.signIn(email, password);
+        const me = await A.me();
+        location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
+      }
+    } catch (err) {
+      $('error').textContent = err.message;
+      $('submit').disabled = false;
+    }
+  });
+  A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
+  render();
+  (mode === 'signup' ? $('name') : $('email')).focus();
+})();
+</script>
+</body>
+</html>

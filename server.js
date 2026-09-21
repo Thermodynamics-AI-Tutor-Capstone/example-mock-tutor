@@ -175,7 +175,7 @@ server.listen(PORT, HOST, () => {
       : 'Knowledge files: 0 (index failed to load)'
   );
   console.log(`Database: ${dbKind()}`);
-  console.log(`Passcode gate: ${process.env.APP_PASSCODE ? 'on' : 'off'}`);
+console.log(`Accounts: ${process.env.NEON_AUTH_BASE_URL ? 'Neon Auth' : 'NOT configured (set NEON_AUTH_BASE_URL)'}`);
   ensureSchema().then(
     () => console.log('Database schema ready'),
     (e) => console.error(`Database not ready: ${e.message}`)

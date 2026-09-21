@@ -102,7 +102,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .conv-item:hover .del, .conv-item.active .del { display: inline-flex; }
 .conv-item .del:hover { color: #ef4444; background: var(--hover); }
-.sb-user { display: flex; align-items: center; gap: 10px; padding: 10px; border-top: 1px solid var(--border); margin-top: 6px; }
+.sb-user-wrap { position: relative; border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
+.sb-user { display: flex; align-items: center; gap: 10px; padding: 10px; width: 100%; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: 10px; }
+.sb-user:hover { background: var(--hover); }
+.user-menu { position: absolute; bottom: calc(100% + 4px); left: 0; right: 0; z-index: 60; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 8px 28px #00000026; padding: 6px; }
+.user-menu-head { font-size: 12.5px; color: var(--text2); padding: 8px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-menu-item { display: block; width: 100%; text-align: left; padding: 9px 10px; border-radius: 8px; background: none; border: 0; font: inherit; font-size: 14px; color: inherit; text-decoration: none; cursor: pointer; }
+.user-menu-item:hover, .user-menu-item:focus-visible { background: var(--hover); outline: none; }
 .avatar {
   width: 28px; height: 28px; border-radius: 50%;
   background: #10a37f; color: #fff; font-size: 11px; font-weight: 600;

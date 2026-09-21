@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   'use strict';
 
   const $ = (id) => document.getElementById(id);
@@ -188,6 +188,13 @@
     if (res.status === 401) {
       let data = null;
       try { data = await res.clone().json(); } catch (e) {}
+      if (data && data.error === 'auth_required') {
+        location.replace('/login?next=' + encodeURIComponent(location.pathname + location.hash));
+        const err = new Error('auth_required');
+        err.status = 401;
+        err.code = 'passcode_required';
+        throw err;
+      }
       if (data && data.error === 'passcode_required') {
         showGate();
         const err = new Error('passcode_required');
@@ -405,6 +412,8 @@
     return state.styles.find((s) => s.id === id) || null;
   }
   function defaultStyleId() {
+    const fromProfile = state.me && state.me.profile ? styleById(state.me.profile.default_style) : null;
+    if (fromProfile && fromProfile.available) return fromProfile.id;
     const saved = styleById(savedStyle());
     if (saved && saved.available) return saved.id;
     const def = state.styles.find((s) => s.default && s.available) || state.styles.find((s) => s.available);
@@ -477,6 +486,10 @@
     if (!s || !s.available) return;
     closeStyleMenu(true);
     rememberStyle(id);
+    if (state.me && state.me.profile && state.me.profile.default_style !== id) {
+      state.me.profile.default_style = id;
+      window.KelvinAccount.saveProfile({ default_style: id }).catch(() => {});
+    }
     if (id === state.activeStyle) return;
     state.activeStyle = id;
     renderStyleButton();
@@ -833,9 +846,36 @@
     else goEmpty(false);
   });
 
+  // ---- Signed-in user: sidebar row + menu ----
+  const userBtn = $('userBtn');
+  const userMenu = $('userMenu');
+  function renderUser() {
+    const name = (state.me.profile && state.me.profile.display_name) || state.me.user.name || state.me.user.email || 'Student';
+    $('userName').textContent = name;
+    $('userAvatar').textContent = window.KelvinAccount.initials(name, state.me.user.email);
+    $('userMenuEmail').textContent = state.me.user.email || '';
+  }
+  function closeUserMenu() {
+    userMenu.hidden = true;
+    userBtn.setAttribute('aria-expanded', 'false');
+  }
+  userBtn.addEventListener('click', () => {
+    userMenu.hidden = !userMenu.hidden;
+    userBtn.setAttribute('aria-expanded', userMenu.hidden ? 'false' : 'true');
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (!userMenu.hidden && !userMenu.parentElement.contains(e.target)) closeUserMenu();
+  });
+  userMenu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeUserMenu(); userBtn.focus(); } });
+  $('signOutBtn').addEventListener('click', () => window.KelvinAccount.signOut());
+
   placeComposer();
   updateSendBtn();
-  loadStyles();
+  const me = await window.KelvinAccount.requireSession();
+  if (!me) return;
+  state.me = me;
+  renderUser();
+  await loadStyles();
   refreshList().then((ok) => {
     if (!ok && !gate.hidden) return;
     const id = parseHash();

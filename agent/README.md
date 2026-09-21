@@ -89,8 +89,8 @@ AI calls at all, so a redeploy is deterministic and needs no API key.
 
 - **GitHub:** Actions tab → latest deploy run → the run summary lists every indexed file and every
   skipped file with the reason (for example "no extractable text (scanned? needs OCR)").
-- **Live site:** `GET /api/knowledge` (passcode required) returns the same list.
+- **Live site:** `GET /api/knowledge` (sign-in required) returns the same list.
   `GET /api/health` shows counts of skills, indexed files, and skipped files.
-- **Cards:** `GET /api/kb` (passcode required) returns the always-in-prompt map and every
+- **Cards:** `GET /api/kb` (sign-in required) returns the always-in-prompt map and every
   student-visible card; `GET /api/kb/card?id=unit:u4-control-volumes-and-second-law` returns one
   card with its links and sources.

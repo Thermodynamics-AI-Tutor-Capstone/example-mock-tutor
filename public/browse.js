@@ -119,6 +119,13 @@
     var res = await fetch(url, { headers: headers });
     var data = null;
     try { data = await res.json(); } catch (e) {}
+    if (res.status === 401 && data && data.error === 'auth_required') {
+      location.replace('/login?next=' + encodeURIComponent(location.pathname + location.hash));
+      var ae = new Error('auth_required');
+      ae.status = 401;
+      ae.code = 'passcode_required';
+      throw ae;
+    }
     if (res.status === 401 && data && data.error === 'passcode_required') {
       showGate();
       var err = new Error('passcode_required');
