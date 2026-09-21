@@ -32,7 +32,7 @@
     </div>
     <div class="acct-field"><label for="major">Major</label><input id="major" placeholder="Mechanical Engineering" maxlength="120"></div>
     <div id="error" class="acct-error" role="alert"></div>
-    <button id="submit" class="acct-btn" type="submit">Continue</button>
+    <button id="submit" class="acct-btn" type="submit" disabled>Continue</button>
   </form>
 </main>
 <script>
@@ -46,6 +46,7 @@
     const p = me.profile || {};
     for (const f of FIELDS) if (p[f]) $(f).value = p[f];
     if (!$('display_name').value && me.user.name) $('display_name').value = me.user.name;
+    $('submit').disabled = false;
     $('display_name').focus();
   });
   $('form').addEventListener('submit', async (e) => {

@@ -34,7 +34,7 @@
     <div class="acct-field"><label for="default_style">Default teaching style for new chats</label><select id="default_style"></select></div>
     <div id="error" class="acct-error" role="alert"></div>
     <div id="ok" class="acct-ok" role="status"></div>
-    <button id="submit" class="acct-btn" type="submit">Save changes</button>
+    <button id="submit" class="acct-btn" type="submit" disabled>Save changes</button>
     <p class="acct-note">Kelvin AI is a capstone prototype. It stores your account email, the profile fields above and your chats, and the capstone team can see them. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies.</p>
   </form>
 </main>
@@ -58,6 +58,7 @@
     const p = me.profile || {};
     for (const f of FIELDS) if (p[f]) $(f).value = p[f];
     if (!p.default_style) sel.value = 'classic';
+    $('submit').disabled = false;
   });
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
