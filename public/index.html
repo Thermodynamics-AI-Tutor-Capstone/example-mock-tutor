@@ -42,7 +42,13 @@
         <button id="topNewChat" class="icon-btn only-collapsed" title="New chat" aria-label="New chat">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L12 14.8 8 16l1.2-4z"/></svg>
         </button>
-        <div class="model-label">Kelvin AI <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        <div id="stylePicker" class="style-picker">
+          <button id="styleBtn" class="model-label" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="styleMenu" title="Choose a tutoring style">
+            <span id="styleBtnIcon" class="style-btn-icon" aria-hidden="true"></span><span>Kelvin AI</span><span id="styleBtnName" class="style-btn-name"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div id="styleMenu" class="style-menu" role="listbox" aria-label="Tutoring style" hidden></div>
+        </div>
       </div>
       <div class="topbar-right">
         <a class="topbar-link" href="/browse" title="Browse the course map">Course map</a>

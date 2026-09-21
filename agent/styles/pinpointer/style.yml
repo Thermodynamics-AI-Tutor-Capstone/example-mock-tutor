@@ -1,0 +1,27 @@
+# Pinpointer — "evaluate my work" as the front door. Finds the earliest wrong line or assumption
+# and deals only with that, on a help ladder whose current rung is tracked by the server.
+id: pinpointer
+name: Pinpointer
+description: Show your work — I find the first line or assumption that goes wrong and ask about just that.
+icon: "🎯"
+order: 2
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - read_course_file
+  - list_course_files
+  - load_skill
+  - update_tutoring_state
+skills:
+  - property-tables
+  - control-volume-energy-balance
+max_tool_rounds: 6
+state:
+  help_ladder: true
+  max_rung: 6
+ui:
+  figures: false
+  mermaid: false
+enabled: true

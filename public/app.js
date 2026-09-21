@@ -15,6 +15,8 @@
 
   const state = {
     conversations: [],
+    styles: [],
+    activeStyle: null,
     currentId: null,
     streaming: false,
     controller: null,
@@ -290,6 +292,10 @@
   function goEmpty(pushUrl) {
     state.loadToken++;
     state.currentId = null;
+    if (state.styles.length) {
+      state.activeStyle = defaultStyleId();
+      renderStyleButton();
+    }
     thread.innerHTML = '';
     setThreadMode(false);
     renderSidebar();
@@ -369,6 +375,10 @@
       return;
     }
     if (token !== state.loadToken) return;
+    if (state.styles.length) {
+      state.activeStyle = styleById(conv.style) ? conv.style : 'classic';
+      renderStyleButton();
+    }
     updateTitle(conv);
     const msgs = conv.messages || [];
     for (const m of msgs) {
@@ -379,6 +389,129 @@
     scrollToBottom();
     input.focus();
   }
+
+  // ---- Tutoring-style picker (like ChatGPT's model selector) ----
+  const STYLE_KEY = 'kelvinStyle';
+  const styleBtn = $('styleBtn');
+  const styleMenu = $('styleMenu');
+
+  function savedStyle() {
+    try { return localStorage.getItem(STYLE_KEY) || ''; } catch (e) { return ''; }
+  }
+  function rememberStyle(id) {
+    try { localStorage.setItem(STYLE_KEY, id); } catch (e) {}
+  }
+  function styleById(id) {
+    return state.styles.find((s) => s.id === id) || null;
+  }
+  function defaultStyleId() {
+    const saved = styleById(savedStyle());
+    if (saved && saved.available) return saved.id;
+    const def = state.styles.find((s) => s.default && s.available) || state.styles.find((s) => s.available);
+    return def ? def.id : null;
+  }
+  function renderStyleButton() {
+    const s = styleById(state.activeStyle);
+    $('styleBtnIcon').textContent = s ? s.icon : '';
+    $('styleBtnName').textContent = s ? s.name : '';
+    styleBtn.title = s ? s.name + ' — ' + s.description : 'Choose a tutoring style';
+  }
+  function renderStyleMenu() {
+    styleMenu.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'style-menu-head';
+    head.textContent = 'Tutoring style';
+    styleMenu.appendChild(head);
+    for (const s of state.styles) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'style-item';
+      item.setAttribute('role', 'option');
+      item.dataset.id = s.id;
+      const selected = s.id === state.activeStyle;
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+      if (!s.available) item.setAttribute('aria-disabled', 'true');
+      const icon = document.createElement('span');
+      icon.className = 'si-icon';
+      icon.textContent = s.icon || '•';
+      const text = document.createElement('span');
+      text.className = 'si-text';
+      const name = document.createElement('span');
+      name.className = 'si-name';
+      name.textContent = s.name;
+      const desc = document.createElement('span');
+      desc.className = 'si-desc';
+      desc.textContent = s.available ? s.description : 'Unavailable: ' + (s.unavailableReason || 'not configured');
+      text.append(name, desc);
+      const check = document.createElement('span');
+      check.className = 'si-check';
+      if (selected) check.innerHTML = ICON_CHECK;
+      item.append(icon, text, check);
+      item.addEventListener('click', () => chooseStyle(s.id));
+      styleMenu.appendChild(item);
+    }
+  }
+  function openStyleMenu() {
+    if (!state.styles.length) return;
+    renderStyleMenu();
+    styleMenu.hidden = false;
+    styleBtn.setAttribute('aria-expanded', 'true');
+    const current = styleMenu.querySelector('[aria-selected="true"]') || styleMenu.querySelector('.style-item');
+    if (current) current.focus();
+  }
+  function closeStyleMenu(refocus) {
+    if (styleMenu.hidden) return;
+    styleMenu.hidden = true;
+    styleBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) styleBtn.focus();
+  }
+  function addStyleNote(text) {
+    if (!thread.children.length) return;
+    const note = document.createElement('div');
+    note.className = 'style-note';
+    note.textContent = text;
+    thread.appendChild(note);
+  }
+  async function chooseStyle(id) {
+    const s = styleById(id);
+    if (!s || !s.available) return;
+    closeStyleMenu(true);
+    rememberStyle(id);
+    if (id === state.activeStyle) return;
+    state.activeStyle = id;
+    renderStyleButton();
+    if (!state.currentId) return;
+    const convId = state.currentId;
+    try {
+      await api('PATCH', '/api/conversations/' + convId, { style: id });
+      const c = state.conversations.find((x) => x.id === convId);
+      if (c) c.style = id;
+      if (state.currentId === convId) addStyleNote('Switched to ' + s.name + ' — applies to new messages.');
+    } catch (e) {
+      addStyleNote('Could not switch style: ' + e.message);
+    }
+  }
+  async function loadStyles() {
+    try {
+      state.styles = (await api('GET', '/api/styles')) || [];
+    } catch (e) {
+      state.styles = [];
+    }
+    if (!state.activeStyle || !styleById(state.activeStyle)) state.activeStyle = defaultStyleId();
+    renderStyleButton();
+  }
+  styleBtn.addEventListener('click', () => (styleMenu.hidden ? openStyleMenu() : closeStyleMenu(false)));
+  styleMenu.addEventListener('keydown', (e) => {
+    const items = Array.from(styleMenu.querySelectorAll('.style-item'));
+    const i = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); closeStyleMenu(true); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); (items[i + 1] || items[0]).focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); (items[i - 1] || items[items.length - 1]).focus(); }
+    else if (e.key === 'Tab') closeStyleMenu(false);
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (!styleMenu.hidden && !$('stylePicker').contains(e.target)) closeStyleMenu(false);
+  });
 
   function parseHash() {
     const m = location.hash.match(/^#\/c\/([^/?#]+)/);
@@ -433,11 +566,11 @@
     let convId = state.currentId;
     if (!convId) {
       try {
-        const conv = await api('POST', '/api/conversations');
+        const conv = await api('POST', '/api/conversations', state.activeStyle ? { style: state.activeStyle } : {});
         convId = conv.id;
         state.loadToken++;
         state.currentId = convId;
-        state.conversations = [{ id: conv.id, title: conv.title, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
+        state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
           .concat(state.conversations.filter((c) => c.id !== conv.id));
         renderSidebar();
         location.hash = '#/c/' + convId;
@@ -702,6 +835,7 @@
 
   placeComposer();
   updateSendBtn();
+  loadStyles();
   refreshList().then((ok) => {
     if (!ok && !gate.hidden) return;
     const id = parseHash();

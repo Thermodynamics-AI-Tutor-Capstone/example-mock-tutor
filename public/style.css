@@ -122,7 +122,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .app.collapsed .only-collapsed { display: inline-flex; }
 .model-label {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 18px; font-weight: 500; padding: 6px 10px; border-radius: 8px; cursor: default;
+  font-size: 18px; font-weight: 500; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+  background: none; border: 0; color: inherit; font-family: inherit;
 }
 .model-label svg { color: var(--text2); }
 .model-label:hover { background: var(--hover); }
@@ -280,3 +281,33 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-weight: 500; font-size: 16px;
 }
 .gate-btn:disabled { background: var(--send-disabled); cursor: default; }
+
+/* Tutoring-style picker */
+.style-picker { position: relative; }
+.style-btn-icon { font-size: 16px; }
+.style-btn-name { color: var(--text2); font-weight: 400; margin-left: 4px; }
+.style-btn-name:empty { display: none; }
+.style-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 60;
+  width: 360px; max-width: calc(100vw - 32px);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: 0 8px 28px #00000026; padding: 6px;
+}
+.style-menu-head { font-size: 13px; color: var(--text2); padding: 8px 10px 6px; }
+.style-item {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left;
+  background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
+  padding: 10px; border-radius: 10px;
+}
+.style-item:hover, .style-item:focus-visible { background: var(--hover); outline: none; }
+.style-item[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.si-icon { font-size: 18px; line-height: 22px; width: 22px; text-align: center; flex: 0 0 22px; }
+.si-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.si-name { font-size: 15px; font-weight: 500; }
+.si-desc { font-size: 13px; color: var(--text2); line-height: 1.35; }
+.si-check { margin-left: auto; flex: 0 0 16px; padding-top: 3px; }
+.style-note { text-align: center; font-size: 12.5px; color: var(--text2); margin: 10px auto; }
+@media (max-width: 480px) {
+  .style-btn-name { display: none; }
+  .style-menu { position: fixed; top: 56px; left: 16px; right: 16px; width: auto; }
+}

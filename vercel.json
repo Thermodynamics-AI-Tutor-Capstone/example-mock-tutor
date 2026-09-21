@@ -8,7 +8,7 @@
     "api/handler.js": {
       "maxDuration": 300,
       "supportsCancellation": true,
-      "includeFiles": "{agent/system-prompt.md,agent/connections/**,agent/skills/**,build/knowledge-index.json}",
+      "includeFiles": "{agent/system-prompt.md,agent/connections/**,agent/skills/**,agent/styles/**,build/knowledge-index.json}",
       "excludeFiles": "{node_modules/@electric-sql/**,agent/knowledge/**,agent/kb/**}"
     }
   },

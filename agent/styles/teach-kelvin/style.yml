@@ -1,0 +1,22 @@
+# Teach Kelvin — learning by teaching. Kelvin plays a classmate with a plausible wrong model; the
+# student finds and fixes the flaw, then Kelvin re-answers using only the student's explanation.
+id: teach-kelvin
+name: Teach Kelvin
+description: I play a classmate with a plausible wrong idea — you find the flaw and fix my reasoning.
+icon: "🧑‍🎓"
+order: 4
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - update_tutoring_state
+skills: []
+max_tool_rounds: 5
+state:
+  help_ladder: true
+  max_rung: 3
+ui:
+  figures: false
+  mermaid: false
+enabled: true

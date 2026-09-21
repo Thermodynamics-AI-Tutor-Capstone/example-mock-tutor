@@ -1,0 +1,16 @@
+# Classic — the original Kelvin, kept unchanged as the baseline the other styles are compared against.
+id: classic
+name: Classic
+description: The original Kelvin — hints first, a full worked solution if you're still stuck.
+icon: "💬"
+order: 1
+connection: deepseek-pro
+tools: all
+skills: all
+max_tool_rounds: 6
+state:
+  help_ladder: false
+ui:
+  figures: false
+  mermaid: false
+enabled: true

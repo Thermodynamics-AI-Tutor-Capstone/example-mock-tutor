@@ -1,0 +1,24 @@
+# Diagnose First — one or two closed concept questions whose wrong options each map to a known
+# misconception. The student's pick is the diagnosis; then repair only that and re-test.
+id: probe
+name: Diagnose First
+description: A quick question or two to find your exact misconception — then we fix only that.
+icon: "🔍"
+order: 3
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - read_course_file
+  - load_skill
+  - update_tutoring_state
+skills: all
+max_tool_rounds: 6
+state:
+  help_ladder: true
+  max_rung: 4
+ui:
+  figures: false
+  mermaid: false
+enabled: true
