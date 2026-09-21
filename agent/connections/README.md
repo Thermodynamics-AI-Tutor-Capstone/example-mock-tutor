@@ -83,6 +83,7 @@ Changes to this file reach the live site on the next deploy.
 - **A different model provider** that speaks the OpenAI chat-completions format: config only. Add a
   named connection here with its own `apiKeyEnvVar`, add that key in Vercel, and name the connection
   in a style's `style.yml`. If the key is missing, that style shows as unavailable in the picker.
-- **A different kind of service** (Canvas, a property library, another API): code. Add a tool to
-  [`lib/tools.js`](../../lib/tools.js) with a `requires.env` list for its keys, then list the tool
-  in the styles that may use it.
+- **A different kind of service** (Canvas, a property library, another API): a new tool. See
+  [`../tools/README.md`](../tools/README.md): a definition in `agent/tools/` (with the keys it needs
+  under `requires.env`) plus its code in `lib/tools/`, then list the tool in the styles that may
+  use it.

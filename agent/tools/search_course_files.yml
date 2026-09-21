@@ -1,0 +1,29 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/search_course_files.js.
+name: search_course_files
+description: >-
+  Keyword search over the knowledge brain. One pool holds both the knowledge cards (course, units,
+  topics, equations, misconceptions, worked examples, assessment items) and the raw passages of the
+  course files, so a single query can land on a summary card or on the slide itself. Card hits come
+  back with an id you can pass straight to open_card; passage hits come back with a file path, page
+  and chunk number for read_course_file. Use specific terms (e.g. "isentropic efficiency turbine",
+  "exam 4 dates").
+status: Searching for “{query}”
+status_default: Searching the knowledge brain
+parameters:
+  type: object
+  properties:
+    query:
+      type: string
+      description: Keywords to look for.
+    max_results:
+      type: integer
+      minimum: 1
+      maximum: 8
+      description: How many results to return (1-8, default 5).
+    kind:
+      type: string
+      enum: [card, chunk, any]
+      description: >-
+        Restrict the pool: "card" for knowledge cards only, "chunk" for raw course-file passages
+        only, "any" (default) for both.
+  required: [query]

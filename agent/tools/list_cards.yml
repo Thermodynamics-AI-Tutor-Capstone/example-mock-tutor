@@ -1,0 +1,17 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/list_cards.js.
+name: list_cards
+description: >-
+  List knowledge cards without opening them — the way to answer "what is on exam 4" or "list every
+  equation in unit 4". Returns id, title, one-line description and review status, at most 30 at a
+  time.
+status: Listing cards
+parameters:
+  type: object
+  properties:
+    kind:
+      type: string
+      enum: [course, unit, topic, equation, misconception, example, item, source]
+      description: Only cards of this kind.
+    parent:
+      type: string
+      description: Only cards under this card id (for example "unit:u4-control-volumes-and-second-law").

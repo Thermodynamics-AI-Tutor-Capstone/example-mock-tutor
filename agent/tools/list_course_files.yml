@@ -1,0 +1,9 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/list_course_files.js.
+name: list_course_files
+description: >-
+  List every course file that has been added (syllabus, lecture notes, assignments, reference
+  material), with type, page count and size, plus files that could not be read.
+status: Listing course materials
+parameters:
+  type: object
+  properties: {}

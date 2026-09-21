@@ -7,6 +7,7 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 |---|---|---|
 | Shared core | [`system-prompt.md`](system-prompt.md) | change the ground rules every teaching style follows |
 | Teaching styles | [`styles/`](styles/README.md) | change how a style teaches, which model, tools and skills it gets, or add a new style to the picker |
+| Tools | [`tools/`](tools/README.md) | change what the model is told about each tool it can call, and when to use it |
 | Skills | [`skills/`](skills/README.md) | add or change focused instruction modules the tutor loads when needed |
 | Connections | [`connections/`](connections/README.md) | change the AI model and its settings; see what services the tutor uses |
 | Course materials | [`knowledge/`](knowledge/README.md) | give the tutor course files to read — drag and drop them here |

@@ -1,0 +1,25 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/read_course_file.js.
+name: read_course_file
+description: >-
+  Read the text of one course file, starting at a chunk (from search results) and continuing for up
+  to max_chars characters. Each chunk is prefixed with its page or slide number and, where one has
+  been written, a one-line note saying where in the file it sits. Returns next_chunk to continue
+  reading, or null at the end.
+status: Reading {path}
+status_default: Reading a course file
+parameters:
+  type: object
+  properties:
+    path:
+      type: string
+      description: File path exactly as returned by list_course_files or search_course_files.
+    start_chunk:
+      type: integer
+      minimum: 0
+      description: Chunk number to start from (default 0).
+    max_chars:
+      type: integer
+      minimum: 500
+      maximum: 12000
+      description: Maximum characters to return (500-12000, default 6000).
+  required: [path]

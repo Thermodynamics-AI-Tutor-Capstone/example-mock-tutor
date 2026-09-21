@@ -1,0 +1,42 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/update_tutoring_state.js.
+# Only styles with state.help_ladder: true should list this tool.
+name: update_tutoring_state
+description: >-
+  Record where this student is, so the next turn continues from here instead of starting over. Call
+  it whenever the help rung changes, the student makes an attempt, you diagnose a misconception, or
+  an assumption is committed or retracted. The current state is shown to you at the top of every
+  turn under "Tutoring state".
+status: Updating tutoring state
+parameters:
+  type: object
+  properties:
+    problem:
+      type: string
+      description: One line naming the problem being worked on. Setting a new problem resets the rung and attempts.
+    rung:
+      type: integer
+      minimum: 0
+      description: Help rung now reached (0 = no help yet). Clamped to the style's maximum.
+    attempt:
+      type: boolean
+      description: true when the student has just made an attempt (counts attempts).
+    diagnosed_misconception:
+      type: string
+      description: A misc card id you have diagnosed, e.g. "misc:m15-adiabatic-implies-isentropic".
+    resolved_misconception:
+      type: string
+      description: A misc card id the student has now repaired.
+    ledger_entry:
+      type: object
+      description: One assumption the student committed to or retracted.
+      properties:
+        assumption:
+          type: string
+          description: e.g. "adiabatic", "steady flow", "ΔKE ≈ 0", "reversible".
+        status:
+          type: string
+          enum: [stated, assumed, derived, retracted]
+        justification:
+          type: string
+          description: The words in the problem, or the reasoning, that license it.
+      required: [assumption, status]

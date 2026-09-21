@@ -38,8 +38,8 @@ jobs:
       # No LLM, no API key: it runs on forks too.
       - name: Validate the knowledge base
         run: node scripts/kb/validate.mjs --summary "$GITHUB_STEP_SUMMARY"
-      - name: Validate tutoring styles
-        run: node scripts/validate-styles.mjs --summary "$GITHUB_STEP_SUMMARY"
+      - name: Validate tools and teaching styles
+        run: node scripts/validate-agent.mjs --summary "$GITHUB_STEP_SUMMARY"
 
       # Informational. Retrieval quality is a number to watch, not a reason to
       # block a deploy — except for the one regression check the eval itself

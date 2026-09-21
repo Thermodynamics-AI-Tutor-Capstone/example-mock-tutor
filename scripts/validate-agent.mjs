@@ -1,21 +1,45 @@
 #!/usr/bin/env node
-// Checks every tutoring style in agent/styles/ before it can reach students: the files parse,
-// ids match folders, and every connection, tool and skill a style names actually exists.
-// Exits non-zero on any problem. Usage: node scripts/validate-styles.mjs [--summary FILE]
+// Checks the agent configuration before it can reach students:
+//   tools  — every agent/tools/<name>.yml parses, has a description and an object schema, and has
+//            its implementation lib/tools/<name>.js registered in lib/tools/index.js (and vice versa);
+//   styles — every agent/styles/<id>/ parses, its id matches the folder, and every connection,
+//            tool and skill it names exists.
+// Exits non-zero on any problem. Usage: node scripts/validate-agent.mjs [--summary FILE]
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadStyles, STYLES_DIR, DEFAULT_STYLE_ID } from '../lib/styles.js';
-import { loadConnections, BUILTIN_TOOL_NAMES } from '../lib/agent.js';
-import { EXTRA_TOOLS } from '../lib/tools.js';
+import { loadConnections } from '../lib/agent.js';
+import { loadTools } from '../lib/tools/index.js';
 import { listSkills } from '../lib/skills.js';
 
 const problems = [];
+
+// Tools
+const { tools, errors: toolErrors } = loadTools();
+problems.push(...toolErrors);
+for (const t of tools.values()) {
+  const where = `agent/tools/${t.file}`;
+  if (t.parameters.type !== 'object' || typeof t.parameters.properties !== 'object') {
+    problems.push(`${where}: parameters must be a JSON-schema object with "properties"`);
+  }
+  for (const req of t.parameters.required || []) {
+    if (!(req in (t.parameters.properties || {}))) problems.push(`${where}: required parameter "${req}" is not in properties`);
+  }
+  for (const v of t.requiresEnv) if (!/^[A-Z][A-Z0-9_]*$/.test(v)) problems.push(`${where}: requires.env "${v}" is not an env var name`);
+  if (t.status && /\{(\w+)\}/.test(t.status)) {
+    for (const [, key] of t.status.matchAll(/\{(\w+)\}/g)) {
+      if (!(key in (t.parameters.properties || {}))) problems.push(`${where}: status mentions {${key}}, which is not a parameter`);
+    }
+  }
+}
+
+// Styles
 const { styles, errors } = loadStyles();
 problems.push(...errors);
 
 const connections = loadConnections().connections;
 const skillNames = new Set((await listSkills()).map((s) => s.name));
-const toolNames = new Set([...BUILTIN_TOOL_NAMES, ...Object.keys(EXTRA_TOOLS)]);
+const toolNames = new Set(tools.keys());
 const orders = new Map();
 
 for (const s of styles) {
@@ -35,9 +59,12 @@ const def = styles.find((s) => s.id === DEFAULT_STYLE_ID);
 if (!def || !def.enabled) problems.push(`the default style "${DEFAULT_STYLE_ID}" must exist and be enabled`);
 
 const lines = problems.length
-  ? [`Styles: FAILED (${problems.length} problem${problems.length === 1 ? '' : 's'})`, ...problems.map((p) => `- ${p}`)]
-  : [`Styles: ok — ${styles.length} checked (${styles.map((s) => s.id).join(', ')})`];
+  ? [`Agent config: FAILED (${problems.length} problem${problems.length === 1 ? '' : 's'})`, ...problems.map((p) => `- ${p}`)]
+  : [
+      `Tools: ok — ${tools.size} checked (${[...tools.keys()].join(', ')})`,
+      `Styles: ok — ${styles.length} checked (${styles.map((s) => s.id).join(', ')})`,
+    ];
 console.log(lines.join('\n'));
 const i = process.argv.indexOf('--summary');
-if (i > 0 && process.argv[i + 1]) fs.appendFileSync(process.argv[i + 1], `\n### Tutoring styles\n\n${lines.join('\n')}\n`);
+if (i > 0 && process.argv[i + 1]) fs.appendFileSync(process.argv[i + 1], `\n### Tools and teaching styles\n\n${lines.join('\n')}\n`);
 process.exit(problems.length ? 1 : 0);

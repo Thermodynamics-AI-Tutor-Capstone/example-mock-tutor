@@ -1,0 +1,25 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/open_card.js.
+name: open_card
+description: >-
+  Open one knowledge card by id and read it. Ids carry their own type: course:, unit:, topic:, eq:
+  (equation), misc: (misconception), ex: (worked example), item: (assessment item), src: (source).
+  Returns the card's description, body, linked ids and the course files it was written from. A card
+  whose status is not "instructor-verified" comes back with an explicit note saying so — pass that
+  on to the student when you use it.
+status: "Opening card: {id}"
+status_default: Opening a card
+parameters:
+  type: object
+  properties:
+    id:
+      type: string
+      description: The card id, for example "topic:t12-entropy-balance-closed".
+    include:
+      type: array
+      items:
+        type: string
+        enum: [children, equations, sources, objectives]
+      description: >-
+        Extra sections to resolve: "children" (the cards under this one, the default), "equations",
+        "objectives", "sources" (adds whether each cited file is actually in the index).
+  required: [id]

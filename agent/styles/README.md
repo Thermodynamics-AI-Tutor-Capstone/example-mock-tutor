@@ -41,7 +41,7 @@ in the research repo.
 | `name`, `description`, `icon` | What the picker shows. Keep the description to one line. |
 | `order` | Position in the picker (unique). |
 | `connection` | A key in [`../connections/connections.json`](../connections/connections.json): which provider, model and API-key variable this style uses. Add a new connection there to give a style a different model or provider. |
-| `tools` | `all`, or a list: the course tools (`search_course_files`, `open_card`, `list_cards`, `read_course_file`, `list_course_files`, `load_skill`) plus any tool registered in [`lib/tools.js`](../../lib/tools.js), e.g. `update_tutoring_state`. |
+| `tools` | `all`, or a list of tool names from [`../tools/`](../tools/README.md), e.g. `search_course_files`, `open_card`, `update_tutoring_state`. Prefer an explicit list: with `all`, every tool added later is handed to the style automatically. |
 | `skills` | `all`, or a list of skill names from [`../skills/`](../skills/README.md). |
 | `max_tool_rounds` | How many rounds of tool calls per reply. |
 | `state.help_ladder`, `state.max_rung` | When on, the server stores this conversation's help rung, attempts, diagnosed misconceptions and assumption ledger, and shows them to the model on every turn. The model updates them with `update_tutoring_state`. |
@@ -55,8 +55,7 @@ in the picker as **unavailable, with the reason**, and the other styles keep wor
 
 1. Copy a folder, e.g. `pinpointer/` → `my-style/`, and change `id` to `my-style`.
 2. Edit `style.yml` and `prompt.md`.
-3. Check it: `npm run styles:validate`. The same check runs in GitHub Actions on every push and
+3. Check it: `npm run agent:validate`. The same check runs in GitHub Actions on every push and
    fails the build on an unknown connection, tool or skill.
 
-Adding a **tool** means code: add an entry to [`lib/tools.js`](../../lib/tools.js) with its
-description, parameters, `run()` and any `requires.env` keys, then list it in a style.
+Adding a **tool** means code as well as a definition; see [`../tools/README.md`](../tools/README.md).
