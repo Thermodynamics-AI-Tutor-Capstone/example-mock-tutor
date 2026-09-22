@@ -908,10 +908,12 @@
   state.me = me;
   renderUser();
   await loadStyles();
+  const hashAtLoad = parseHash();
   refreshList().then((ok) => {
     if (!ok && !gate.hidden) return;
-    const id = parseHash();
-    if (id) openConversation(id);
-    else input.focus();
+    // Only reopen the chat the page was loaded with. If the student has already started a new
+    // one (e.g. by dropping a file before this list finished loading), reopening would reset it.
+    if (hashAtLoad && state.currentId === null) openConversation(hashAtLoad);
+    else if (!hashAtLoad) input.focus();
   });
 })();

@@ -423,7 +423,10 @@
     busy: () => pending.some((a) => a.uploading),
     hasPending: () => pending.some((a) => a.id && !a.error),
     setPending(list) {
-      pending = (list || []).map((a) => Object.assign({}, a));
+      // Keep uploads still in flight: the server doesn't know about them yet.
+      const fromServer = (list || []).map((a) => Object.assign({}, a));
+      const ids = new Set(fromServer.map((a) => a.id));
+      pending = fromServer.concat(pending.filter((a) => a.uploading && !ids.has(a.id)));
       renderTray();
     },
     clear() {
