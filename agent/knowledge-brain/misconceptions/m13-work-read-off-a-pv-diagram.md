@@ -20,6 +20,20 @@ symbols: [P, v, V, W_b]
 misconceptions: []
 examples: []
 items: []
+signatures:
+  - "Pressure rises along the vertical line, so the work is positive."
+  - "It's a closed loop with the same start and end volume, so net work is zero."
+  - "Both paths go from V₁ to V₂, so they do the same work."
+  - "The adiabatic curve drops more pressure, so it does more work."
+  - "I used W = PΔV with the final pressure for the curved path."
+  - "Positive work going out, negative coming back — over the cycle they cancel."
+not_signatures:
+  - "Work is the area under the path to the v-axis; the isobaric path has more."
+  - "Constant volume, so W_b = 0 even though P rises."
+  - "For the cycle, net work is the enclosed area — clockwise means net work out."
+confusable_with:
+  - id: misc:m11-state-function-vs-path-function
+    separating_question: "If you shade the area under each path on the P-v diagram, are the two areas equal?"
 sources:
   - url: https://peer.asee.org/systematic-literature-review-on-the-common-misconceptions-in-thermodynamics-fluid-mechanics-and-heat-transfer.pdf
     title: >-
@@ -32,21 +46,51 @@ sources:
       ME 300 sample syllabus — the mandated SKETCH step requires "schematic diagram and
       relevant graphs (P-v, T-s diagrams, etc.)"
     retrieved: '2026-09-17'
+  - url: https://www.if.ufrj.br/~carlos/fisterm/leituras/Meltzer_AJP2004.pdf
+    title: >-
+      Meltzer, "Investigation of students' reasoning regarding heat, work, and the first law of
+      thermodynamics in an introductory calculus-based general physics course", Am. J. Phys. 72,
+      1432 (2004) [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://www.if.ufrj.br/~carlos/fisterm/leituras/Loverude_AJP2002.pdf
+    title: >-
+      Loverude, Kautz & Heron, "Student understanding of the first law of thermodynamics: Relating
+      work to the adiabatic compression of an ideal gas", Am. J. Phys. 70, 137 (2002) [read — full
+      text]
+    retrieved: '2026-09-22'
+  - url: https://arxiv.org/abs/2403.03795
+    title: >-
+      Brundage, Meltzer & Singh, "Investigating introductory and advanced students' difficulties
+      with change in internal energy, work and heat transfer using a validated instrument",
+      arXiv:2403.03795 (2024) [read — full text]
+    retrieved: '2026-09-22'
 generated: null
 ---
 
 # P-v diagram misread when finding work
 
-> **Not instructor-checked.** The finding is transcribed from the ASEE 2025 systematic review's
-> introduction, which cites Meltzer (2004). Note that the review does **not** place this in its
-> primary/secondary tiering — filing it under
-> [`misc:m11`](m11-state-function-vs-path-function.md) is this project's inference, not the
-> review's claim. Probe and repair move authored by this project.
+> **Not instructor-checked.** The finding is Meltzer (2004), now read directly as well as via
+> the ASEE 2025 review, and filing it under [`misc:m11`](m11-state-function-vs-path-function.md) is
+> our inference; the signatures, added by an AI research pass on 2026-09-22, paraphrase student
+> responses in Meltzer (2004), Loverude et al. (2002) and Brundage et al. (2024), while the
+> not-signatures, probe and repair move are this project's.
 
 ## The wrong belief
 
 The work of a process can be read off a P-v diagram without attending to the path: from the
 endpoints alone, or from the area to the left of the curve, or without a sign.
+
+## How it sounds
+
+- Pressure rises along the vertical line, so the work is positive.
+- It's a closed loop with the same start and end volume, so net work is zero.
+- Both paths go from V₁ to V₂, so they do the same work.
+- The adiabatic curve drops more pressure, so it does more work.
+- I used W = PΔV with the final pressure for the curved path.
+- Positive work going out, negative coming back — over the cycle they cancel.
+
+The tell is work read from endpoints, a pressure change or the net volume change instead of the
+area under the path; shading that area with a direction-set sign is correct.
 
 ## Why students hold it
 

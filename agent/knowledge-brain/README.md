@@ -105,6 +105,7 @@ existing one first.
 | `equations[]`, `misconceptions[]`, `examples[]`, `items[]`, `symbols[]` | Ids of related cards, or symbols from `symbols.md`. |
 | `requires_objectives[]` | On an assessment item: which objectives it tests. |
 | `derives_from`, `specializes_to` | Equation to equation — general energy balance → steady-flow form → nozzle form. |
+| `signatures[]`, `not_signatures[]`, `confusable_with[]` | **On misconception cards.** How a student who holds the belief talks or writes (4–8 short lines in a student's voice), correct statements that sound similar and must *not* trigger it, and other cards it's easily confused with, each with one `separating_question`. The Jev classifier reads these on every message to decide which misconception a student's words show; the tutor uses the separating question to confirm before repairing. Write them to discriminate, not just to describe. |
 | `valid_when[]`, `invalid_when[]` | **On equation cards, the most important fields in the brain.** The assumptions under which the equation holds, drawn from the closed list in `taxonomy.yml`. Right equation, wrong assumptions is the most common way to get a thermo problem wrong, and this is the field that catches it. |
 | `sources[]` | Where the content came from: `{path, pages}` or `{path, slides}` for a file in `agent/raw-course-files/`, or `{url, title, retrieved}` for something outside the repo. **Every card needs at least one.** No card without a citation. |
 

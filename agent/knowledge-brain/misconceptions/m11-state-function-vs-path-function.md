@@ -21,6 +21,19 @@ misconceptions:
   - misc:m13-work-read-off-a-pv-diagram
 examples: []
 items: []
+signatures:
+  - "Both paths start and end at the same states, so Q is the same for both."
+  - "Work is a state function — the route from 1 to 2 doesn't matter."
+  - "It's a cycle and we end where we started, so net Q and net W are zero."
+  - "I'll write Q₂ − Q₁ for the change in the gas's heat."
+  - "Heat and work are properties of the system, like P and v."
+  - "A different path between the same two states changes Δu too."
+not_signatures:
+  - "Δu is the same for both paths; W and Q differ because the areas differ."
+  - "Over a full cycle ΔU = 0, so Q_net = W_net — neither has to be zero."
+confusable_with:
+  - id: misc:m13-work-read-off-a-pv-diagram
+    separating_question: "If you shade the area under each path on the P-v diagram, are the two areas equal?"
 sources:
   - url: https://peer.asee.org/systematic-literature-review-on-the-common-misconceptions-in-thermodynamics-fluid-mechanics-and-heat-transfer.pdf
     title: >-
@@ -28,18 +41,60 @@ sources:
       constant-volume assumptions "led to misunderstandings about function of state and
       function of path" (Foroushani), reported as secondary to primary #3
     retrieved: '2026-09-17'
+  - url: https://www.if.ufrj.br/~carlos/fisterm/leituras/Meltzer_AJP2004.pdf
+    title: >-
+      Meltzer, "Investigation of students' reasoning regarding heat, work, and the first law of
+      thermodynamics in an introductory calculus-based general physics course", Am. J. Phys. 72,
+      1432 (2004) [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://www.if.ufrj.br/~carlos/fisterm/leituras/Loverude_AJP2002.pdf
+    title: >-
+      Loverude, Kautz & Heron, "Student understanding of the first law of thermodynamics: Relating
+      work to the adiabatic compression of an ideal gas", Am. J. Phys. 70, 137 (2002) [read — full
+      text]
+    retrieved: '2026-09-22'
+  - url: https://arxiv.org/abs/2403.03795
+    title: >-
+      Brundage, Meltzer & Singh, "Investigating introductory and advanced students' difficulties
+      with change in internal energy, work and heat transfer using a validated instrument",
+      arXiv:2403.03795 (2024) [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://www.physicseducation.net/docs/ASEE_2008_published.pdf
+    title: >-
+      Meltzer, "Investigating and addressing learning difficulties in thermodynamics", ASEE 2008, AC
+      2008-1505; about 90% of the introductory sample were engineering majors [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://peer.asee.org/assessment-of-fundamental-concept-in-thermodynamics.pdf
+    title: >-
+      Karimi & Manteufel, "Assessment of fundamental concepts in thermodynamics", ASEE 2014, paper
+      10626 (first mechanical engineering thermodynamics course, UTSA) [read — full text]
+    retrieved: '2026-09-22'
 generated: null
 ---
 
 # State functions and path functions not distinguished
 
-> **Not instructor-checked.** Statement, tier and origin transcribed from the ASEE 2025
-> systematic review; probe and repair move authored by this project.
+> **Not instructor-checked.** Statement, tier and origin are from the ASEE 2025 review; the
+> signatures, added by an AI research pass on 2026-09-22, paraphrase student responses in Meltzer
+> (2004, 2008), Loverude et al. (2002) and Brundage et al. (2024) and ME exam items in Karimi &
+> Manteufel (2014), while the not-signatures, probe and repair move are this project's.
 
 ## The wrong belief
 
 Every quantity in thermodynamics belongs to a state, so all of them can be subtracted between
 states. A student writes $Q_2 - Q_1$, or asks how much work a system "has".
+
+## How it sounds
+
+- Both paths start and end at the same states, so Q is the same for both.
+- Work is a state function — the route from 1 to 2 doesn't matter.
+- It's a cycle and we end where we started, so net Q and net W are zero.
+- I'll write Q₂ − Q₁ for the change in the gas's heat.
+- Heat and work are properties of the system, like P and v.
+- A different path between the same two states changes Δu too.
+
+The tell is endpoint reasoning applied to Q or W, or path reasoning applied to u, h or s;
+keeping Δ and state subscripts for properties only is correct.
 
 ## Why students hold it
 
