@@ -23,8 +23,8 @@
     "urlEnvVar": "DATABASE_URL"
   },
   "courseMaterials": {
-    "folder": "agent/knowledge",
-    "cards": "agent/kb",
+    "folder": "agent/raw-course-files",
+    "cards": "agent/knowledge-brain",
     "tools": ["list_course_files", "search_course_files", "read_course_file", "open_card", "list_cards"]
   },
   "skills": {

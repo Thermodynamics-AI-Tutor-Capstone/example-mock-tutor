@@ -7,7 +7,7 @@
 //      duplicates, so this is an exact-match registry and not MinHash/LSH.
 //   2. Propose `precedes` edges from lecture order and drop the transitively implied
 //      ones, so a human never re-answers a question the graph already implies.
-//   3. Write cards under agent/kb/ honouring the NO-CLOBBER rule, and emit
+//   3. Write cards under agent/knowledge-brain/ honouring the NO-CLOBBER rule, and emit
 //      build/kb-report.json for the Action's PR body.
 //
 // WHAT THIS STAGE DELIBERATELY DOES NOT DO:
@@ -15,7 +15,7 @@
 //     around 46% precision in the published work; emitting them as if they were
 //     known would be exactly the fake capability the project rules forbid. They are
 //     left empty for a human.
-//   * It does not write symbol definitions. agent/kb/symbols.md is hand-authored and
+//   * It does not write symbol definitions. agent/knowledge-brain/symbols.md is hand-authored and
 //     authoritative; cards may only reference it.
 //   * It does not create course or unit cards unless asked (--write-units), because
 //     those are the always-resident L0 surface and belong to a human.
@@ -25,7 +25,7 @@
 //   — no underscores. The design's illustrative source-card filename used the `__`
 //   path separator (`sources/lectures__lec27-entropy-pptx.md`). Source CARD ids and
 //   filenames here use hyphens only so id <-> filename stays 1:1 and gate 1 passes.
-//   The CONTEXT files (agent/kb/context/) keep the `__` spelling: they are not ids.
+//   The CONTEXT files (agent/knowledge-brain/context/) keep the `__` spelling: they are not ids.
 
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -106,7 +106,7 @@ export function relaxedEquationKey(latex) {
 /* --------------------------------------------------------------- symbols - */
 
 /**
- * agent/kb/symbols.md is hand-authored and AUTHORITATIVE. The pipeline may only
+ * agent/knowledge-brain/symbols.md is hand-authored and AUTHORITATIVE. The pipeline may only
  * reference it, never add to it: the best published benchmark for auto-extracting
  * variable → meaning → units tops out around F1 0.49, and a wrong unit is exactly
  * the error a student trusts and carries into an exam.
@@ -446,7 +446,7 @@ export async function writeCards({
   try {
     symbolTable = parseSymbolTable(await fsp.readFile(path.join(kbDir, 'symbols.md'), 'utf8'));
   } catch {
-    report.warnings.push('agent/kb/symbols.md is missing; every extracted symbol was dropped (CI gate 5 requires the table).');
+    report.warnings.push('agent/knowledge-brain/symbols.md is missing; every extracted symbol was dropped (CI gate 5 requires the table).');
   }
   const proposedSymbols = new Map();
   const cards = [];
@@ -731,7 +731,7 @@ export async function writeCards({
       `**Holds when** (auto-extracted, NOT checked by an instructor — do not rely on this on an exam):\n${validWhen}\n` +
       (eq.invalid_when.length ? `\n**Does not hold when:**\n${eq.invalid_when.map((v) => `- \`${v}\``).join('\n')}\n` : '') +
       `\n**Symbols:** ${eq.symbols.length ? eq.symbols.map((s) => `\`${s}\``).join(', ') : '_none recorded_'} ` +
-      `— meanings live in \`agent/kb/symbols.md\`, which is hand-authored and authoritative.\n`;
+      `— meanings live in \`agent/knowledge-brain/symbols.md\`, which is hand-authored and authoritative.\n`;
 
     cards.push(
       await buildCard({
@@ -976,7 +976,7 @@ export async function writeCards({
 
   report.notes.push('`prerequisites[]` is left empty on every card on purpose: auto-extracted prerequisite edges run around 46% precision in the published work, so they are a human job.');
   report.proposedSymbols = [...proposedSymbols.values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
-  report.notes.push('Symbol meanings are never auto-extracted. `agent/kb/symbols.md` is hand-authored and authoritative; cards only reference it.');
+  report.notes.push('Symbol meanings are never auto-extracted. `agent/knowledge-brain/symbols.md` is hand-authored and authoritative; cards only reference it.');
   report.notes.push('Every `valid_when` on a `status: auto` card is unverified. The card body says so and the tool layer must pass that on.');
 
   for (const card of cards) {
@@ -1054,7 +1054,7 @@ export function reportMarkdown(report) {
     lines.push('');
   }
   if (report.proposedSymbols?.length) {
-    lines.push('### Symbols dropped because they are not in `agent/kb/symbols.md`', '');
+    lines.push('### Symbols dropped because they are not in `agent/knowledge-brain/symbols.md`', '');
     lines.push('That file is hand-authored and authoritative. Add a row for any of these that is real, then re-run.', '');
     for (const p of report.proposedSymbols) lines.push(`- \`${p.symbol}\` — wanted by ${p.equations.join(', ')}`);
     lines.push('');
@@ -1080,13 +1080,13 @@ const FLAGS = mergeFlagSpec(BASE_FLAGS, {
 const USAGE = `Usage: node scripts/kb/write-cards.mjs [options]
 
 Stage 5 of the KB ingest pipeline. Dedupes equations, proposes precedes edges from
-lecture order, and writes cards under agent/kb/ without ever clobbering a human
+lecture order, and writes cards under agent/knowledge-brain/ without ever clobbering a human
 edit. No network, no API key.
 
   --segments FILE    segments.json   (default build/kb/segments.json)
   --classified FILE  classified.json (default build/kb/classified.json)
   --entities FILE    entities.json   (default build/kb/entities.json)
-  --kb-dir DIR       cards + state   (default agent/kb)
+  --kb-dir DIR       cards + state   (default agent/knowledge-brain)
   --out DIR          work dir        (default build/kb)
   --report FILE      machine-readable report (default build/kb-report.json)
   --summary FILE     append the markdown report here (e.g. "$GITHUB_STEP_SUMMARY")

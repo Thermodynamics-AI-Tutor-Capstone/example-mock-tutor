@@ -49,10 +49,10 @@ database in `data/pglite/`. Only the final text of each reply is saved.
 
 | Setting | Value |
 |---|---|
-| `folder` | `agent/knowledge` |
+| `folder` | `agent/raw-course-files` |
 | `tools` | `list_course_files`, `search_course_files`, `read_course_file` |
 
-Files dropped into [`agent/knowledge/`](../knowledge/README.md) are turned into a searchable index
+Files dropped into [`agent/raw-course-files/`](../raw-course-files/README.md) are turned into a searchable index
 when the site is built. The model uses the three tools to list, search, and read them. The tools
 are left out automatically when the folder has no usable files.
 

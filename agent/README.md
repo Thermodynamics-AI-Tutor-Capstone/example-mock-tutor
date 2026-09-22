@@ -10,8 +10,8 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 | Tools | [`tools/`](tools/README.md) | change what the model is told about each tool it can call, and when to use it |
 | Skills | [`skills/`](skills/README.md) | add or change focused instruction modules the tutor loads when needed |
 | Connections | [`connections/`](connections/README.md) | change the AI model and its settings; see what services the tutor uses |
-| Course materials | [`knowledge/`](knowledge/README.md) | give the tutor course files to read — drag and drop them here |
-| Knowledge brain | [`kb/`](kb/README.md) | correct what the tutor believes about the course — units, topics, equations, misconceptions, notation |
+| Course materials | [`raw-course-files/`](raw-course-files/README.md) | give the tutor course files to read — drag and drop them here |
+| Knowledge brain | [`knowledge-brain/`](knowledge-brain/README.md) | correct what the tutor believes about the course — units, topics, equations, misconceptions, notation |
 
 ```
 agent/
@@ -23,14 +23,14 @@ agent/
 ├── skills/
 │   ├── README.md           ← how to write a skill (with template)
 │   └── <skill-name>/SKILL.md
-├── knowledge/              ← drop course files here (raw uploads, humans only)
+├── raw-course-files/       ← drop course files here (raw uploads, humans only)
 │   ├── README.md
 │   ├── syllabus/
 │   ├── lectures/
 │   ├── assignments/
 │   ├── reference/
 │   └── other/
-└── kb/                     ← the knowledge brain: reviewable cards about the course
+└── knowledge-brain/        ← the knowledge brain: reviewable cards about the course
     ├── README.md           ← how the brain works, and how to correct a card
     ├── INDEX.md            ← the map the tutor sees in every message (2,000-token cap)
     ├── taxonomy.yml        ← the course spine: 5 units, 44 lecture rows, allowed values
@@ -40,7 +40,7 @@ agent/
     └── misconceptions/     ← wrong beliefs, how to spot them, how to repair them
 ```
 
-Folders for topic, equation, worked-example, assessment-item and source cards appear in `kb/`
+Folders for topic, equation, worked-example, assessment-item and source cards appear in `knowledge-brain/`
 when the first card of that kind is written. None exist yet, because no course files have been
 uploaded.
 
@@ -50,7 +50,7 @@ On every message, the app sends the model:
 
 1. the text of `system-prompt.md`,
 2. an automatically generated list of skills (name + description), a summary of the course
-   materials, and the knowledge map rendered from [`kb/INDEX.md`](kb/INDEX.md), and
+   materials, and the knowledge map rendered from [`kb/INDEX.md`](knowledge-brain/INDEX.md), and
 3. tools that let it search course files and cards, open a card, list a card's siblings, read a
    course file, and load a skill.
 
@@ -58,24 +58,24 @@ You never need to list skills, files or cards in the system prompt by hand.
 
 ### Two folders, two jobs
 
-`knowledge/` and `kb/` are easy to confuse, so:
+`raw-course-files/` and `knowledge-brain/` are easy to confuse, so:
 
-- **[`knowledge/`](knowledge/README.md) is the raw material.** Whatever the instructor gives
+- **[`raw-course-files/`](raw-course-files/README.md) is the raw material.** Whatever the instructor gives
   you — slides, handouts, the syllabus — goes in as-is. Humans upload here; nothing writes to it
   automatically.
-- **[`kb/`](kb/README.md) is what the tutor understands.** Short markdown cards, one idea each,
+- **[`knowledge-brain/`](knowledge-brain/README.md) is what the tutor understands.** Short markdown cards, one idea each,
   with a citation back to the file and page they came from. Cards are drafted from the raw files
   by an AI pipeline that opens a pull request, and corrected by humans editing them directly.
   **A human edit is never overwritten** — see the no-clobber rule in
-  [`kb/README.md`](kb/README.md).
+  [`kb/README.md`](knowledge-brain/README.md).
 
 Both are compiled into one `build/knowledge-index.json` at deploy time by a script that makes no
 AI calls at all, so a redeploy is deterministic and needs no API key.
 
-> **Nothing here has been exercised on real ME 300 material.** `agent/knowledge/` currently holds
+> **Nothing here has been exercised on real ME 300 material.** `agent/raw-course-files/` currently holds
 > only README files, so there are no topic, equation or worked-example cards and no search
 > results to judge. The cards that do exist were hand-written; see
-> [`kb/README.md`](kb/README.md) for what their `status` values claim and do not claim.
+> [`kb/README.md`](knowledge-brain/README.md) for what their `status` values claim and do not claim.
 
 ## How changes reach the live site
 

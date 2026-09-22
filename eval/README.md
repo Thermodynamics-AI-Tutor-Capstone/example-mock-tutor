@@ -50,8 +50,8 @@ If `build/knowledge-index.json` has no files and no cards, the harness prints
 | `id` | stable, unique; never reuse an id for a different question |
 | `q` | the student's question, in a student's words |
 | `type` | `lookup` · `procedure` · `conceptual` · `course-admin` · `misconception` |
-| `gold_cards` | card ids that should surface. Must exist in `agent/kb/`, or the row can only score 0 |
-| `gold_source` | `{path, slides: [..]}` for a deck, `{path, pages: [..]}` for a document. `path` is relative to `agent/knowledge/` |
+| `gold_cards` | card ids that should surface. Must exist in `agent/knowledge-brain/`, or the row can only score 0 |
+| `gold_source` | `{path, slides: [..]}` for a deck, `{path, pages: [..]}` for a document. `path` is relative to `agent/raw-course-files/` |
 | `placeholder` | `true` while the row is a stand-in rather than a real question |
 | `note` | free text; why the row is a placeholder, or what it is probing |
 
@@ -64,9 +64,9 @@ State ME's *published sample syllabus* for ME 300
 (<https://www.me.psu.edu/assets/docs/sample-syllabus/ME-300.pdf>) — the unit/topic titles and
 the lecture numbering — and from nothing else. Specifically:
 
-- **`gold_cards` are real ids** taken from the committed `agent/kb/taxonomy.yml` and the
+- **`gold_cards` are real ids** taken from the committed `agent/knowledge-brain/taxonomy.yml` and the
   misconception cards, so they resolve.
-- **`gold_source` paths are invented.** `agent/knowledge/` holds only README files, so no file
+- **`gold_source` paths are invented.** `agent/raw-course-files/` holds only README files, so no file
   named in any row exists. Until real course materials are uploaded, **source recall@5 is 0 by
   construction and the numbers describe the harness, not the tutor.**
 - No dates, policies, grading rules, problem numbers or exam contents were invented, and none

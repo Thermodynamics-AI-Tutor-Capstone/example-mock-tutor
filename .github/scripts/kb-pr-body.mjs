@@ -111,7 +111,7 @@ async function main() {
   const lines = [
     '## Generated course cards — needs a human review',
     '',
-    `Written by \`.github/workflows/kb.yml\` from \`agent/knowledge/\` at ${args.sha ? `\`${args.sha}\`` : 'this commit'}.`,
+    `Written by \`.github/workflows/kb.yml\` from \`agent/raw-course-files/\` at ${args.sha ? `\`${args.sha}\`` : 'this commit'}.`,
     '',
     '**Everything in this diff was produced by an LLM unless a card says otherwise.** LLM classification into a fixed',
     'taxonomy is good but not reliable, and auto-extracted symbol meanings and prerequisite edges are worse than that.',
@@ -123,7 +123,7 @@ async function main() {
     '- sections the classifier could not place (`unassigned`) and the topics it proposed instead,',
     '- low-confidence classifications,',
     '- equations whose `valid_when` assumptions look wrong — that join is what catches "right equation, wrong assumptions",',
-    '- any symbol the pipeline could not find in `agent/kb/symbols.md`.',
+    '- any symbol the pipeline could not find in `agent/knowledge-brain/symbols.md`.',
     '',
     ...cardSection,
     '',

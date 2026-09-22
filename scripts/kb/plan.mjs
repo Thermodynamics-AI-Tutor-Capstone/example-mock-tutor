@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Stage 0 — plan. No LLM, no API key, no network.
 //
-// sha256 every file under agent/knowledge/, compare against agent/kb/.kbstate.json,
+// sha256 every file under agent/raw-course-files/, compare against agent/knowledge-brain/.kbstate.json,
 // and emit the work list. When nothing changed and neither the pipeline version nor
 // any prompt version moved, this exits 0 with "nothing to do" and the rest of the
 // pipeline never runs. That is the whole reason a push that touches only the
@@ -160,11 +160,11 @@ const FLAGS = mergeFlagSpec(BASE_FLAGS, { booleans: ['force', 'json'] });
 
 const USAGE = `Usage: node scripts/kb/plan.mjs [options]
 
-Stage 0 of the KB ingest pipeline. Hashes agent/knowledge/** and decides what
+Stage 0 of the KB ingest pipeline. Hashes agent/raw-course-files/** and decides what
 needs regenerating. Makes no network calls and needs no API key.
 
-  --knowledge-dir DIR  raw uploads to hash        (default agent/knowledge)
-  --kb-dir DIR         committed cards + state    (default agent/kb)
+  --knowledge-dir DIR  raw uploads to hash        (default agent/raw-course-files)
+  --kb-dir DIR         committed cards + state    (default agent/knowledge-brain)
   --out DIR            where plan.json is written (default build/kb)
   --limit N            only plan the first N changed files
   --force              re-ingest everything, ignoring hashes

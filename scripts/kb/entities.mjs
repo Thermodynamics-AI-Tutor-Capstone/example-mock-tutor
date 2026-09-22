@@ -393,7 +393,7 @@ objectives it wrote (a separate pass on purpose — see the header comment).
 
   --segments FILE      segments.json    (default build/kb/segments.json)
   --classified FILE    classified.json  (default build/kb/classified.json)
-  --kb-dir DIR         taxonomy.yml + misconception cards (default agent/kb)
+  --kb-dir DIR         taxonomy.yml + misconception cards (default agent/knowledge-brain)
   --out DIR            work dir         (default build/kb; writes entities.json)
   --limit N            only the first N topics
   --topic ID[,ID]      only these topic ids (for debugging one topic cheaply)

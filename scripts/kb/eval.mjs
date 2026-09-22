@@ -171,7 +171,7 @@ function normalizePath(p) {
     .replace(/\\/g, '/')
     .replace(/^\.\//, '')
     .replace(/^\/+/, '');
-  for (const prefix of ['agent/knowledge/', 'knowledge/']) {
+  for (const prefix of ['agent/raw-course-files/', 'knowledge/']) {
     if (s.toLowerCase().startsWith(prefix)) {
       s = s.slice(prefix.length);
       break;
@@ -205,7 +205,7 @@ async function buildFlatIndex(index, chunkText) {
       chunks,
     });
   }
-  return { builtAt: index.builtAt || null, root: index.root || 'agent/knowledge', files, skipped: [] };
+  return { builtAt: index.builtAt || null, root: index.root || 'agent/raw-course-files', files, skipped: [] };
 }
 
 /** Last-resort 1500-char splitter, used only if scripts/build-knowledge.mjs

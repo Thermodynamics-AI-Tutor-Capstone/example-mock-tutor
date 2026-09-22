@@ -33,7 +33,7 @@ jobs:
       - name: Build knowledge index
         run: npm run knowledge -- --summary "$GITHUB_STEP_SUMMARY"
 
-      # Hard gate. A broken cross-reference in agent/kb/ means the model can be
+      # Hard gate. A broken cross-reference in agent/knowledge-brain/ means the model can be
       # handed a card id that resolves to nothing, so this must stop the deploy.
       # No LLM, no API key: it runs on forks too.
       - name: Validate the knowledge base

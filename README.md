@@ -8,16 +8,16 @@
 | System prompt | [`agent/system-prompt.md`](agent/system-prompt.md) |
 | Skills | [`agent/skills/`](agent/skills/README.md) |
 | Connections (model, database, tools) | [`agent/connections/`](agent/connections/README.md) |
-| Course materials — **drop course files here** | [`agent/knowledge/`](agent/knowledge/README.md) |
-| Knowledge brain — **correct what the tutor believes** | [`agent/kb/`](agent/kb/README.md) |
+| Course materials — **drop course files here** | [`agent/raw-course-files/`](agent/raw-course-files/README.md) |
+| Knowledge brain — **correct what the tutor believes** | [`agent/knowledge-brain/`](agent/knowledge-brain/README.md) |
 
 ---
 
 A throwaway example of a ChatGPT-style thermodynamics tutor, built for the Penn State ME 300
 capstone team to poke at. **This is not the product.** It has no evaluation and no user accounts,
-and it only knows course content that the team adds to `agent/knowledge/`.
+and it only knows course content that the team adds to `agent/raw-course-files/`.
 
-[`agent/kb/`](agent/kb/README.md) is the first piece with any research behind it: a committed set
+[`agent/knowledge-brain/`](agent/knowledge-brain/README.md) is the first piece with any research behind it: a committed set
 of markdown cards — the course, its five exam blocks, a hand-authored ME 300 symbol table, and
 fourteen misconception cards drawn from a 2025 ASEE systematic review of 32 studies. It is a
 knowledge structure, not a teaching result: **nothing in it has been checked by an ME 300
@@ -30,11 +30,11 @@ system prompt and the starter skills remain unreviewed drafts.
 > and the capstone's IRB determination is still pending. Keep the link within the team until it
 > is in hand. Sign-up is currently open to any email address.
 
-> **Warning: this repository is public.** Anything in `agent/knowledge/` or `agent/kb/` is
+> **Warning: this repository is public.** Anything in `agent/raw-course-files/` or `agent/knowledge-brain/` is
 > visible to the whole internet, and chat messages plus any course text the tutor reads are sent
-> to DeepSeek's API. See [`agent/knowledge/README.md`](agent/knowledge/README.md) before
-> uploading anything, and note that cards in `agent/kb/` quote and summarise whatever is in
-> `agent/knowledge/`.
+> to DeepSeek's API. See [`agent/raw-course-files/README.md`](agent/raw-course-files/README.md) before
+> uploading anything, and note that cards in `agent/knowledge-brain/` quote and summarise whatever is in
+> `agent/raw-course-files/`.
 
 ## Run locally
 
@@ -80,7 +80,7 @@ win over `.env`.
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL; point it at a local fake server for offline testing. |
 | `PORT` | `3300` | Local port (local server only). |
 | `PGLITE_DIR` | `data/pglite` | Optional. Where the embedded database lives, relative to this folder. |
-| `KNOWLEDGE_DIR` | `agent/knowledge` | Optional. Course-materials folder, absolute or relative to this folder. Used by both `npm run knowledge` and the server (handy for testing with throwaway files). |
+| `KNOWLEDGE_DIR` | `agent/raw-course-files` | Optional. Course-materials folder, absolute or relative to this folder. Used by both `npm run knowledge` and the server (handy for testing with throwaway files). |
 
 The model settings (`model`, `baseUrl`, `temperature`, `maxToolRounds`) default to
 [`agent/connections/connections.json`](agent/connections/connections.json). `DEEPSEEK_MODEL` and
@@ -106,14 +106,14 @@ with `DeepSeek returned 402: Insufficient Balance`.
 The tutor's behaviour is set by [`agent/system-prompt.md`](agent/system-prompt.md), re-read on
 every message. The app appends a generated list of skills from `agent/skills/*/SKILL.md`, a
 summary of the indexed course materials, and the knowledge map rendered from
-[`agent/kb/INDEX.md`](agent/kb/README.md); it gives the model tools to search files and cards,
+[`agent/knowledge-brain/INDEX.md`](agent/knowledge-brain/README.md); it gives the model tools to search files and cards,
 open a card, list a card's siblings, read a course file, and load a skill. See
 [`agent/README.md`](agent/README.md).
 
 Two folders feed the tutor and they do different jobs:
 
-- **[`agent/knowledge/`](agent/knowledge/README.md)** — raw uploaded course files. Humans only.
-- **[`agent/kb/`](agent/kb/README.md)** — the knowledge brain: short, committed, human-editable
+- **[`agent/raw-course-files/`](agent/raw-course-files/README.md)** — raw uploaded course files. Humans only.
+- **[`agent/knowledge-brain/`](agent/knowledge-brain/README.md)** — the knowledge brain: short, committed, human-editable
   markdown cards about the course, each citing the file and page it came from. AI drafts are
   proposed by pull request; a human edit is never overwritten.
 

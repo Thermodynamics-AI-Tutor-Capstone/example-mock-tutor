@@ -46,8 +46,8 @@ Runs stages 0–5 of the KB ingest pipeline:
   0 plan (hash, no LLM) → 1 extract (no LLM) → 2 situate (deepseek-flash)
   → 3 classify (deepseek-flash) → 4 entities (deepseek-v4-pro) → 5 write cards (no LLM)
 
-  --knowledge-dir DIR  raw uploads          (default agent/knowledge)
-  --kb-dir DIR         cards + state        (default agent/kb)
+  --knowledge-dir DIR  raw uploads          (default agent/raw-course-files)
+  --kb-dir DIR         cards + state        (default agent/knowledge-brain)
   --out DIR            work dir             (default build/kb)
   --report FILE        machine-readable report (default build/kb-report.json)
   --summary FILE       append the markdown report (e.g. "$GITHUB_STEP_SUMMARY")
@@ -56,7 +56,7 @@ Runs stages 0–5 of the KB ingest pipeline:
   --all                ignore the plan; ingest every file (implies --force)
   --min-confidence X   ignore sections classified below X when extracting entities
   --write-units        also draft unit cards from taxonomy.yml (off by default)
-  --dry-run            no API key, no network, no spend, nothing written to agent/kb/
+  --dry-run            no API key, no network, no spend, nothing written to agent/knowledge-brain/
   --max-spend USD      abort rather than exceed this (default 2.00, "none" to disable)
   --verbose
   --help

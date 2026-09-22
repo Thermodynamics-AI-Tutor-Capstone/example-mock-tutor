@@ -8,7 +8,7 @@
 // have. Their headline 49%/67% numbers are for the full four-component system and
 // must NOT be quoted as an expectation for this.
 //
-// Output is committed markdown at agent/kb/context/<file-slug>.md so every
+// Output is committed markdown at agent/knowledge-brain/context/<file-slug>.md so every
 // regeneration is a reviewable git diff, and the list is wrapped in a kb:auto
 // block so a human's edits are never overwritten.
 
@@ -222,10 +222,10 @@ const FLAGS = mergeFlagSpec(BASE_FLAGS, { flags: { segments: 'string' } });
 const USAGE = `Usage: node scripts/kb/situate.mjs [options]
 
 Stage 2 of the KB ingest pipeline. One deepseek-flash call per section; writes a
-<=${MAX_CONTEXT_WORDS}-word situating line per chunk to agent/kb/context/<file-slug>.md.
+<=${MAX_CONTEXT_WORDS}-word situating line per chunk to agent/knowledge-brain/context/<file-slug>.md.
 
   --segments FILE   segments.json from stage 1 (default build/kb/segments.json)
-  --kb-dir DIR      committed cards          (default agent/kb)
+  --kb-dir DIR      committed cards          (default agent/knowledge-brain)
   --out DIR         work dir                 (default build/kb; writes context.json)
   --limit N         only the first N files
   --dry-run         no API key, no network, no spend; writes placeholder captions
@@ -262,7 +262,7 @@ runCli(import.meta.url, async (argv) => {
 
   for (const f of result.files) {
     if (f.outcome === AUTO_BLOCK_OUTCOME.WRITTEN) {
-      // --dry-run never touches agent/kb/.
+      // --dry-run never touches agent/knowledge-brain/.
       if (args.dryRun) console.log(`[situate] would write ${relLabel(f.target)} (${fmtInt(f.chunks)} lines)`);
       else {
         await writeTextAtomic(f.target, f.text);

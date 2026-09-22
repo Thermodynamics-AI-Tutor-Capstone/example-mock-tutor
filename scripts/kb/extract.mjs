@@ -3,7 +3,7 @@
 //
 // ⚠ THE ONE THING THAT MATTERS IN THIS FILE: the chunk indices it assigns must be
 // byte-for-byte the indices scripts/build-knowledge.mjs assigns at Vercel build
-// time. agent/kb/context/<file-slug>.md keys its situating lines to those indices,
+// time. agent/knowledge-brain/context/<file-slug>.md keys its situating lines to those indices,
 // and if the two ever disagree every caption attaches to the wrong chunk — silently,
 // and in a way no test would notice without a corpus.
 //
@@ -319,7 +319,7 @@ Stage 1 of the KB ingest pipeline. Delegates chunking to the compiler's own
 segmentExtraction() so the chunk indices the situating lines are keyed to are
 exactly the ones Vercel will build. No network, no API key.
 
-  --knowledge-dir DIR  raw uploads   (default agent/knowledge)
+  --knowledge-dir DIR  raw uploads   (default agent/raw-course-files)
   --out DIR            work dir      (default build/kb; writes segments.json)
   --plan FILE          only extract the files in this plan.json (default build/kb/plan.json)
   --all                ignore the plan and extract everything
@@ -350,7 +350,7 @@ runCli(import.meta.url, async (argv) => {
 
   const segments = await extractAll({ knowledgeDir, files, limit: args.limit });
   // build/ is gitignored and ephemeral, so it is written even on a dry run.
-  // --dry-run means "no LLM calls, and nothing written under agent/kb/".
+  // --dry-run means "no LLM calls, and nothing written under agent/knowledge-brain/".
   const out = path.join(workDir, 'segments.json');
   await writeJsonAtomic(out, segments);
   console.log(`[extract] wrote ${relLabel(out)}`);

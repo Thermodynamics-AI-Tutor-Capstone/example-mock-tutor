@@ -30,7 +30,7 @@ generated: null
 # Unit 0 — Course administration
 
 > **This card contains no course policy, because none has been uploaded.** Everything under it
-> comes from whatever the team puts in `agent/knowledge/` — a syllabus PDF, a Canvas export, an
+> comes from whatever the team puts in `agent/raw-course-files/` — a syllabus PDF, a Canvas export, an
 > announcement. Until that happens these four topic ids are an empty shelf: the ids exist so that
 > an uploaded syllabus has somewhere to go, and an id existing is **not** the same as knowing the
 > answer.
@@ -70,7 +70,7 @@ and that path starts by being honest that it is empty.
 
 ## How material gets in here
 
-Drop the file into `agent/knowledge/` (for example `syllabus/me300-fall-2026.pdf`) and run the
+Drop the file into `agent/raw-course-files/` (for example `syllabus/me300-fall-2026.pdf`) and run the
 ingest pipeline. The classifier will place its administrative sections onto the four ids above,
 and the cards written from them will carry `status: auto` — drafted by a model, not checked by an
 instructor — until a human reviews them. Kelvin must say so when it relies on one.

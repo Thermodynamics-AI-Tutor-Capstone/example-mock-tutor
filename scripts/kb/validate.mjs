@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Kelvin AI — KB-1 validator.
 //
-// Ten CI gates over agent/kb/**. No network, no LLM, no API key: this runs on
+// Ten CI gates over agent/knowledge-brain/**. No network, no LLM, no API key: this runs on
 // forks and on every push. Hard failures exit 1; warnings are advisory and are
 // written to $GITHUB_STEP_SUMMARY when GitHub Actions provides one.
 //
@@ -214,8 +214,8 @@ function parseArgs(argv) {
           [
             'Usage: node scripts/kb/validate.mjs [options]',
             '',
-            '  --kb <dir>         knowledge-base directory (default agent/kb)',
-            '  --knowledge <dir>  raw course files (default agent/knowledge)',
+            '  --kb <dir>         knowledge-base directory (default agent/knowledge-brain)',
+            '  --knowledge <dir>  raw course files (default agent/raw-course-files)',
             '  --index <file>     compiled index for the L0 check (default build/knowledge-index.json)',
             '  --summary <file>   markdown summary target (default $GITHUB_STEP_SUMMARY)',
             '  --parser <which>   auto (default) | yaml | builtin — which YAML parser to use',
@@ -316,8 +316,8 @@ function asArray(value) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const kbDir = path.resolve(APP_DIR, args.kb || path.join('agent', 'kb'));
-  const knowledgeDir = path.resolve(APP_DIR, args.knowledge || path.join('agent', 'knowledge'));
+  const kbDir = path.resolve(APP_DIR, args.kb || path.join('agent', 'knowledge-brain'));
+  const knowledgeDir = path.resolve(APP_DIR, args.knowledge || path.join('agent', 'raw-course-files'));
   const indexPath = path.resolve(APP_DIR, args.index || path.join('build', 'knowledge-index.json'));
   const yaml = await loadYamlParser(args.parser);
   const kblib = await loadKbLib();
@@ -571,7 +571,7 @@ async function main() {
     }
   }
   if (l0 === null) {
-    gate(7, `rendered L0 ≤ ${L0_TOKEN_CAP} tokens`, 'SKIP', 'no compiled `l0` and no agent/kb/INDEX.md');
+    gate(7, `rendered L0 ≤ ${L0_TOKEN_CAP} tokens`, 'SKIP', 'no compiled `l0` and no agent/knowledge-brain/INDEX.md');
   } else {
     const tokens = estimateTokens(l0);
     if (tokens > L0_TOKEN_CAP) fail(7, l0Source, `L0 is ~${tokens} estimated tokens, over the hard cap of ${L0_TOKEN_CAP}`);

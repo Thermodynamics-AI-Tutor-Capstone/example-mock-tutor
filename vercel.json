@@ -9,7 +9,7 @@
       "maxDuration": 300,
       "supportsCancellation": true,
       "includeFiles": "{agent/system-prompt.md,agent/connections/**,agent/skills/**,agent/styles/**,agent/tools/**,build/knowledge-index.json}",
-      "excludeFiles": "{node_modules/@electric-sql/**,agent/knowledge/**,agent/kb/**}"
+      "excludeFiles": "{node_modules/@electric-sql/**,agent/raw-course-files/**,agent/knowledge-brain/**}"
     }
   },
   "rewrites": [

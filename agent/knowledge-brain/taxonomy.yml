@@ -266,7 +266,7 @@ program_outcomes:
 # weights and office hours all land on `unassigned` and produce no card at all. Those are
 # exactly the questions where a wrong answer is unambiguously a lie to a student, so they
 # need a card path. The unit is an EMPTY SHELF: no date, deadline, weight or policy is
-# known here until a real syllabus is uploaded into agent/knowledge/.
+# known here until a real syllabus is uploaded into agent/raw-course-files/.
 # ---------------------------------------------------------------------------------------
 units:
   - id: unit:u0-course-admin
@@ -327,7 +327,7 @@ units:
 #
 # `date` is the sample syllabus's Fall 2025 date. It is here so the pipeline can align
 # uploaded lecture files by date. Kelvin must NEVER quote these dates to a student as this
-# section's schedule — see agent/kb/course/me300.md.
+# section's schedule — see agent/knowledge-brain/course/me300.md.
 #
 # `kind: examples` rows are the schedule's "Examples" days; `kind: exam` rows are the five
 # in-class exams. They are kept as topics because uploaded files (worked-example sheets,

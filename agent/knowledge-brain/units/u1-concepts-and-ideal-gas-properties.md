@@ -87,5 +87,5 @@ Topic ids are `topic:t01-…` through `topic:t09-…`; see [`taxonomy.yml`](../t
 ## What is not here yet
 
 No topic, equation or worked-example cards exist for this unit — the course-file corpus is
-empty. When real lecture files land in `agent/knowledge/`, the pipeline drafts those cards and
+empty. When real lecture files land in `agent/raw-course-files/`, the pipeline drafts those cards and
 opens a pull request; until then Kelvin has only this card and the schedule.

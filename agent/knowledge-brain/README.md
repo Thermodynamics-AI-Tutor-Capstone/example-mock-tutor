@@ -1,4 +1,4 @@
-# The knowledge brain (`agent/kb/`)
+# The knowledge brain (`agent/knowledge-brain/`)
 
 This folder is Kelvin AI's **knowledge brain**: a set of small markdown cards, one idea each,
 that the tutor reads on demand instead of being handed a wall of course text.
@@ -17,8 +17,8 @@ what the tutor believes.
 
 | Folder | Who writes it | What it is |
 |---|---|---|
-| [`agent/knowledge/`](../knowledge/README.md) | **Humans only.** Drag and drop. | Raw uploaded course files — PDFs, slides, handouts. The pipeline never writes here. |
-| **`agent/kb/`** (this folder) | Humans, and an AI pipeline via pull request | Cards. The brain. Committed, reviewable, diffable. |
+| [`agent/raw-course-files/`](../raw-course-files/README.md) | **Humans only.** Drag and drop. | Raw uploaded course files — PDFs, slides, handouts. The pipeline never writes here. |
+| **`agent/knowledge-brain/`** (this folder) | Humans, and an AI pipeline via pull request | Cards. The brain. Committed, reviewable, diffable. |
 | `build/knowledge-index.json` | A build script | Compiled from the other two at deploy time. Not committed, never edited by hand. |
 
 Nothing in this folder is secret and nothing here is student data. Do not put either in it.
@@ -106,7 +106,7 @@ existing one first.
 | `requires_objectives[]` | On an assessment item: which objectives it tests. |
 | `derives_from`, `specializes_to` | Equation to equation — general energy balance → steady-flow form → nozzle form. |
 | `valid_when[]`, `invalid_when[]` | **On equation cards, the most important fields in the brain.** The assumptions under which the equation holds, drawn from the closed list in `taxonomy.yml`. Right equation, wrong assumptions is the most common way to get a thermo problem wrong, and this is the field that catches it. |
-| `sources[]` | Where the content came from: `{path, pages}` or `{path, slides}` for a file in `agent/knowledge/`, or `{url, title, retrieved}` for something outside the repo. **Every card needs at least one.** No card without a citation. |
+| `sources[]` | Where the content came from: `{path, pages}` or `{path, slides}` for a file in `agent/raw-course-files/`, or `{url, title, retrieved}` for something outside the repo. **Every card needs at least one.** No card without a citation. |
 
 **Risk control**
 
@@ -185,7 +185,7 @@ thing that computes it. Do not compute one by hand.
 
 ```
   you upload a course file            you edit a card in GitHub
-  to agent/knowledge/                         │
+  to agent/raw-course-files/                         │
           │                                   │
           ▼                                   │
   GitHub Action (the only step that uses an   │
@@ -248,7 +248,7 @@ specializes_to:
 misconceptions:
   - misc:m12-boundary-flow-and-shaft-work-confused
 sources:
-  - path: lectures/lec24-open-system-steady-flow.pptx    # a real file in agent/knowledge/
+  - path: lectures/lec24-open-system-steady-flow.pptx    # a real file in agent/raw-course-files/
     slides: [8, 9, 10]                                  # so a student can check in one click
 generated:
   model: deepseek-v4-pro

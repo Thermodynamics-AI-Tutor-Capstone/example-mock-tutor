@@ -5,7 +5,7 @@
 
   var REPO = 'Thermodynamics-AI-Tutor-Capstone/example-mock-tutor';
   var BRANCH = 'main';
-  var KNOWLEDGE_ROOT = 'agent/knowledge';
+  var KNOWLEDGE_ROOT = 'agent/raw-course-files';
   var GITHUB_UPLOAD = 'https://github.com/' + REPO + '/upload/' + BRANCH + '/' + KNOWLEDGE_ROOT;
 
   var $ = function (id) { return document.getElementById(id); };

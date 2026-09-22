@@ -16,7 +16,7 @@ on:
     branches:
       - main
     paths:
-      - 'agent/knowledge/**'
+      - 'agent/raw-course-files/**'
   workflow_dispatch:
     inputs:
       full_rebuild:
@@ -116,7 +116,7 @@ jobs:
           {
             echo "## Kelvin AI — ingest"
             echo ""
-            echo "Nothing to do: no course file under \`agent/knowledge/\` is new, changed, or affected by a pipeline or prompt version bump."
+            echo "Nothing to do: no course file under \`agent/raw-course-files/\` is new, changed, or affected by a pipeline or prompt version bump."
             echo ""
             echo "Re-run this workflow from the Actions tab with **full_rebuild** ticked to re-ingest everything."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -174,15 +174,15 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- agent/kb
+          git add -- agent/knowledge-brain
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "The pipeline produced no change to agent/kb/."
+            echo "The pipeline produced no change to agent/knowledge-brain/."
             exit 0
           fi
-          outside="$(git diff --cached --name-only -- . ':(exclude)agent/kb/**')"
+          outside="$(git diff --cached --name-only -- . ':(exclude)agent/knowledge-brain/**')"
           if [ -n "$outside" ]; then
-            echo "::error::refusing to commit files outside agent/kb/: $outside"
+            echo "::error::refusing to commit files outside agent/knowledge-brain/: $outside"
             exit 1
           fi
           branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -193,7 +193,7 @@ jobs:
               exit 1
               ;;
           esac
-          git commit -m "kb: regenerate cards from agent/knowledge at ${{ steps.branch.outputs.short }}"
+          git commit -m "kb: regenerate cards from agent/raw-course-files at ${{ steps.branch.outputs.short }}"
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Push the review branch
@@ -224,7 +224,7 @@ jobs:
             url="$(gh pr create \
               --base main \
               --head "$branch" \
-              --title "kb: generated cards from agent/knowledge (${{ steps.branch.outputs.short }})" \
+              --title "kb: generated cards from agent/raw-course-files (${{ steps.branch.outputs.short }})" \
               --body-file /tmp/kb-pr-body.md)"
           fi
           {

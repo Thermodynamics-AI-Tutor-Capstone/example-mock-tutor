@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Stage 3 — classify into the committed taxonomy. deepseek-flash, one call per section.
 //
-// The taxonomy is NEVER induced. agent/kb/taxonomy.yml is hand-transcribed from the
+// The taxonomy is NEVER induced. agent/knowledge-brain/taxonomy.yml is hand-transcribed from the
 // published ME 300 syllabus, which already partitions the course into exam blocks and
 // lecture rows. This stage only picks from that fixed enum.
 //
@@ -241,11 +241,11 @@ const FLAGS = mergeFlagSpec(BASE_FLAGS, { flags: { segments: 'string' } });
 const USAGE = `Usage: node scripts/kb/classify.mjs [options]
 
 Stage 3 of the KB ingest pipeline. One deepseek-flash call per section; assigns a
-topic id from agent/kb/taxonomy.yml (never an invented one) plus a content_type and
+topic id from agent/knowledge-brain/taxonomy.yml (never an invented one) plus a content_type and
 an honest confidence.
 
   --segments FILE   segments.json from stage 1 (default build/kb/segments.json)
-  --kb-dir DIR      where taxonomy.yml lives   (default agent/kb)
+  --kb-dir DIR      where taxonomy.yml lives   (default agent/knowledge-brain)
   --out DIR         work dir                   (default build/kb; writes classified.json)
   --limit N         only the first N files
   --dry-run         no API key, no network, no spend; everything comes back unassigned
@@ -285,7 +285,7 @@ runCli(import.meta.url, async (argv) => {
 
   const classified = await classify({ segments, taxonomy, client, limit: args.limit });
   // build/ is gitignored and ephemeral, so work-dir artefacts are written even on a
-  // dry run. --dry-run means "no LLM calls, and nothing written under agent/kb/".
+  // dry run. --dry-run means "no LLM calls, and nothing written under agent/knowledge-brain/".
   const out = path.join(workDir, 'classified.json');
   await writeJsonAtomic(out, classified);
   console.log(`[classify] wrote ${relLabel(out)}`);
