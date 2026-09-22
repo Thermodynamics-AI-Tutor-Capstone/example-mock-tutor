@@ -6,10 +6,12 @@
 <title>Kelvin AI</title>
 <link rel="stylesheet" href="/vendor/katex/katex.min.css">
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/account.css">
 <script src="/vendor/marked.umd.js"></script>
 <script src="/vendor/purify.min.js"></script>
 <script src="/vendor/katex/katex.min.js"></script>
 <script src="/account.js"></script>
+<script src="/settings.js" defer></script>
 <script src="/attachments.js" defer></script>
 <script src="/app.js" defer></script>
 </head>
@@ -32,7 +34,7 @@
     <div class="sb-user-wrap">
       <div id="userMenu" class="user-menu" role="menu" hidden>
         <div id="userMenuEmail" class="user-menu-head"></div>
-        <a class="user-menu-item" role="menuitem" href="/settings">Settings</a>
+        <button id="settingsBtn" class="user-menu-item" role="menuitem" type="button">Settings</button>
         <a class="user-menu-item" role="menuitem" href="/browse">Course map</a>
         <button id="signOutBtn" class="user-menu-item" role="menuitem" type="button">Sign out</button>
       </div>

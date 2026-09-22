@@ -1,5 +1,6 @@
 /* Login, onboarding and settings pages. Uses the colour tokens from /style.css. */
-body.account-page { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; background: var(--bg); }
+/* style.css locks body scrolling for the chat; account pages are ordinary scrolling pages. */
+body.account-page { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; background: var(--bg); overflow-y: auto; box-sizing: border-box; }
 .acct-card { width: 100%; max-width: 440px; }
 .acct-brand { font-size: 15px; font-weight: 600; margin-bottom: 28px; text-align: center; }
 .acct-title { font-size: 28px; font-weight: 600; margin: 0 0 8px; text-align: center; }
