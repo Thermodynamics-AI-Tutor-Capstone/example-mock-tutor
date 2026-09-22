@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  # Several sessions work in parallel on their own branches; every pull request into main gets
+  # the same checks before it can be merged. Only a push to main ever deploys (see the deploy job).
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -53,6 +58,8 @@ jobs:
   deploy:
     name: Deploy to Vercel
     needs: index
+    # Never from a pull request: production only ever runs what is on main.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
