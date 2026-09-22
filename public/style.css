@@ -300,6 +300,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   box-shadow: 0 8px 28px #00000026; padding: 6px;
 }
 .style-menu-head { font-size: 13px; color: var(--text2); padding: 8px 10px 6px; }
+.style-menu-sep { font-size: 12px; color: var(--text2); padding: 8px 10px 4px; margin-top: 4px; border-top: 1px solid var(--border); }
 .style-item {
   display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left;
   background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
@@ -313,6 +314,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .si-desc { font-size: 13px; color: var(--text2); line-height: 1.35; }
 .si-check { margin-left: auto; flex: 0 0 16px; padding-top: 3px; }
 .style-note { text-align: center; font-size: 12.5px; color: var(--text2); margin: 10px auto; }
+.decision-note { font-size: 12.5px; line-height: 1.5; color: var(--text2); border-left: 3px solid var(--border); padding: 4px 0 4px 10px; margin: 0 0 10px; }
+.decision-note.is-jev { border-left-color: #d97706; }
+.decision-note > div:first-child { color: var(--text); font-weight: 500; }
 @media (max-width: 480px) {
   .style-btn-name { display: none; }
   .style-menu { position: fixed; top: 56px; left: 16px; right: 16px; width: auto; }

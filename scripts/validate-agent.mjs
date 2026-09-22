@@ -3,7 +3,9 @@
 //   tools  — every agent/tools/<name>.yml parses, has a description and an object schema, and has
 //            its implementation lib/tools/<name>.js registered in lib/tools/index.js (and vice versa);
 //   styles — every agent/styles/<id>/ parses, its id matches the folder, and every connection,
-//            tool and skill it names exists.
+//            tool and skill it names exists; every enabled style tells the Auto router when it fits
+//            (route_when.use_for) and names only known intents;
+//   policy — agent/policy.yml thresholds are in range and the help ladder is well formed.
 // Exits non-zero on any problem. Usage: node scripts/validate-agent.mjs [--summary FILE]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,6 +13,8 @@ import { loadStyles, STYLES_DIR, DEFAULT_STYLE_ID } from '../lib/styles.js';
 import { loadConnections } from '../lib/agent.js';
 import { loadTools } from '../lib/tools/index.js';
 import { listSkills } from '../lib/skills.js';
+import { loadPolicy } from '../lib/policy.js';
+import { INTENTS } from '../lib/decide.js';
 
 const problems = [];
 
@@ -54,7 +58,26 @@ for (const s of styles) {
   if (s.skills !== 'all') for (const k of s.skills) if (!skillNames.has(k)) problems.push(`${where}: unknown skill "${k}"`);
   if (orders.has(s.order)) problems.push(`${where}: order ${s.order} is already used by ${orders.get(s.order)}`);
   orders.set(s.order, s.id);
+  if (s.enabled && !s.routeWhen.use_for) problems.push(`${where}: route_when.use_for is required, so the Auto router knows when this style fits`);
+  for (const intent of s.routeWhen.intents) {
+    if (!(intent in INTENTS)) problems.push(`${where}: route_when.intents has unknown intent "${intent}" (known: ${Object.keys(INTENTS).join(', ')})`);
+  }
+  if (s.id === 'auto') problems.push(`${where}: "auto" is reserved for automatic routing`);
 }
+
+// Policy
+const policy = loadPolicy();
+for (const [k, v] of Object.entries(policy.thresholds)) {
+  const max = k === 'frustrated' ? 3 : 1;
+  if (!(v >= 0 && v <= max)) problems.push(`agent/policy.yml: thresholds.${k} = ${v} is outside 0–${max}`);
+}
+if (policy.thresholds.misconception_confirm > policy.thresholds.misconception_repair) {
+  problems.push('agent/policy.yml: thresholds.misconception_confirm must not exceed misconception_repair');
+}
+policy.ladder.forEach((r, i) => {
+  if (r.rung !== i) problems.push(`agent/policy.yml: ladder rungs must be numbered 0, 1, 2… in order (found ${r.rung} at position ${i})`);
+  if (!r.allows) problems.push(`agent/policy.yml: ladder rung ${r.rung} needs an "allows" description`);
+});
 const def = styles.find((s) => s.id === DEFAULT_STYLE_ID);
 if (!def || !def.enabled) problems.push(`the default style "${DEFAULT_STYLE_ID}" must exist and be enabled`);
 
@@ -62,7 +85,8 @@ const lines = problems.length
   ? [`Agent config: FAILED (${problems.length} problem${problems.length === 1 ? '' : 's'})`, ...problems.map((p) => `- ${p}`)]
   : [
       `Tools: ok — ${tools.size} checked (${[...tools.keys()].join(', ')})`,
-      `Styles: ok — ${styles.length} checked (${styles.map((s) => s.id).join(', ')})`,
+      `Styles: ok — ${styles.length} checked (${styles.map((s) => s.id + (s.enabled ? '' : ' [disabled]')).join(', ')})`,
+      `Policy: ok — ${policy.ladder.length}-rung ladder, ${Object.keys(policy.thresholds).length} thresholds`,
     ];
 console.log(lines.join('\n'));
 const i = process.argv.indexOf('--summary');

@@ -7,6 +7,11 @@ description: Hint ladder for guiding a student through a thermodynamics problem 
 
 > Starter draft written by an AI assistant — not reviewed by a thermodynamics instructor. Edit freely.
 
+> **Used only by the Classic baseline (disabled).** The student-facing styles use the shared help
+> ladder in `agent/policy.yml`, whose ceiling the server sets each turn, plus the `what-next`,
+> `answer-requests`, `worked-example-isomorph` and `contrast-and-redo` skills. Don't add this skill to
+> a new style; its ladder predates the server-set ceiling and does not match it.
+
 Climb the ladder one rung at a time. Stop at the lowest rung that gets the student moving again.
 
 ## The hint ladder

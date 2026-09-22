@@ -1,10 +1,11 @@
-# Teach Kelvin — learning by teaching. Kelvin plays a classmate with a plausible wrong model; the
-# student finds and fixes the flaw, then Kelvin re-answers using only the student's explanation.
+# Teach It Back (folder id "teach-kelvin", kept so existing conversations and logs still resolve).
+# Learning by teaching: the student explains an idea to Kelvin, who applies ONLY that explanation to
+# a new case and goes wrong wherever it's incomplete. Only when the student asks for it.
 id: teach-kelvin
-name: Teach Kelvin
-description: I play a classmate with a plausible wrong idea — you find the flaw and fix my reasoning.
+name: Teach It Back
+description: Explain an idea to Kelvin — Kelvin uses only what you taught, so gaps in your explanation show up fast.
 icon: "🧑‍🎓"
-order: 4
+order: 5
 connection: deepseek-pro
 tools:
   - search_course_files
@@ -12,11 +13,23 @@ tools:
   - list_cards
   - update_tutoring_state
   - read_attachment
+  - note_student_assumption
 skills: []
 max_tool_rounds: 5
 state:
   help_ladder: true
   max_rung: 3
+route_when:
+  use_for: >-
+    The student asks to explain an idea back, to have their own explanation tested, or to play the
+    game where Kelvin makes a mistake for them to find. Only when they ask for it.
+  not_for: >-
+    A student who is stuck or confused right now, or who wants their work checked.
+  examples:
+    - "can I explain the second law to you and you tell me if I've got it?"
+    - "let's do the teach Kelvin thing on turbines"
+    - "quiz me on whether I actually understand entropy generation"
+  intents: [teach_back]
 ui:
   figures: false
   mermaid: false

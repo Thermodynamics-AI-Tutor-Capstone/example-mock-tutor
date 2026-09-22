@@ -1,9 +1,12 @@
 # Classic — the original Kelvin, kept unchanged as the baseline the other styles are compared against.
+# Disabled 2026-09-22: it hands over full worked solutions, which is what the tutor must never do
+# before a complete attempt. It is not offered to students or to the Auto router. Re-enable only as
+# a research comparison arm, never as a student-facing choice.
 id: classic
 name: Classic
 description: The original Kelvin — hints first, a full worked solution if you're still stuck.
 icon: "💬"
-order: 1
+order: 99
 connection: deepseek-pro
 # The original six course tools, listed explicitly so new tools don't change the baseline.
 tools:
@@ -21,4 +24,4 @@ state:
 ui:
   figures: false
   mermaid: false
-enabled: true
+enabled: false

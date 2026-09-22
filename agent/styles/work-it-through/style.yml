@@ -1,0 +1,47 @@
+# Work It Through — step-gated coaching for a student who is stuck, hasn't started, or wants the
+# answer. The student writes every step of the ME 300 solution format; Kelvin won't move past a step
+# until they have produced it.
+id: work-it-through
+name: Work It Through
+description: Stuck on a problem? You write each step; Kelvin keeps you moving until the answer is yours.
+icon: "🪜"
+order: 3
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - read_course_file
+  - list_course_files
+  - load_skill
+  - update_tutoring_state
+  - read_attachment
+  - note_student_assumption
+skills:
+  - what-next
+  - answer-requests
+  - misconception-repair
+  - worked-example-isomorph
+  - contrast-and-redo
+  - property-tables
+  - control-volume-energy-balance
+max_tool_rounds: 6
+state:
+  help_ladder: true
+  max_rung: 6
+route_when:
+  use_for: >-
+    The student is working a specific problem and is stuck, hasn't got far, asks how to start or
+    what to do next, or asks to be handed the answer. Coach them to produce each step themselves.
+  not_for: >-
+    A student who already has a full worked solution and wants it checked; a question about an idea
+    that isn't tied to finishing a problem.
+  examples:
+    - "I have no idea how to start this piston-cylinder problem"
+    - "what do I do next after the mass balance?"
+    - "just give me the answer, it's due in an hour"
+  intents: [stuck_on_problem, wants_answer]
+ui:
+  figures: false
+  mermaid: false
+enabled: true

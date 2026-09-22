@@ -2,30 +2,38 @@
 # Only styles with state.help_ladder: true should list this tool.
 name: update_tutoring_state
 description: >-
-  Record where this student is, so the next turn continues from here instead of starting over. Call
-  it whenever the help rung changes, the student makes an attempt, you diagnose a misconception, or
-  an assumption is committed or retracted. The current state is shown to you at the top of every
-  turn under "Tutoring state".
+  Record what happened in this conversation so the next turn continues from here: name the problem
+  being worked on, the rung you used, a misconception you confirmed or saw repaired, an assumption
+  the student committed to or retracted, or that the problem is finished or parked. You cannot move
+  the help ceiling, add attempts or reset the ladder with this tool — the server does that from its
+  own read of the student. Call it when one of these changes, not every turn.
 status: Updating tutoring state
 parameters:
   type: object
   properties:
     problem:
       type: string
-      description: One line naming the problem being worked on. Setting a new problem resets the rung and attempts.
+      description: >-
+        One line naming the problem being worked on. Set it when the tutoring state says the problem
+        is new and not named yet. Renaming never resets the ladder.
     rung:
       type: integer
       minimum: 0
-      description: Help rung now reached (0 = no help yet). Clamped to the style's maximum.
-    attempt:
-      type: boolean
-      description: true when the student has just made an attempt (counts attempts).
+      description: The help rung you used this turn. Anything above this turn's ceiling is recorded as the ceiling.
+    problem_status:
+      type: string
+      enum: [working, finished, parked]
+      description: >-
+        "finished" only when the final answer is the student's own and they can say why it holds.
+        "parked" when the student stops mid-problem and wants to come back to it.
     diagnosed_misconception:
       type: string
-      description: A misc card id you have diagnosed, e.g. "misc:m15-adiabatic-implies-isentropic".
+      description: >-
+        A misc card id the student's answer has CONFIRMED (not merely suspected), e.g.
+        "misc:m15-adiabatic-implies-isentropic". Also written to the student's long-term model.
     resolved_misconception:
       type: string
-      description: A misc card id the student has now repaired.
+      description: A misc card id the student has now repaired and passed a re-test on. Also written to the student's long-term model.
     ledger_entry:
       type: object
       description: One assumption the student committed to or retracted.

@@ -32,4 +32,14 @@ body.account-page { min-height: 100vh; display: flex; align-items: flex-start; j
 .acct-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 14px; }
 .acct-top a { color: var(--text2); text-decoration: none; }
 .acct-top a:hover { color: var(--text); }
+.acct-toggle { display: flex; align-items: flex-start; gap: 14px; cursor: pointer; position: relative; }
+.acct-toggle-text { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.acct-toggle-name { font-size: 14.5px; font-weight: 500; }
+.acct-toggle-desc { font-size: 13px; color: var(--text2); line-height: 1.45; }
+.acct-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.acct-toggle-track { flex: none; width: 40px; height: 24px; border-radius: 999px; background: var(--border); position: relative; margin-top: 1px; transition: background .15s; }
+.acct-toggle-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); box-shadow: 0 1px 2px #0003; transition: transform .15s; }
+.acct-toggle input:checked + .acct-toggle-track { background: var(--send-bg); }
+.acct-toggle input:checked + .acct-toggle-track::after { transform: translateX(16px); }
+.acct-toggle input:focus-visible + .acct-toggle-track { outline: 2px solid var(--text2); outline-offset: 2px; }
 @media (max-width: 420px) { .acct-row { grid-template-columns: 1fr; } }

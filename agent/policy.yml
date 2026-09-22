@@ -1,0 +1,66 @@
+# Kelvin's teaching policy — the part the tutoring model does NOT decide.
+#
+# Every message, a fast classifier (Jev, see connections.json → decider) reads the student's
+# message and answers typed questions: what are they doing, have they shown their own work, have
+# they finished an attempt, which misconceptions do their words show, how frustrated are they,
+# which style fits. lib/policy.js turns those answers into hard limits using the numbers below.
+# The tutoring model only ever sees the result ("help ceiling: rung 2"), so a student who argues
+# with the tutor cannot argue the limit up.
+#
+# Research basis (capstone survey, knowledge/PAPER.md): completion with self-generated reasoning
+# is what produces learning (finding 3); a system prompt cannot hold the floor under pressure
+# (§V.0 — CS50 leaked in 48% of conversations); the ladder should end in a contrast with the
+# student's own complete attempt, never before it (§V.4, productive-failure fidelity criterion 1).
+#
+# Every number here is a starting guess, not a tuned value. Change them, rerun the persona
+# eval (npm run eval:personas), and compare.
+
+# Probability (0–1) thresholds applied to Jev's answers.
+thresholds:
+  shows_work: 0.6          # this message contains the student's own work → counts as an attempt
+  complete_attempt: 0.7    # the student has carried the problem through to a final answer
+  new_problem: 0.7         # the student has moved to a different problem → reset the ladder
+  giving_up: 0.6           # the student is about to quit → park-and-resume protocol
+  wants_answer: 0.6        # the student is asking to be handed the answer
+  misconception_repair: 0.8   # at or above: name it and repair it directly
+  misconception_confirm: 0.5  # at or above (and below repair): ask ONE question that confirms it first
+  misconception_record: 0.6   # at or above: write it to the student model as a signal
+  style_switch: 0.55       # Auto routing: minimum confidence to leave the current style mid-problem
+  frustrated: 1.75         # frustration score (0–3) at or above which replies get shorter and warmer
+
+# How the help ceiling moves. Attempts are counted by the server from Jev's shows_work answer;
+# the tutoring model cannot add one.
+ceiling:
+  start: 1                 # rung available before any attempt: locate + principle
+  per_attempt: 1           # each attempt raises the ceiling by this many rungs
+  frustration_bonus: 1     # extra rung when frustrated AND at least one attempt has been made
+  without_complete_attempt: 4   # the highest rung reachable until the student has a complete attempt
+  stall_replies: 2         # replies in a row with no attempt ("ok", "what next") before the tutor is told to stop shrinking the step
+
+# The one help ladder every style shares. Styles may stop lower (max_rung in style.yml).
+# A rung marked needs_complete_attempt is never offered before the student has carried their
+# own attempt to a final answer.
+ladder:
+  - rung: 0
+    name: Locate
+    allows: Say where to look (a line, an assumption, a property value, a sign) and ask one question about it. Nothing else.
+  - rung: 1
+    name: Principle
+    allows: Ask which law, balance or assumption governs that spot, and for what kind of system. Answer strategy questions ("what do I do next") at the level of strategy — what kind of system, which balance — never with the step itself.
+  - rung: 2
+    name: Error class
+    allows: Name the kind of error (wrong balance for the system type, sign convention, wrong table or state, unit slip, unjustified assumption, neglected term) without saying what the corrected line is.
+  - rung: 3
+    name: Misconception and repair
+    allows: Name the belief behind the error plainly, give the repair move from its card, and have the student redo their own line.
+  - rung: 4
+    name: Worked example of a different problem
+    allows: Work a different problem (different device or numbers) that uses the same move, every assumption stated, then hand the student's own problem back.
+  - rung: 5
+    name: Contrast
+    needs_complete_attempt: true
+    allows: Put the student's step beside the correct step for that one step and ask them to explain the difference. They still redo and finish.
+  - rung: 6
+    name: Talk through one step
+    needs_complete_attempt: true
+    allows: Talk through the correct reasoning for that one step. The student still finishes the problem and the final answer is theirs.

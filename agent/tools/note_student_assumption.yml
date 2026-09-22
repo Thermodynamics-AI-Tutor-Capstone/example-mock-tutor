@@ -1,0 +1,32 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/note_student_assumption.js.
+name: note_student_assumption
+description: >-
+  Record a durable hypothesis about what this student knows, so later sessions start from it — for
+  example "solid on control-volume mass balance" or "shaky on when to use h instead of u". Call it
+  when a turn reveals something that should still be true next week, not on every turn. A later
+  note about the same thing replaces the earlier one; pass retire: true when an earlier hypothesis
+  turned out to be wrong. These notes are shown to you in later conversations as drafts, never to
+  the student.
+status: Updating learning notes
+parameters:
+  type: object
+  properties:
+    about:
+      type: string
+      description: A card id such as "topic:t12-entropy-balance-closed" or "misc:m15-adiabatic-implies-isentropic", or a short skill name.
+    belief:
+      type: string
+      enum: [solid, shaky, misconception, unknown]
+      description: Your current read of the student on this. Required unless retire is true.
+    note:
+      type: string
+      description: The evidence in a sentence — what the student said or did. At most 300 characters.
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1
+      description: How sure you are, 0 to 1.
+    retire:
+      type: boolean
+      description: true to drop an earlier hypothesis about the same thing because it was wrong.
+  required: [about]

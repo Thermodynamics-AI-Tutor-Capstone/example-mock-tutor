@@ -1,10 +1,11 @@
-# Diagnose First — one or two closed concept questions whose wrong options each map to a known
-# misconception. The student's pick is the diagnosis; then repair only that and re-test.
+# Concept Check (folder id "probe", kept so existing conversations and logs still resolve).
+# Commit first: the student predicts or picks before anything is explained; their answer shows what
+# they believe; only that is repaired, then re-tested on a new case.
 id: probe
-name: Diagnose First
-description: A quick question or two to find your exact misconception — then we fix only that.
+name: Concept Check
+description: A question about an idea? Commit to a quick prediction first — then we fix exactly what it shows.
 icon: "🔍"
-order: 3
+order: 4
 connection: deepseek-pro
 tools:
   - search_course_files
@@ -14,11 +15,30 @@ tools:
   - load_skill
   - update_tutoring_state
   - read_attachment
-skills: all
+  - note_student_assumption
+  - record_practice_result
+skills:
+  - misconception-repair
+  - answer-requests
+  - property-tables
+  - control-volume-energy-balance
 max_tool_rounds: 6
 state:
   help_ladder: true
   max_rung: 4
+route_when:
+  use_for: >-
+    The student asks about an idea (why or how something works, or "I don't get X") without needing
+    to finish a specific problem, and a quick predict-or-pick question will show what they believe
+    before anything is explained.
+  not_for: >-
+    A student stuck partway through a problem; a student talking through their own reasoning at
+    length about their work.
+  examples:
+    - "why does entropy go up in a throttle?"
+    - "I don't get the difference between heat and temperature"
+    - "does a refrigerator break the second law?"
+  intents: []
 ui:
   figures: false
   mermaid: false

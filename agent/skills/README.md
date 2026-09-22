@@ -6,9 +6,24 @@ to read the full instructions. This keeps the main [system prompt](../system-pro
 
 ## Current skills
 
+**Teaching moves**, shared by the styles so each move is defined once:
+
 | Skill | Used for |
 |---|---|
-| [`socratic-coaching`](socratic-coaching/SKILL.md) | Hint ladder for working through a problem without handing out the answer |
+| [`misconception-repair`](misconception-repair/SKILL.md) | The professor's surgical correction: confirm with one question, then quote, name, repair, re-test, hand back |
+| [`answer-requests`](answer-requests/SKILL.md) | "Just give me the answer": the most useful help the ceiling allows, with no refusal and no sermon |
+| [`what-next`](what-next/SKILL.md) | "What do I do next?": strategy (which system, which balance, which unknown), never the step |
+| [`worked-example-isomorph`](worked-example-isomorph/SKILL.md) | Rung 4: a worked example of a *different* problem that turns on the same move |
+| [`contrast-and-redo`](contrast-and-redo/SKILL.md) | Rungs 5–6, only after a complete attempt: one of their steps beside the correct one |
+| [`socratic-coaching`](socratic-coaching/SKILL.md) | The old hint ladder. Used only by the disabled Classic baseline; superseded by the four above and `agent/policy.yml` |
+
+The help ladder itself, and the ceiling that limits it each turn, are not a skill. They live in
+[`../policy.yml`](../policy.yml) and are enforced by the server (`lib/policy.js`).
+
+**Thermodynamics procedures:**
+
+| Skill | Used for |
+|---|---|
 | [`property-tables`](property-tables/SKILL.md) | Finding the phase and reading/interpolating property tables |
 | [`control-volume-energy-balance`](control-volume-energy-balance/SKILL.md) | Setting up steady-flow energy balances for devices |
 
