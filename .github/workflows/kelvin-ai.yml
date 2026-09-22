@@ -47,6 +47,10 @@ jobs:
         run: node scripts/validate-agent.mjs --summary "$GITHUB_STEP_SUMMARY"
       - name: Load every server module
         run: node scripts/smoke-imports.mjs
+      # Guards the numbers Kelvin gives students: the tables in agent/properties/ are compared
+      # against exact CoolProp values and against printed textbook values.
+      - name: Check the property tables
+        run: node scripts/properties/test.mjs
 
       # Informational. Retrieval quality is a number to watch, not a reason to
       # block a deploy — except for the one regression check the eval itself

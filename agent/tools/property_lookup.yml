@@ -1,0 +1,53 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/property_lookup.js
+# and the data is agent/properties/ (how it was made and how accurate it is: agent/properties/README.md).
+name: property_lookup
+description: >-
+  Look up properties of water/steam or R-134a from verified tables, computed from the same reference
+  equations the textbook tables are printed from. For each state give exactly two independent
+  properties: T and P, T and x, P and x, P with one of v, u, h or s, or T with v or s. Returns the
+  phase, which table a student would read it from, T, P, v, u, h, s, the quality for a saturated
+  mixture, and the saturation values at that pressure or temperature. Use it whenever a table value
+  matters, to check your own numbers and the values a student reads from their table. Never recall
+  table values from memory.
+status: "Checking the {fluid} tables"
+status_default: Checking the property tables
+parameters:
+  type: object
+  properties:
+    fluid:
+      type: string
+      enum: [water, R-134a]
+      description: water (liquid, mixture or steam) or R-134a.
+    states:
+      type: array
+      minItems: 1
+      maxItems: 8
+      description: The states to look up, one to eight in a single call.
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+            description: Optional name for the state, such as "1" or "turbine inlet".
+          T:
+            type: number
+            description: Temperature in °C.
+          P:
+            type: number
+            description: Pressure in kPa (1 MPa = 1000 kPa, 1 bar = 100 kPa).
+          x:
+            type: number
+            description: Quality, 0 to 1, for a saturated liquid-vapor mixture.
+          v:
+            type: number
+            description: Specific volume in m³/kg.
+          u:
+            type: number
+            description: Specific internal energy in kJ/kg.
+          h:
+            type: number
+            description: Specific enthalpy in kJ/kg.
+          s:
+            type: number
+            description: Specific entropy in kJ/(kg·K).
+  required: [fluid, states]

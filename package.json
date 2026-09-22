@@ -17,7 +17,8 @@
     "agent:test": "node scripts/tutor.test.mjs",
     "eval:personas": "node scripts/eval/personas.mjs",
     "eval:compare": "node scripts/eval/personas.mjs --jev both",
-    "check:imports": "node scripts/smoke-imports.mjs"
+    "check:imports": "node scripts/smoke-imports.mjs",
+    "properties:test": "node scripts/properties/test.mjs"
   },
   "engines": {
     "node": "24.x"
@@ -32,6 +33,7 @@
     "katex": "^0.18.7",
     "mammoth": "^1.12.3",
     "marked": "^18.0.13",
+    "mermaid": "^11.17.2",
     "pg": "^8.23.0",
     "unpdf": "^1.8.1",
     "yaml": "^2.9.1"

@@ -137,8 +137,35 @@
     });
   }
 
+  // Mermaid and property-diagram blocks are drawn by public/figures.js, which is fetched the first
+  // time a reply contains one.
+  let figuresScript = null;
+  function renderFigures(el) {
+    if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram')) return;
+    if (window.KelvinFigures) return window.KelvinFigures.render(el, { api });
+    if (!figuresScript) {
+      figuresScript = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = '/figures.js';
+        s.onload = resolve;
+        s.onerror = () => {
+          figuresScript = null;
+          reject(new Error('figures.js'));
+        };
+        document.head.appendChild(s);
+      });
+    }
+    figuresScript.then(
+      () => {
+        if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api });
+      },
+      () => {}
+    );
+  }
+
   function setMarkdown(el, text) {
     el.innerHTML = renderMarkdown(text);
+    renderFigures(el);
     decorateCode(el);
   }
 

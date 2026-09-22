@@ -10,6 +10,8 @@ const COPIES = [
   { from: path.join(NODE_MODULES, 'marked', 'lib', 'marked.umd.js'), to: path.join(VENDOR_DIR, 'marked.umd.js') },
   { from: path.join(NODE_MODULES, 'dompurify', 'dist', 'purify.min.js'), to: path.join(VENDOR_DIR, 'purify.min.js') },
   { from: path.join(NODE_MODULES, 'katex', 'dist'), to: path.join(VENDOR_DIR, 'katex') },
+  // Only loaded when a reply actually contains a Mermaid diagram (see public/figures.js).
+  { from: path.join(NODE_MODULES, 'mermaid', 'dist', 'mermaid.min.js'), to: path.join(VENDOR_DIR, 'mermaid.min.js') },
 ];
 
 export function vendorReady() {

@@ -1,0 +1,83 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/plot_property_diagram.js,
+# the drawing is public/figures.js, and the property data is agent/properties/.
+name: plot_property_diagram
+description: >-
+  Draw a real, to-scale property diagram for water or R-134a: the saturation dome, the states you
+  give, and the processes between them, all computed from the property tables. Types: Ts
+  (temperature-entropy), Pv (pressure-specific volume, log axes), Ph (pressure-enthalpy, usual for
+  refrigeration) and Tv (temperature-specific volume). The result has a `figure` block. Put it in
+  your reply exactly as given, on its own lines, where the diagram should appear, and the student
+  sees the drawing. The result also lists every state's properties, and flags any process whose
+  label does not match its end states (for example "isentropic" with different entropies). Use it
+  to show where states sit relative to the dome, to lay out a cycle (Rankine, vapor-compression
+  refrigeration), or to compare with a student's sketch.
+status: "Drawing the {type} diagram"
+status_default: Drawing a property diagram
+parameters:
+  type: object
+  properties:
+    fluid:
+      type: string
+      enum: [water, R-134a]
+    type:
+      type: string
+      enum: [Ts, Pv, Ph, Tv]
+      description: Which diagram to draw.
+    title:
+      type: string
+      description: Optional short caption, such as "Ideal Rankine cycle".
+    states:
+      type: array
+      minItems: 1
+      maxItems: 12
+      description: >-
+        The states to plot. Each needs a label and exactly two independent properties, as in
+        property_lookup (T °C, P kPa, x, v m³/kg, u and h kJ/kg, s kJ/(kg·K)).
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          T:
+            type: number
+          P:
+            type: number
+          x:
+            type: number
+          v:
+            type: number
+          u:
+            type: number
+          h:
+            type: number
+          s:
+            type: number
+        required: [label]
+    processes:
+      type: array
+      maxItems: 16
+      description: Lines to draw between states, in order.
+      items:
+        type: object
+        properties:
+          from:
+            type: string
+            description: Label of the starting state.
+          to:
+            type: string
+            description: Label of the end state.
+          path:
+            type: string
+            enum: [isobaric, isentropic, isothermal, isochoric, isenthalpic, straight]
+            description: >-
+              How the property changes along the way. isenthalpic is a throttling valve. straight
+              draws a dashed line for a process whose path is not known, such as an irreversible
+              one.
+        required: [from, to, path]
+    isobars:
+      type: array
+      maxItems: 6
+      items:
+        type: number
+      description: Optional constant-pressure lines (kPa) drawn across the whole diagram, such as the boiler and condenser pressures.
+  required: [fluid, type, states]
