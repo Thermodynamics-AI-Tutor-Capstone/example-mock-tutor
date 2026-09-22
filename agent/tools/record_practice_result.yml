@@ -1,0 +1,24 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/record_practice_result.js.
+name: record_practice_result
+description: >-
+  Record the outcome of one practice problem or re-test attempt, so mastery is tracked in code
+  rather than guessed. independent is true only when the student solved it this attempt without
+  hints or worked steps from you. Returns the updated mastery record for that target. Call it once
+  per attempt, after the student has answered.
+status: Recording practice result
+parameters:
+  type: object
+  properties:
+    target:
+      type: string
+      description: The card id or skill practised, e.g. "topic:t12-entropy-balance-closed" or "misc:m15-adiabatic-implies-isentropic".
+    correct:
+      type: boolean
+      description: Whether the student's final answer and reasoning were right.
+    independent:
+      type: boolean
+      description: true only if they got there without hints or worked steps from you on this attempt.
+    note:
+      type: string
+      description: Optional, one sentence on what went right or wrong.
+  required: [target, correct, independent]

@@ -6,11 +6,12 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 | Piece | File / folder | Edit this to… |
 |---|---|---|
 | Shared core | [`system-prompt.md`](system-prompt.md) | change the ground rules every teaching style follows |
-| Teaching styles | [`styles/`](styles/README.md) | change how a style teaches, which model, tools and skills it gets, or add a new style to the picker |
+| Teaching styles | [`styles/`](styles/README.md) | change how a style teaches, when Auto picks it, which model, tools and skills it gets, or add a new style |
+| Teaching policy | [`policy.yml`](policy.yml) | change the help ladder and the thresholds the server uses to set the help ceiling each turn: what counts as an attempt, when to repair or confirm a misconception, when to switch styles |
 | Tools | [`tools/`](tools/README.md) | change what the model is told about each tool it can call, and when to use it |
 | Student uploads | [`attachments/`](attachments/README.md) | change how students' photos and files are turned into Markdown: the transcription prompt, which model reads images, size limits |
 | Skills | [`skills/`](skills/README.md) | add or change focused instruction modules the tutor loads when needed |
-| Connections | [`connections/`](connections/README.md) | change the AI model and its settings; see what services the tutor uses |
+| Connections | [`connections/`](connections/README.md) | change the AI model and its settings, including the Jev decider (`decider`); see what services the tutor uses |
 | Course materials | [`raw-course-files/`](raw-course-files/README.md) | give the tutor course files to read — drag and drop them here |
 | Knowledge brain | [`knowledge-brain/`](knowledge-brain/README.md) | correct what the tutor believes about the course — units, topics, equations, misconceptions, notation |
 
@@ -18,6 +19,7 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 agent/
 ├── README.md               ← you are here
 ├── system-prompt.md        ← how the tutor behaves
+├── policy.yml              ← help ladder + the thresholds the server enforces each turn
 ├── connections/
 │   ├── connections.json    ← model, database, and tool settings
 │   └── README.md
@@ -47,13 +49,20 @@ uploaded.
 
 ## How the pieces fit together
 
-On every message, the app sends the model:
+On every message, **before the tutoring model sees anything**, a fast classifier (Jev) reads the
+student's message. The Auto router picks a style, and the policy in [`policy.yml`](policy.yml) sets
+the help ceiling. See [`styles/README.md`](styles/README.md#what-happens-on-every-message). Then
+the app sends the model:
 
-1. the text of `system-prompt.md`,
+1. the text of `system-prompt.md` and the chosen style's `prompt.md`,
 2. an automatically generated list of skills (name + description), a summary of the course
-   materials, and the knowledge map rendered from [`kb/INDEX.md`](knowledge-brain/INDEX.md), and
-3. tools that let it search course files and cards, open a card, list a card's siblings, read a
-   course file, and load a skill.
+   materials, and the knowledge map rendered from [`kb/INDEX.md`](knowledge-brain/INDEX.md),
+3. "## This turn": the server-set help ceiling, Jev's read of the student (including any
+   misconception to repair or confirm), and the conversation's tutoring state,
+4. "## What Kelvin has inferred about this student": drafts from earlier sessions, built from an
+   evidence log that is deleted along with the conversation it came from, and
+5. tools that let it search course files and cards, open a card, read a course file, load a skill,
+   record tutoring state, and record what it has learned about the student.
 
 You never need to list skills, files or cards in the system prompt by hand.
 
@@ -77,6 +86,50 @@ AI calls at all, so a redeploy is deterministic and needs no API key.
 > only README files, so there are no topic, equation or worked-example cards and no search
 > results to judge. The cards that do exist were hand-written; see
 > [`kb/README.md`](knowledge-brain/README.md) for what their `status` values claim and do not claim.
+
+## Testing a change to how Kelvin teaches
+
+- `npm run agent:validate`: styles, tools, skills and `policy.yml` are well formed.
+- `npm run agent:test`: the policy, router and student model behave as specified (no network).
+- `npm run eval:personas`: simulated students (a deadline-demander, a "what next" looper, a
+  student holding a known misconception, a quitter, a strong student, and others; see
+  [`../eval/personas.yml`](../eval/personas.yml)) are driven through the real pipeline against a
+  throwaway local database. It costs a few cents and needs no real students or IRB. The report
+  lands in `data/eval-runs/`. Its ✅ marks are automatic judgments, so read the transcripts.
+
+## With and without Jev
+
+Jev, the fast decision model (see [`styles/README.md`](styles/README.md#what-happens-on-every-message)),
+can be switched off to show what it adds. With it off, the rest of the tutor still runs, and simple
+keyword rules take its place. Those rules still count visible work toward the help ceiling and
+still catch "just tell me" and "forget it", but they cannot read misconceptions, can't tell when an
+attempt is complete (so the step-comparison rungs never open), and can't pick a style (Auto keeps
+the current one).
+
+**By hand, in the app:** Settings → Testing.
+- **Use Jev** (on by default) switches it for that account, from the next message on.
+- **Show Kelvin's decisions** prints what was decided above each reply: who decided it (⚡ Jev or
+  ⌨ keyword rules), what the message looked like, the style, the help ceiling, and any
+  misconception. This makes a sponsor demo easy: ask the same question with the switch on, then
+  off, and compare.
+
+With the switch off, the app makes **no** Jev calls at all, not even the after-reply audit, so
+"off" really means off (Settings tells students their messages go to Jev only while it's on). Every
+turn is logged in `turn_decisions`, with `policy.jevEnabled` recording which way it ran.
+`GET /api/conversations/:id/decisions` returns the log for one conversation.
+
+**Automatically, against simulated students:**
+- `npm run eval:personas -- --jev off` runs the personas without Jev (`--jev on` is the default).
+- `npm run eval:compare` runs both arms on the same personas and puts a side-by-side table at the top
+  of the report: checks passed, answer leaks, key-step leaks, and replies that corrected a wrong
+  belief. Add `--repeat 3` or more before showing the numbers to anyone, because the simulated
+  students are random and one run per arm is an anecdote.
+
+In the eval, both arms have every reply *audited* by Jev, so both are measured with the same
+instrument. The audit judges for itself whether the student had already finished an attempt or asked
+a fact question; it never uses the arm's own read, which would bias the comparison toward Jev. Checks
+that measure Jev's own read (did it flag the misconception?) show as ➖ n/a without Jev and are left
+out of the score.
 
 ## How changes reach the live site
 

@@ -32,16 +32,28 @@
     <div class="acct-field"><label for="major">Major</label><input id="major" maxlength="120"></div>
     <div class="acct-section">Tutoring</div>
     <div class="acct-field"><label for="default_style">Default teaching style for new chats</label><select id="default_style"></select></div>
+    <div class="acct-section">Testing <span class="opt">(capstone team)</span></div>
+    <label class="acct-toggle" for="use_jev">
+      <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev is a fast decision model that reads each message before Kelvin answers: whether you showed your own work, which misconception your words point to, how much help you've earned, which teaching style fits. Turn it off to see Kelvin run on simple keyword rules instead.</span></span>
+      <input id="use_jev" type="checkbox" role="switch">
+      <span class="acct-toggle-track" aria-hidden="true"></span>
+    </label>
+    <label class="acct-toggle" for="show_decisions">
+      <span class="acct-toggle-text"><span class="acct-toggle-name">Show Kelvin's decisions</span><span class="acct-toggle-desc">Above each reply, show what was decided before Kelvin answered, and whether Jev or the keyword rules decided it. Useful for demos.</span></span>
+      <input id="show_decisions" type="checkbox" role="switch">
+      <span class="acct-toggle-track" aria-hidden="true"></span>
+    </label>
     <div id="error" class="acct-error" role="alert"></div>
     <div id="ok" class="acct-ok" role="status"></div>
     <button id="submit" class="acct-btn" type="submit" disabled>Save changes</button>
-    <p class="acct-note">Kelvin AI is a capstone prototype. It stores your account email, the profile fields above and your chats, and the capstone team can see them. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies.</p>
+    <p class="acct-note">Kelvin AI is a capstone prototype. It stores your account email, the profile fields above, your chats, and notes Kelvin makes about what you've learned (deleted along with the chat they came from). The capstone team can see all of them. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies. While "Use Jev" is on, your messages and Kelvin's replies are also sent to TypeSafe's Jev model through OpenRouter.</p>
   </form>
 </main>
 <script>
 (function () {
   const A = window.KelvinAccount;
   const FIELDS = ['display_name', 'course_number', 'section', 'professor', 'semester', 'year', 'major', 'default_style'];
+  const SWITCHES = { use_jev: true, show_decisions: false };
   const $ = (id) => document.getElementById(id);
   $('signOut').addEventListener('click', () => A.signOut());
   Promise.all([A.requireSession(), A.call('/api/styles')]).then(([me, styles]) => {
@@ -57,7 +69,8 @@
     $('email').value = me.user.email || '';
     const p = me.profile || {};
     for (const f of FIELDS) if (p[f]) $(f).value = p[f];
-    if (!p.default_style) sel.value = 'classic';
+    if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = 'auto';
+    for (const [f, fallback] of Object.entries(SWITCHES)) $(f).checked = typeof p[f] === 'boolean' ? p[f] : fallback;
     $('submit').disabled = false;
   });
   $('form').addEventListener('submit', async (e) => {
@@ -66,6 +79,7 @@
     $('ok').textContent = '';
     const body = {};
     for (const f of FIELDS) body[f] = $(f).value.trim();
+    for (const f of Object.keys(SWITCHES)) body[f] = $(f).checked;
     if (!body.display_name) { $('error').textContent = 'Please enter your name.'; return; }
     $('submit').disabled = true;
     try {

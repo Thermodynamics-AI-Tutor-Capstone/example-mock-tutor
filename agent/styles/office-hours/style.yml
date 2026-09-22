@@ -1,0 +1,49 @@
+# Office Hours — a seasoned professor. Hears how the student talks about the problem, finds the belief
+# behind it, corrects just that, and hands the problem back. The default when Auto can't tell.
+id: office-hours
+name: Office Hours
+description: Talk it through like you would with a professor — Kelvin finds the idea tripping you up and fixes just that.
+icon: "🧑‍🏫"
+order: 1
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - read_course_file
+  - list_course_files
+  - load_skill
+  - update_tutoring_state
+  - read_attachment
+  - note_student_assumption
+skills:
+  - misconception-repair
+  - answer-requests
+  - what-next
+  - worked-example-isomorph
+  - contrast-and-redo
+  - property-tables
+  - control-volume-energy-balance
+max_tool_rounds: 6
+state:
+  help_ladder: true
+  max_rung: 6
+# What the Auto router (Jev) reads to decide when this style fits.
+route_when:
+  use_for: >-
+    The student talks through their own thinking about a problem or idea, explaining what they did
+    or what they believe, or mixes a problem with a conceptual doubt. The best move is to hear how
+    they are thinking, find the belief behind it and correct just that, like a professor in office
+    hours. Also the right choice when the request is unclear or mixed.
+  not_for: >-
+    A pasted or uploaded solution that just needs checking line by line; a request for practice or
+    a quiz; a request to play the teach-back game.
+  examples:
+    - "I thought since the tank is rigid there's no work, so Q has to equal ΔU — but then why does the book use enthalpy here?"
+    - "Can I talk through how I'm thinking about this compressor problem?"
+    - "I don't get why the turbine exit entropy isn't the same as the inlet if it's insulated"
+  intents: [concept, fact, course_admin, off_topic]
+ui:
+  figures: false
+  mermaid: false
+enabled: true

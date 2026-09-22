@@ -17,6 +17,7 @@
     conversations: [],
     styles: [],
     activeStyle: null,
+    routedStyle: null,
     currentId: null,
     streaming: false,
     controller: null,
@@ -300,6 +301,7 @@
     state.loadToken++;
     state.currentId = null;
     if (window.KelvinAttachments) window.KelvinAttachments.clear();
+    state.routedStyle = null;
     if (state.styles.length) {
       state.activeStyle = defaultStyleId();
       renderStyleButton();
@@ -385,19 +387,88 @@
     }
     if (token !== state.loadToken) return;
     window.KelvinAttachments.setPending(conv.pendingAttachments || []);
+    state.routedStyle = conv.routedStyle || null;
     if (state.styles.length) {
-      state.activeStyle = styleById(conv.style) ? conv.style : 'classic';
+      state.activeStyle = styleById(conv.style) ? conv.style : 'auto';
       renderStyleButton();
     }
     updateTitle(conv);
     const msgs = conv.messages || [];
+    const replyRows = new Map();
     for (const m of msgs) {
       if (m.role === 'user') addUserMessage(m.content, m.attachments);
-      else addAssistantMessage(m.content, true);
+      else replyRows.set(m.id, addAssistantMessage(m.content, true));
     }
     setThreadMode(msgs.length > 0);
     scrollToBottom();
     input.focus();
+    if (showingDecisions() && replyRows.size) {
+      api('GET', '/api/conversations/' + id + '/decisions')
+        .then((rows) => {
+          if (token !== state.loadToken) return;
+          for (const d of rows || []) {
+            const row = replyRows.get(Number(d.message_id));
+            if (row && d.policy && d.policy.summary) showDecision(row, d.policy.summary);
+          }
+        })
+        .catch(() => {});
+    }
+  }
+
+  // ---- "Show Kelvin's decisions" (a testing switch in Settings) ----
+  const INTENT_WORDS = {
+    check_work: 'showing their work',
+    stuck_on_problem: 'stuck on a problem',
+    concept: 'asking about an idea',
+    fact: 'asking for a fact',
+    wants_answer: 'asking for the answer',
+    practice: 'asking for practice',
+    teach_back: 'explaining it back',
+    reply: 'answering Kelvin',
+    course_admin: 'asking about the course',
+    off_topic: 'off topic',
+  };
+  function showingDecisions() {
+    return Boolean(state.me && state.me.profile && state.me.profile.show_decisions);
+  }
+  function decisionLines(d) {
+    const source = d.jev
+      ? '⚡ Jev' + (d.latencyMs ? ' · ' + (d.latencyMs / 1000).toFixed(2) + ' s' : '')
+      : d.reason === 'Jev is turned off in settings'
+        ? '⌨ Keyword rules (Jev off)'
+        : '⌨ Keyword rules (Jev unavailable' + (d.reason ? ': ' + d.reason : '') + ')';
+    const read = [];
+    if (d.intent) read.push(INTENT_WORDS[d.intent] || d.intent);
+    if (d.attemptCounted) read.push('own work ✓');
+    if (d.completeAttempt) read.push('complete attempt ✓');
+    if (d.wantsAnswer) read.push('wants the answer');
+    if (d.stalled) read.push('stalling');
+    if (d.frustrated) read.push('frustrated');
+    if (d.givingUp) read.push('giving up → park');
+    const m = d.misconception || { action: 'none', candidates: [] };
+    let misc;
+    if (m.action === 'repair') misc = 'Misconception: ' + m.candidates[0].title + ' (' + m.candidates[0].p + ') → repair it';
+    else if (m.action === 'confirm') misc = 'Possible misconception: ' + m.candidates.map((c) => c.title + ' (' + c.p + ')').join(', ') + ' → ask one question first';
+    else misc = d.jev ? 'No misconception in this message' : 'No misconception read (needs Jev)';
+    const style = d.style ? (d.style.icon ? d.style.icon + ' ' : '') + d.style.name + (d.auto ? '' : ' (pinned)') : '—';
+    return [
+      source + ' — ' + (read.length ? read.join(' · ') : 'nothing detected'),
+      'Style: ' + style + ' · Help ceiling: rung ' + d.ceiling + ' of ' + d.maxRung + (d.rungName ? ' (' + d.rungName + ')' : ''),
+      misc,
+    ];
+  }
+  function showDecision(row, d) {
+    if (!row || !d) return;
+    const old = row.querySelector('.decision-note');
+    if (old) old.remove();
+    const note = document.createElement('div');
+    note.className = 'decision-note' + (d.jev ? ' is-jev' : '');
+    for (const line of decisionLines(d)) {
+      const div = document.createElement('div');
+      div.textContent = line;
+      note.appendChild(div);
+    }
+    row.insertBefore(note, row.firstChild);
   }
 
   // ---- Tutoring-style picker (like ChatGPT's model selector) ----
@@ -424,9 +495,11 @@
   }
   function renderStyleButton() {
     const s = styleById(state.activeStyle);
+    const routed = s && s.auto ? styleById(state.routedStyle) : null;
     $('styleBtnIcon').textContent = s ? s.icon : '';
-    $('styleBtnName').textContent = s ? s.name : '';
-    styleBtn.title = s ? s.name + ' — ' + s.description : 'Choose a tutoring style';
+    $('styleBtnName').textContent = s ? (routed ? s.name + ' · ' + (routed.icon ? routed.icon + ' ' : '') + routed.name : s.name) : '';
+    if (routed) styleBtn.title = 'Auto — Kelvin chose ' + routed.name + ' for this conversation. ' + routed.description;
+    else styleBtn.title = s ? s.name + ' — ' + s.description : 'Choose a tutoring style';
   }
   function renderStyleMenu() {
     styleMenu.innerHTML = '';
@@ -434,7 +507,13 @@
     head.className = 'style-menu-head';
     head.textContent = 'Tutoring style';
     styleMenu.appendChild(head);
-    for (const s of state.styles) {
+    state.styles.forEach((s, i) => {
+      if (i > 0 && state.styles[i - 1].auto && !s.auto) {
+        const sep = document.createElement('div');
+        sep.className = 'style-menu-sep';
+        sep.textContent = 'Or pin one approach';
+        styleMenu.appendChild(sep);
+      }
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'style-item';
@@ -461,7 +540,7 @@
       item.append(icon, text, check);
       item.addEventListener('click', () => chooseStyle(s.id));
       styleMenu.appendChild(item);
-    }
+    });
   }
   function openStyleMenu() {
     if (!state.styles.length) return;
@@ -477,12 +556,13 @@
     styleBtn.setAttribute('aria-expanded', 'false');
     if (refocus) styleBtn.focus();
   }
-  function addStyleNote(text) {
+  function addStyleNote(text, before) {
     if (!thread.children.length) return;
     const note = document.createElement('div');
     note.className = 'style-note';
     note.textContent = text;
-    thread.appendChild(note);
+    if (before && before.parentNode === thread) thread.insertBefore(note, before);
+    else thread.appendChild(note);
   }
   async function chooseStyle(id) {
     const s = styleById(id);
@@ -713,6 +793,15 @@
         text2 += ev.content || '';
         row._text = text2;
         schedule();
+      } else if (ev.type === 'style') {
+        if (ev.auto && state.currentId === convId) {
+          const previous = state.routedStyle;
+          state.routedStyle = ev.id;
+          renderStyleButton();
+          if (previous && previous !== ev.id) addStyleNote('Kelvin switched to ' + (ev.icon ? ev.icon + ' ' : '') + ev.name + ' for this part.', row);
+        }
+      } else if (ev.type === 'decision') {
+        showDecision(row, ev);
       } else if (ev.type === 'status') {
         showStatus(ev.message);
       } else if (ev.type === 'error') {

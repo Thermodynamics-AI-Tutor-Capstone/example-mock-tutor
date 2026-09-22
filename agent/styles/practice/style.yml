@@ -1,0 +1,45 @@
+# Practice — the one style that chooses what the student works on (the "outer loop"). Problems one at
+# a time, independent attempt first, feedback after, mastery tracked in code, and a target isn't
+# dropped until it is mastered or the student chooses to move on.
+id: practice
+name: Practice
+description: Practice problems and quick quizzes, aimed at what you haven't mastered yet — Kelvin tracks it.
+icon: "🔁"
+order: 6
+connection: deepseek-pro
+tools:
+  - search_course_files
+  - open_card
+  - list_cards
+  - read_course_file
+  - list_course_files
+  - load_skill
+  - update_tutoring_state
+  - read_attachment
+  - note_student_assumption
+  - record_practice_result
+skills:
+  - misconception-repair
+  - answer-requests
+  - worked-example-isomorph
+  - contrast-and-redo
+  - property-tables
+  - control-volume-energy-balance
+max_tool_rounds: 6
+state:
+  help_ladder: true
+  max_rung: 4
+route_when:
+  use_for: >-
+    The student wants practice problems, a quiz, a re-test, or help studying for an exam.
+  not_for: >-
+    A student working on their own homework problem; a single question about an idea.
+  examples:
+    - "can you give me some practice problems on entropy for the exam?"
+    - "quiz me on control volumes"
+    - "I have exam 4 on Friday, help me study"
+  intents: [practice]
+ui:
+  figures: false
+  mermaid: false
+enabled: true

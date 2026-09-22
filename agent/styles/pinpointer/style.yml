@@ -1,9 +1,10 @@
-# Pinpointer — "evaluate my work" as the front door. Finds the earliest wrong line or assumption
-# and deals only with that, on a help ladder whose current rung is tracked by the server.
+# Check My Work (folder id "pinpointer", kept so existing conversations and logs still resolve).
+# "Evaluate my work" as the front door: find the earliest wrong line or assumption and deal only
+# with that, one error per turn, under the server-set help ceiling.
 id: pinpointer
-name: Pinpointer
-description: Show your work — I find the first line or assumption that goes wrong and ask about just that.
-icon: "🎯"
+name: Check My Work
+description: Show your work — Kelvin finds the first line or assumption that goes wrong and asks about just that.
+icon: "✅"
 order: 2
 connection: deepseek-pro
 tools:
@@ -15,13 +16,29 @@ tools:
   - load_skill
   - update_tutoring_state
   - read_attachment
+  - note_student_assumption
 skills:
+  - misconception-repair
+  - answer-requests
+  - worked-example-isomorph
+  - contrast-and-redo
   - property-tables
   - control-volume-energy-balance
 max_tool_rounds: 6
 state:
   help_ladder: true
   max_rung: 6
+route_when:
+  use_for: >-
+    The student shares their own worked solution or steps (typed, pasted, or uploaded as a photo or
+    file) and wants to know whether it is right or where it goes wrong.
+  not_for: >-
+    A question with no work shown yet; a question about an idea rather than their solution.
+  examples:
+    - "Here's my turbine solution, I got 950 kW but the answer is 1100 — where did I go wrong?"
+    - "Can you check my work? [photo of handwritten solution]"
+    - "I used ΔU = Q − W with Q = 0 and got W = m(u1 − u2). Is that right?"
+  intents: [check_work]
 ui:
   figures: false
   mermaid: false

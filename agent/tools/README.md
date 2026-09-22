@@ -25,7 +25,9 @@ say what the tool is for, when to use it, and when *not* to.
 | `read_course_file` | Reads the text of an uploaded course file from a given chunk. | files have been uploaded |
 | `list_course_files` | Lists every uploaded course file, and the ones that couldn't be read. | files have been uploaded |
 | `load_skill` | Loads the full instructions of one of the style's skills. | the style has skills |
-| `update_tutoring_state` | Records the help rung, attempts, diagnosed misconceptions and the assumption ledger for this conversation. | always, for styles that list it |
+| `update_tutoring_state` | Records the problem's name, the rung used, confirmed and repaired misconceptions, the assumption ledger, and whether the problem is finished or parked. It **cannot** raise the help ceiling, add attempts or reset the ladder: the server does those from Jev's read (`../policy.yml`). | always, for styles that list it |
+| `note_student_assumption` | Records a durable hypothesis about what this student knows ("shaky on h vs u"), shown as a draft in their later conversations. A later note on the same thing replaces the earlier one. | the student is signed in |
+| `record_practice_result` | Records one practice or re-test attempt (correct? independent?) and returns the updated mastery record, tracked in code with Bayesian Knowledge Tracing (textbook defaults, not fitted). | the student is signed in |
 
 Which **style** gets which tool is set in that style's `style.yml` (`tools:`), in
 [`../styles/`](../styles/README.md).

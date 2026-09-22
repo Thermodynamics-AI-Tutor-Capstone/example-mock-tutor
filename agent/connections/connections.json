@@ -18,6 +18,14 @@
       "apiKeyEnvVar": "DEEPSEEK_API_KEY"
     }
   },
+  "decider": {
+    "provider": "Jev (TypeSafe) via OpenRouter",
+    "baseUrl": "https://openrouter.ai/api",
+    "model": "jev-1.13",
+    "apiKeyEnvVar": "OPENROUTER_API_KEY",
+    "timeoutMs": 6000,
+    "enabled": true
+  },
   "chatHistory": {
     "provider": "Postgres (Neon on Vercel, embedded PGlite locally)",
     "urlEnvVar": "DATABASE_URL"
