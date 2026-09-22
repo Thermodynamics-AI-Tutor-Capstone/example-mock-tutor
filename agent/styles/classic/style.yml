@@ -13,6 +13,7 @@ tools:
   - open_card
   - list_cards
   - load_skill
+  - read_attachment
 skills: all
 max_tool_rounds: 6
 state:

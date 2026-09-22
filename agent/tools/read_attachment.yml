@@ -1,0 +1,20 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/read_attachment.js.
+# Offered only when the student has uploaded files to this conversation.
+name: read_attachment
+description: >-
+  Read one file the student uploaded to this conversation (a photo of their work, a screenshot of a
+  problem, a PDF, Word or PowerPoint file), converted to Markdown with LaTeX math. Use it before
+  discussing an upload. The result says whether the student has checked the transcription; spots
+  the transcriber was unsure about are marked [?].
+status: "Reading your upload: {name}"
+status_default: Reading your upload
+parameters:
+  type: object
+  properties:
+    id:
+      type: string
+      description: The attachment id from the list of the student's attachments.
+    name:
+      type: string
+      description: Optional. The file name, used only for the status line the student sees.
+  required: [id]

@@ -13,6 +13,7 @@ tools:
   - read_course_file
   - load_skill
   - update_tutoring_state
+  - read_attachment
 skills: all
 max_tool_rounds: 6
 state:

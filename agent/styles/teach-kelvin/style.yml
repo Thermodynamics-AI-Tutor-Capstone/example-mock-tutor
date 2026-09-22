@@ -11,6 +11,7 @@ tools:
   - open_card
   - list_cards
   - update_tutoring_state
+  - read_attachment
 skills: []
 max_tool_rounds: 5
 state:

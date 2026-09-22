@@ -49,8 +49,11 @@ rebuilt by `npm run build`.
 
 ## Storage
 
-Chats live in Postgres, in two tables: `conversations` and `messages`. The tables are created
-automatically the first time the app touches the database.
+Chats live in Postgres: `conversations`, `messages`, `tutoring_state`, `user_profiles` and
+`attachments` (students' uploads, as Markdown). The tables are created automatically the first time
+the app touches the database. The original files students upload are kept in a private Vercel Blob
+store when `BLOB_READ_WRITE_TOKEN` is set (as on the live site), and in `data/uploads/` locally.
+See [`agent/attachments/README.md`](agent/attachments/README.md).
 
 - **`DATABASE_URL` (or `POSTGRES_URL`) set**: the app connects to that Postgres server with `pg`.
   Local hosts connect without TLS. Remote hosts use TLS with certificate checking unless the URL

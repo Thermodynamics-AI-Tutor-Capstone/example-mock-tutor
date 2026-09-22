@@ -299,6 +299,7 @@
   function goEmpty(pushUrl) {
     state.loadToken++;
     state.currentId = null;
+    if (window.KelvinAttachments) window.KelvinAttachments.clear();
     if (state.styles.length) {
       state.activeStyle = defaultStyleId();
       renderStyleButton();
@@ -311,9 +312,10 @@
     input.focus();
   }
 
-  function addUserMessage(content) {
+  function addUserMessage(content, attachments) {
     const row = document.createElement('div');
     row.className = 'msg user';
+    if (attachments && attachments.length) row.appendChild(window.KelvinAttachments.chipsFor(attachments));
     const b = document.createElement('div');
     b.className = 'bubble';
     b.textContent = content;
@@ -382,6 +384,7 @@
       return;
     }
     if (token !== state.loadToken) return;
+    window.KelvinAttachments.setPending(conv.pendingAttachments || []);
     if (state.styles.length) {
       state.activeStyle = styleById(conv.style) ? conv.style : 'classic';
       renderStyleButton();
@@ -389,7 +392,7 @@
     updateTitle(conv);
     const msgs = conv.messages || [];
     for (const m of msgs) {
-      if (m.role === 'user') addUserMessage(m.content);
+      if (m.role === 'user') addUserMessage(m.content, m.attachments);
       else addAssistantMessage(m.content, true);
     }
     setThreadMode(msgs.length > 0);
@@ -562,14 +565,33 @@
       sendBtn.setAttribute('aria-label', 'Stop');
     } else {
       sendBtn.classList.remove('stop');
-      sendBtn.disabled = input.value.trim() === '';
+      const files = window.KelvinAttachments;
+      sendBtn.disabled = (input.value.trim() === '' && !files.hasPending()) || files.busy();
       sendBtn.setAttribute('aria-label', 'Send');
     }
   }
 
+  // Creates the conversation on first use (an upload can come before the first message) without
+  // triggering a reload of the thread: currentId is set before the hash changes.
+  async function ensureConversation() {
+    if (state.currentId) return state.currentId;
+    const conv = await api('POST', '/api/conversations', state.activeStyle ? { style: state.activeStyle } : {});
+    state.loadToken++;
+    state.currentId = conv.id;
+    state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
+      .concat(state.conversations.filter((c) => c.id !== conv.id));
+    renderSidebar();
+    location.hash = '#/c/' + conv.id;
+    return conv.id;
+  }
+
   async function send(text) {
-    const content = (text != null ? text : input.value).trim();
-    if (!content || state.streaming) return;
+    const files = window.KelvinAttachments;
+    const typed = (text != null ? text : input.value).trim();
+    if (state.streaming || files.busy()) return;
+    const sentFiles = text != null ? [] : files.pendingList();
+    const content = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
+    if (!content) return;
 
     state.streaming = true;
     input.value = '';
@@ -601,7 +623,8 @@
     }
 
     setThreadMode(true);
-    addUserMessage(content);
+    addUserMessage(content, sentFiles);
+    if (sentFiles.length) window.KelvinAttachments.clear();
     const row = addAssistantMessage('', false);
     const md = row.querySelector('.md');
     const dot = document.createElement('span');
@@ -702,7 +725,7 @@
       const res = await apiFetch('/api/conversations/' + convId + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, attachments: sentFiles.map((a) => a.id) }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
@@ -868,6 +891,15 @@
   });
   userMenu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeUserMenu(); userBtn.focus(); } });
   $('signOutBtn').addEventListener('click', () => window.KelvinAccount.signOut());
+
+  window.KelvinAttachments.init({
+    api,
+    apiFetch,
+    renderMarkdown,
+    ensureConversation,
+    onChange: updateSendBtn,
+    onAttachmentSaved: () => {},
+  });
 
   placeComposer();
   updateSendBtn();

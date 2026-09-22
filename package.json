@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@vercel/blob": "^2.8.0",
     "@vercel/functions": "^3.9.8",
     "dompurify": "^3.4.15",
     "jszip": "^3.10.2",

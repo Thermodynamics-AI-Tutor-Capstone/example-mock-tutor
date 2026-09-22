@@ -1,0 +1,28 @@
+# How student uploads are turned into Markdown. See README.md in this folder.
+
+# Which connection (from ../connections/connections.json) reads images. It must support vision:
+# deepseek-flash does, deepseek-v4-pro does not.
+vision_connection: deepseek-flash
+
+# Largest upload accepted, in bytes. Vercel rejects request bodies over 4.5 MB, so keep this below
+# that. Photos are shrunk in the browser before upload, so they rarely come near it.
+max_bytes: 4000000
+
+# Longest side, in pixels, that photos and screenshots are shrunk to before upload.
+max_image_side: 2000
+
+# File types students may upload, and how each is read:
+#   text   → extracted in code, no AI (instant, exact)
+#   vision → read by the vision model; the student is asked to check it
+types:
+  pdf: text
+  docx: text
+  pptx: text
+  txt: text
+  md: text
+  csv: text
+  png: vision
+  jpg: vision
+  jpeg: vision
+  webp: vision
+  gif: vision
