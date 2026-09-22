@@ -20,7 +20,10 @@
   }
 
   function statusText(a) {
-    if (a.uploading) return a.kind === 'image' || TYPES[extOf(a.name)] === 'image' ? 'Reading your image…' : 'Reading…';
+    if (a.uploading) {
+      const t = TYPES[extOf(a.name)];
+      return t === 'image' ? 'Reading your image…' : extOf(a.name) === 'pdf' ? 'Reading your PDF…' : 'Reading…';
+    }
     if (a.error) return a.error;
     if (a.status === 'needs_review') return a.uncertain ? `Check it · ${a.uncertain} unsure` : 'Check it';
     if (a.status === 'confirmed') return a.source === 'edited' ? 'Edited ✓' : 'Checked ✓';
@@ -168,7 +171,8 @@
   function renderPreview() {
     const text = $('attEditor').value;
     const pv = $('attPreview');
-    pv.innerHTML = hooks.renderMarkdown(text);
+    // Keep the line breaks the student wrote: a worked solution is one step per line.
+    pv.innerHTML = hooks.renderMarkdown(text, { breaks: true });
     highlightUnsure(pv);
     const n = (text.match(UNSURE_RE) || []).length;
     $('attUnsure').textContent = n ? `${n} spot${n === 1 ? '' : 's'} Kelvin wasn’t sure about` : 'No unsure spots';
@@ -209,7 +213,7 @@
     $('attBadge').textContent =
       a.status === 'needs_review' ? 'Read automatically: please check it' : a.source === 'edited' ? 'Edited by you' : a.status === 'confirmed' ? 'Checked by you' : 'Extracted from your file';
     $('attBadge').className = 'att-badge ' + (a.status === 'needs_review' ? 'warn' : 'ok');
-    $('attHelp').hidden = !isImage;
+    $('attHelp').hidden = !(isImage || a.status === 'needs_review');
     const orig = $('attOriginal');
     orig.innerHTML = '';
     if (isImage) {
@@ -222,6 +226,32 @@
       zoom.rel = 'noopener';
       zoom.appendChild(img);
       orig.appendChild(zoom);
+    } else if (extOf(a.name) === 'pdf') {
+      // Page images rendered by the server: they show in every browser (an embedded PDF viewer
+      // doesn't on many phones), and they are what the vision model read for scanned pages.
+      const list = document.createElement('div');
+      list.className = 'att-pages';
+      orig.appendChild(list);
+      hooks.api('GET', '/api/attachments/' + a.id + '/pages').then((info) => {
+        for (let n = 1; n <= Math.min(info.pages, 30); n++) {
+          const fig = document.createElement('figure');
+          const img = document.createElement('img');
+          img.loading = 'lazy';
+          img.src = '/api/attachments/' + a.id + '/pages/' + n;
+          img.alt = 'Page ' + n + ' of ' + a.name;
+          const cap = document.createElement('figcaption');
+          cap.textContent = 'Page ' + n;
+          fig.append(img, cap);
+          list.appendChild(fig);
+        }
+      }).catch(() => { list.textContent = 'Couldn’t show the pages.'; });
+      const link = document.createElement('a');
+      link.className = 'att-pdf-link';
+      link.href = '/api/attachments/' + a.id + '/file';
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = 'Open the PDF in a new tab';
+      orig.appendChild(link);
     } else {
       const card = document.createElement('div');
       card.className = 'att-doc';
@@ -329,6 +359,53 @@
     });
   }
 
+  // Drag files anywhere onto the chat, or paste a screenshot into the message box.
+  function setUpDropAndPaste() {
+    const overlay = document.createElement('div');
+    overlay.id = 'dropOverlay';
+    overlay.className = 'drop-overlay';
+    overlay.hidden = true;
+    overlay.innerHTML = '<div class="drop-card"><div class="drop-icon">📎</div><div class="drop-title">Drop to attach</div><div class="drop-sub">Photos of your work, screenshots, PDFs, Word or PowerPoint</div></div>';
+    document.body.appendChild(overlay);
+    let depth = 0;
+    const hasFiles = (e) => Array.from((e.dataTransfer && e.dataTransfer.types) || []).includes('Files');
+    const reviewing = () => !$('attModal').hidden;
+    window.addEventListener('dragenter', (e) => {
+      if (!hasFiles(e) || reviewing()) return;
+      e.preventDefault();
+      depth++;
+      overlay.hidden = false;
+    });
+    window.addEventListener('dragover', (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault(); // without this the browser opens the file instead of dropping it here
+      e.dataTransfer.dropEffect = reviewing() ? 'none' : 'copy';
+    });
+    window.addEventListener('dragleave', (e) => {
+      if (!hasFiles(e)) return;
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) overlay.hidden = true;
+    });
+    window.addEventListener('drop', (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = 0;
+      overlay.hidden = true;
+      if (reviewing()) return;
+      Array.from(e.dataTransfer.files || []).forEach(uploadOne);
+    });
+    $('input').addEventListener('paste', (e) => {
+      const files = Array.from((e.clipboardData && e.clipboardData.files) || []);
+      if (!files.length) return; // ordinary text paste
+      e.preventDefault();
+      files.forEach((f, i) => {
+        // Pasted screenshots arrive as "image.png"; give them a clearer, unique name.
+        const name = /^image\.(png|jpe?g|gif|webp)$/i.test(f.name) ? `screenshot-${Date.now()}${i ? '-' + i : ''}.${f.name.split('.').pop()}` : f.name;
+        uploadOne(name === f.name ? f : new File([f], name, { type: f.type }));
+      });
+    });
+  }
+
   window.KelvinAttachments = {
     init(h) {
       hooks = h;
@@ -339,6 +416,7 @@
         e.target.value = '';
         files.forEach(uploadOne);
       });
+      setUpDropAndPaste();
     },
     pendingIds: () => pending.filter((a) => a.id && !a.error && !a.uploading).map((a) => a.id),
     pendingList: () => pending.filter((a) => a.id && !a.error && !a.uploading),

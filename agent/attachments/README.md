@@ -1,15 +1,16 @@
 # Student uploads
 
-Students can attach their own files to a chat with the 📎 button: photos of handwritten work,
+Students can attach their own files to a chat with the 📎 button, by dragging them anywhere onto
+the chat, or by pasting a screenshot into the message box: photos of handwritten work,
 screenshots of a problem, PDFs, Word or PowerPoint files. Kelvin never reads the file directly.
 Every upload is turned into **Markdown with LaTeX math** once, when it arrives, and that Markdown
 is what the tutor reads.
 
 | File | How it becomes Markdown | Student asked to check it? |
 |---|---|---|
-| PDF (with real text), Word, PowerPoint, text, Markdown, CSV | Extracted in code, no AI. Exact and instant. | No, but they can still open and edit it. |
+| Word, PowerPoint, text, Markdown, CSV | Extracted in code, no AI. Exact and instant. | No, but they can still open and edit it. |
+| PDF | Each page with real text is extracted in code. Each page **without** text (a scan, or photos saved as a PDF) is rendered to an image and read by the vision model, like a photo. Up to 15 scanned pages per PDF. | **Yes, if any page was scanned.** Those pages are labelled "scanned — read from the image". |
 | Photo, screenshot (PNG, JPG, WEBP, GIF) | Read by the vision model named in [`settings.yml`](settings.yml), using [`transcription-prompt.md`](transcription-prompt.md). | **Yes.** The review window opens automatically. |
-| Scanned PDF (pictures of pages, no text) | Not supported yet: the student is asked to upload photos or screenshots of the pages instead. | — |
 
 **Why students check it:** the vision model is good but not perfect, especially on handwriting and
 diagrams. If it misreads $h_2$ as $h_1$, a tutor that diagnoses mistakes would "find" an error the

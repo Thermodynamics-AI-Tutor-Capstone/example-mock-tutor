@@ -400,3 +400,16 @@ mark.unsure { background: #fde68a; color: #78350f; border-radius: 4px; padding: 
   .att-pane-original { border-right: 0; }
   .att-editor { height: 30vh; }
 }
+
+/* PDF preview and drag-and-drop */
+.att-pages { display: flex; flex-direction: column; gap: 14px; }
+.att-pages figure { margin: 0; }
+.att-pages img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; display: block; }
+.att-pages figcaption { font-size: 12px; color: var(--text2); margin-top: 4px; text-align: center; }
+.att-pdf-link { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--text2); }
+.drop-overlay { position: fixed; inset: 0; z-index: 90; background: #0006; display: flex; align-items: center; justify-content: center; padding: 24px; pointer-events: none; }
+.drop-overlay[hidden] { display: none; }
+.drop-card { width: min(520px, 100%); padding: 44px 24px; text-align: center; border-radius: 22px; background: var(--bg); border: 2px dashed var(--text2); box-shadow: 0 20px 60px #0004; }
+.drop-icon { font-size: 36px; margin-bottom: 8px; }
+.drop-title { font-size: 20px; font-weight: 600; }
+.drop-sub { margin-top: 6px; color: var(--text2); font-size: 14px; }

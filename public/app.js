@@ -32,7 +32,7 @@
     ADD_ATTR: ['encoding', 'aria-hidden', 'xmlns', 'mathvariant', 'stretchy', 'fence', 'separator', 'lspace', 'rspace', 'columnalign', 'rowspacing', 'columnspacing', 'displaystyle', 'scriptlevel', 'accent', 'accentunder', 'minsize', 'maxsize', 'width', 'height', 'depth', 'voffset'],
   };
 
-  function renderMarkdown(text) {
+  function renderMarkdown(text, opts) {
     const codes = [];
     const maths = [];
     let s = String(text || '');
@@ -60,7 +60,7 @@
 
     let html;
     try {
-      html = marked.parse(s, { gfm: true, breaks: false });
+      html = marked.parse(s, { gfm: true, breaks: Boolean(opts && opts.breaks) });
     } catch (e) {
       html = '<p>' + escapeHtml(s) + '</p>';
     }
