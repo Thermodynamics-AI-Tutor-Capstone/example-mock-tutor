@@ -18,6 +18,8 @@ tools:
   - read_attachment
   - note_student_assumption
   - record_practice_result
+  - property_lookup
+  - plot_property_diagram
 skills:
   - misconception-repair
   - answer-requests
@@ -40,6 +42,6 @@ route_when:
     - "I have exam 4 on Friday, help me study"
   intents: [practice]
 ui:
-  figures: false
-  mermaid: false
+  figures: true
+  mermaid: true
 enabled: true

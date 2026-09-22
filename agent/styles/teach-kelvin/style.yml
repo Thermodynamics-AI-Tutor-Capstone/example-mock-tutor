@@ -14,6 +14,7 @@ tools:
   - update_tutoring_state
   - read_attachment
   - note_student_assumption
+  - property_lookup
 skills: []
 max_tool_rounds: 5
 state:

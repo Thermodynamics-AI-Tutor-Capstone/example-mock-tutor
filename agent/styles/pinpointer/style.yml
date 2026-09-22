@@ -17,6 +17,8 @@ tools:
   - update_tutoring_state
   - read_attachment
   - note_student_assumption
+  - property_lookup
+  - plot_property_diagram
 skills:
   - misconception-repair
   - answer-requests
@@ -40,6 +42,6 @@ route_when:
     - "I used ΔU = Q − W with Q = 0 and got W = m(u1 − u2). Is that right?"
   intents: [check_work]
 ui:
-  figures: false
-  mermaid: false
+  figures: true
+  mermaid: true
 enabled: true
