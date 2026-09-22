@@ -14,6 +14,9 @@
     "kb:ingest:dry": "node scripts/kb/ingest.mjs --dry-run",
     "kb:test": "node scripts/kb/ingest.test.mjs",
     "agent:validate": "node scripts/validate-agent.mjs",
+    "agent:test": "node scripts/tutor.test.mjs",
+    "eval:personas": "node scripts/eval/personas.mjs",
+    "eval:compare": "node scripts/eval/personas.mjs --jev both",
     "check:imports": "node scripts/smoke-imports.mjs"
   },
   "engines": {
