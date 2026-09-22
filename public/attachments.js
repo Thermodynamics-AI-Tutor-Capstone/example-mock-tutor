@@ -20,7 +20,7 @@
   }
 
   function statusText(a) {
-    if (a.uploading) {
+    if (a.uploading || a.status === 'processing') {
       const t = TYPES[extOf(a.name)];
       return t === 'image' ? 'Reading your image…' : extOf(a.name) === 'pdf' ? 'Reading your PDF…' : 'Reading…';
     }
@@ -33,14 +33,14 @@
   function chip(a, { removable }) {
     const el = document.createElement('div');
     if (a.id) el.dataset.id = a.id;
-    el.className = 'att-chip' + (a.status === 'needs_review' ? ' needs-review' : '') + (a.error ? ' failed' : '') + (a.uploading ? ' busy' : '');
+    el.className = 'att-chip' + (a.status === 'needs_review' ? ' needs-review' : '') + (a.error ? ' failed' : '') + (a.uploading || a.status === 'processing' ? ' busy' : '');
     const icon = document.createElement('span');
     icon.className = 'att-icon';
     icon.textContent = TYPES[extOf(a.name)] === 'image' ? '🖼' : '📄';
     const text = document.createElement('button');
     text.type = 'button';
     text.className = 'att-open';
-    text.disabled = Boolean(a.uploading || a.error);
+    text.disabled = Boolean(a.uploading || a.error || a.status === 'processing');
     text.title = a.error ? a.error : 'Open to check or edit what Kelvin reads';
     const name = document.createElement('span');
     name.className = 'att-name';
@@ -67,7 +67,7 @@
     const tray = $('attTray');
     tray.innerHTML = '';
     tray.hidden = pending.length === 0;
-    for (const a of pending) tray.appendChild(chip(a, { removable: !a.uploading }));
+    for (const a of pending) tray.appendChild(chip(a, { removable: !a.uploading && a.status !== 'processing' }));
     hooks.onChange();
   }
 
@@ -136,6 +136,19 @@
     } catch (e) {
       item.uploading = false;
       item.error = e.message;
+      renderTray();
+    }
+  }
+
+  async function watch(a) {
+    for (let i = 0; i < 200 && pending.includes(a) && a.status === 'processing'; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      try {
+        Object.assign(a, await hooks.api('GET', '/api/attachments/' + a.id));
+      } catch (e) {
+        if (e.status === 404) pending = pending.filter((p) => p !== a); // it failed and was removed
+        else continue;
+      }
       renderTray();
     }
   }
@@ -418,9 +431,9 @@
       });
       setUpDropAndPaste();
     },
-    pendingIds: () => pending.filter((a) => a.id && !a.error && !a.uploading).map((a) => a.id),
-    pendingList: () => pending.filter((a) => a.id && !a.error && !a.uploading),
-    busy: () => pending.some((a) => a.uploading),
+    pendingIds: () => pending.filter((a) => a.id && !a.error && !a.uploading && a.status !== 'processing').map((a) => a.id),
+    pendingList: () => pending.filter((a) => a.id && !a.error && !a.uploading && a.status !== 'processing'),
+    busy: () => pending.some((a) => a.uploading || a.status === 'processing'),
     hasPending: () => pending.some((a) => a.id && !a.error),
     setPending(list) {
       // Keep uploads still in flight: the server doesn't know about them yet.
@@ -428,6 +441,8 @@
       const ids = new Set(fromServer.map((a) => a.id));
       pending = fromServer.concat(pending.filter((a) => a.uploading && !ids.has(a.id)));
       renderTray();
+      // Uploads another tab (or a reload) left mid-read: follow them until they finish.
+      for (const a of pending) if (a.status === 'processing' && !a.uploading) watch(a);
     },
     clear() {
       pending = [];
