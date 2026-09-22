@@ -20,6 +20,21 @@ symbols: [s, S, S_gen]
 misconceptions: []
 examples: []
 items: []
+signatures:
+  - "The gas expands, so there's more room and more disorder — entropy goes up."
+  - "Compression packs the particles into less space, so entropy increases."
+  - "Steam's more disordered than water; that's all I need to rank them."
+  - "Gas molecules move fast and chaotically, so any gas expansion raises entropy."
+  - "You can't get order from disorder, so freezing water can't lower its entropy."
+  - "Stirring doesn't make the tank messier, so its entropy doesn't change."
+not_signatures:
+  - "The volume grows in the isentropic turbine, but Δs = 0 — reversible and adiabatic."
+  - "Disorder is one picture; I checked s₂ − s₁ in the steam tables."
+confusable_with:
+  - id: misc:m02-entropy-and-the-second-law
+    separating_question: "How would you check your answer: with s values from the tables, or by how disordered the molecules are?"
+  - id: misc:m10-entropy-of-an-isolated-system
+    separating_question: "Why must it increase: because the molecules get more disordered, or because entropy can never go down?"
 sources:
   - url: https://peer.asee.org/systematic-literature-review-on-the-common-misconceptions-in-thermodynamics-fluid-mechanics-and-heat-transfer.pdf
     title: >-
@@ -28,18 +43,44 @@ sources:
       interactions and collisions ... and, of course, treating entropy as only a measurement
       of disorder in a physical arrangement"
     retrieved: '2026-09-17'
+  - url: https://arxiv.org/abs/2408.00944
+    title: >-
+      Brundage, Meltzer & Singh, "Investigating introductory and advanced students' difficulties
+      with entropy and the second law of thermodynamics using a validated instrument", Phys. Rev.
+      Phys. Educ. Res. 20, 020110 (2024), arXiv:2408.00944 [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://www.physicseducation.net/docs/Christensen_AJP_final.pdf
+    title: >-
+      Christensen, Meltzer & Ogilvie, "Student ideas regarding entropy and the second law of
+      thermodynamics in an introductory physics course", Am. J. Phys. 77, 907 (2009), author-hosted
+      copy [read — full text]
+    retrieved: '2026-09-22'
 generated: null
 ---
 
 # Entropy is only a measure of disorder
 
-> **Not instructor-checked.** Statement, tier and origin transcribed from the ASEE 2025
-> systematic review; probe and repair move authored by this project.
+> **Not instructor-checked.** Statement, tier and origin are from the ASEE 2025 review; the
+> signatures, added by an AI research pass on 2026-09-22, paraphrase student responses in Brundage
+> et al. (2024) and Christensen et al. (2009) except the stirred-tank one, which is our inference, as
+> are the not-signatures, probe and repair move.
 
 ## The wrong belief
 
 Entropy measures how messy or random a system is. A related form, also named in the review, is
 that entropy counts intermolecular interactions and collisions.
+
+## How it sounds
+
+- The gas expands, so there's more room and more disorder — entropy goes up.
+- Compression packs the particles into less space, so entropy increases.
+- Steam's more disordered than water; that's all I need to rank them.
+- Gas molecules move fast and chaotically, so any gas expansion raises entropy.
+- You can't get order from disorder, so freezing water can't lower its entropy.
+- Stirring doesn't make the tank messier, so its entropy doesn't change.
+
+The tell is a disorder or crowding story standing in for a calculation; using the picture
+alongside table values or an entropy balance is correct.
 
 ## Why students hold it
 

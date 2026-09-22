@@ -20,6 +20,18 @@ symbols: [W, W_b, W_flow, W_shaft, h, u]
 misconceptions: []
 examples: []
 items: []
+signatures:
+  - "For the turbine I'll use W = ∫P dV between the inlet and exit pressures."
+  - "I added Pv flow work at the inlet and exit on top of the h terms."
+  - "The compressor's work is just P(v₂ − v₁)."
+  - "In the nozzle balance I used u, then added the flow work as a W."
+  - "Work is work — one W covers the piston and the shaft."
+not_signatures:
+  - "Flow work is already inside h, so the only W in the turbine balance is shaft work."
+  - "Reversible steady-flow work per kg is −∫v dP, not the closed-system ∫P dv."
+confusable_with:
+  - id: misc:m16-internal-energy-and-enthalpy-interchangeable
+    separating_question: "For the stream crossing the inlet, are you using u or h, and did you also add a separate Pv work term?"
 sources:
   - url: https://peer.asee.org/systematic-literature-review-on-the-common-misconceptions-in-thermodynamics-fluid-mechanics-and-heat-transfer.pdf
     title: >-
@@ -32,13 +44,26 @@ generated: null
 
 # Boundary work, flow work and shaft work merged into one W
 
-> **Not instructor-checked.** Statement, tier and origin transcribed from the ASEE 2025
-> systematic review; probe and repair move authored by this project.
+> **Not instructor-checked.** Only the ASEE 2025 review's one-line mention (citing Foroushani
+> 2019, which we could not open) is sourced; an AI research pass on 2026-09-22 found no study
+> reporting students' own words for this, so the signatures it added, like the not-signatures,
+> probe and repair move, are this project's inference.
 
 ## The wrong belief
 
 Work is work. One symbol $W$ covers a piston moving, a fluid being pushed across an inlet, and
 a turbine shaft turning, and the same expression can be used for all three.
+
+## How it sounds
+
+- For the turbine I'll use W = ∫P dV between the inlet and exit pressures.
+- I added Pv flow work at the inlet and exit on top of the h terms.
+- The compressor's work is just P(v₂ − v₁).
+- In the nozzle balance I used u, then added the flow work as a W.
+- Work is work — one W covers the piston and the shaft.
+
+The tell is a closed-system work formula, or a separate Pv term, inside a steady-flow balance
+that already uses h; one explicit shaft-work term alongside h is correct.
 
 ## Why students hold it
 

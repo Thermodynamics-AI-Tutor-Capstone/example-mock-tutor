@@ -23,25 +23,75 @@ misconceptions:
   - misc:m10-entropy-of-an-isolated-system
 examples: []
 items: []
+signatures:
+  - "The hot block loses entropy and the cold block gains the same amount, so the total doesn't change."
+  - "Entropy is conserved like energy — system plus surroundings stays constant."
+  - "Two different processes between the same two states give different Δs."
+  - "After a full Rankine cycle the water's entropy is higher, because heat went in."
+  - "I can't really check entropy with a table — it's more of a concept."
+not_signatures:
+  - "Energy is conserved between the blocks, but total entropy rises because S_gen > 0."
+  - "Over a full cycle the working fluid's Δs is zero; the entropy change shows up in the reservoirs."
+confusable_with:
+  - id: misc:m10-entropy-of-an-isolated-system
+    separating_question: "As a can of soda cools in the fridge, does the soda's own entropy go up or down, and what about soda plus kitchen together?"
+  - id: misc:m08-entropy-is-only-disorder
+    separating_question: "How would you check your answer: with s values from the tables, or by how disordered the molecules are?"
 sources:
   - url: https://peer.asee.org/systematic-literature-review-on-the-common-misconceptions-in-thermodynamics-fluid-mechanics-and-heat-transfer.pdf
     title: >-
       Rodriguez et al., ASEE 2025, paper 46085 — thermodynamics primary misconception #2
       ("misunderstandings related to entropy and its implications with the 2nd law")
     retrieved: '2026-09-17'
+  - url: https://www.physicseducation.net/docs/Christensen_AJP_final.pdf
+    title: >-
+      Christensen, Meltzer & Ogilvie, "Student ideas regarding entropy and the second law of
+      thermodynamics in an introductory physics course", Am. J. Phys. 77, 907 (2009), author-hosted
+      copy [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://arxiv.org/abs/2408.00944
+    title: >-
+      Brundage, Meltzer & Singh, "Investigating introductory and advanced students' difficulties
+      with entropy and the second law of thermodynamics using a validated instrument", Phys. Rev.
+      Phys. Educ. Res. 20, 020110 (2024), arXiv:2408.00944 [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://arxiv.org/abs/1508.04104
+    title: >-
+      Smith, Christensen, Mountcastle & Thompson, "Identifying student difficulties with entropy,
+      heat engines, and the Carnot cycle", Phys. Rev. ST Phys. Educ. Res. 11, 020116 (2015),
+      arXiv:1508.04104 [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://peer.asee.org/assessment-of-fundamental-concept-in-thermodynamics.pdf
+    title: >-
+      Karimi & Manteufel, "Assessment of fundamental concepts in thermodynamics", ASEE 2014, paper
+      10626 (first mechanical engineering thermodynamics course, UTSA) [read — full text]
+    retrieved: '2026-09-22'
 generated: null
 ---
 
 # Entropy and the second law misunderstood
 
-> **Not instructor-checked.** Statement and tier transcribed from the ASEE 2025 systematic
-> review; probe and repair move authored by this project.
+> **Not instructor-checked.** Statement and tier are from the ASEE 2025 review; the signatures,
+> added by an AI research pass on 2026-09-22, paraphrase student responses in Christensen et al.
+> (2009), Smith et al. (2015) and Brundage et al. (2024) and an ME exam item in Karimi & Manteufel
+> (2014), while the not-signatures, probe and repair move are this project's.
 
 ## The wrong belief
 
 Entropy is a qualitative property of matter — a vague "messiness" — rather than a state
 property with units of kJ/(kg·K) that is tabulated, computed, and balanced like mass or energy.
 The second law is remembered as a slogan rather than as a usable constraint.
+
+## How it sounds
+
+- The hot block loses entropy and the cold block gains the same amount, so the total doesn't change.
+- Entropy is conserved like energy — system plus surroundings stays constant.
+- Two different processes between the same two states give different Δs.
+- After a full Rankine cycle the water's entropy is higher, because heat went in.
+- I can't really check entropy with a table — it's more of a concept.
+
+The tell is entropy handled as a conserved quantity with no generation term, or as something
+that cannot be computed; an entropy balance with S_gen ≥ 0 and table values is correct.
 
 ## Why students hold it
 

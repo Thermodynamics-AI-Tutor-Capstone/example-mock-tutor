@@ -20,6 +20,19 @@ symbols: [s, Q]
 misconceptions: []
 examples: []
 items: []
+signatures:
+  - "It's insulated, so Q = 0 and s₂ = s₁."
+  - "Adiabatic turbine, so the actual exit state is at s₂ = s₁."
+  - "The throttle's adiabatic, so entropy doesn't change across it."
+  - "No heat can get in or out, so there's no way the entropy changes."
+  - "The free expansion is adiabatic, so Δs = 0."
+  - "Q = 0 in the compressor, so it's isentropic whatever the efficiency."
+not_signatures:
+  - "Insulated removes the heat-transfer term, but it's irreversible so s_gen > 0."
+  - "s₂s = s₁ is only the ideal reference state; η then gives the actual h₂."
+confusable_with:
+  - id: misc:m05-adiabatic-and-isothermal-conflated
+    separating_question: "For this insulated device, which do you think stays constant: the temperature or the entropy?"
 sources:
   - url: https://github.com/Thermodynamics-AI-Tutor-Capstone/thermo-tutor-research/blob/main/knowledge/PAPER.md
     title: >-
@@ -27,19 +40,45 @@ sources:
       benchmark, every language model tested assumed reversibility on an adiabatic process where
       the problem did not state it
     retrieved: '2026-09-21'
+  - url: https://arxiv.org/abs/2408.00944
+    title: >-
+      Brundage, Meltzer & Singh, "Investigating introductory and advanced students' difficulties
+      with entropy and the second law of thermodynamics using a validated instrument", Phys. Rev.
+      Phys. Educ. Res. 20, 020110 (2024), arXiv:2408.00944 [read — full text]
+    retrieved: '2026-09-22'
+  - url: https://peer.asee.org/assessment-of-fundamental-concept-in-thermodynamics.pdf
+    title: >-
+      Karimi & Manteufel, "Assessment of fundamental concepts in thermodynamics", ASEE 2014, paper
+      10626 (first mechanical engineering thermodynamics course, UTSA) [read — full text]
+    retrieved: '2026-09-22'
 generated: null
 ---
 
 # Adiabatic assumed to mean isentropic
 
-> **Not instructor-checked.** Authored by this project. The research survey documents the same
-> unwarranted assumption in language models (§VI); that students hold it is our inference from
-> how often textbooks pair the two words, not a sourced finding.
+> **Not instructor-checked.** That students hold this is now sourced: the signatures, added by an
+> AI research pass on 2026-09-22, paraphrase introductory students' reasoning reported by Brundage
+> et al. (2024) that no heat exchange means entropy cannot change, and on an ME exam item 36 % of 41
+> students missed that an irreversible device with Q ≥ 0 raises exit entropy (Karimi & Manteufel
+> 2014; wrong answers not broken down). The not-signatures, probe and repair move remain this
+> project's inference.
 
 ## The wrong belief
 
 "The device is insulated, so $Q = 0$, so $\Delta s = 0$." The student writes $s_2 = s_1$ for any
 adiabatic process.
+
+## How it sounds
+
+- It's insulated, so Q = 0 and s₂ = s₁.
+- Adiabatic turbine, so the actual exit state is at s₂ = s₁.
+- The throttle's adiabatic, so entropy doesn't change across it.
+- No heat can get in or out, so there's no way the entropy changes.
+- The free expansion is adiabatic, so Δs = 0.
+- Q = 0 in the compressor, so it's isentropic whatever the efficiency.
+
+The tell is Q = 0 alone justifying Δs = 0; using s₂ = s₁ only when the process is also stated
+reversible, or only for the ideal reference state, is correct.
 
 ## Why students hold it
 
