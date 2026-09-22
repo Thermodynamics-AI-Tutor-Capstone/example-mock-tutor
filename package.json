@@ -13,7 +13,8 @@
     "kb:ingest": "node scripts/kb/ingest.mjs",
     "kb:ingest:dry": "node scripts/kb/ingest.mjs --dry-run",
     "kb:test": "node scripts/kb/ingest.test.mjs",
-    "agent:validate": "node scripts/validate-agent.mjs"
+    "agent:validate": "node scripts/validate-agent.mjs",
+    "check:imports": "node scripts/smoke-imports.mjs"
   },
   "engines": {
     "node": "24.x"
