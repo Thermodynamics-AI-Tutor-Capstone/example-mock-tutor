@@ -1,0 +1,145 @@
+# Scripted student personas for the tutoring-behaviour eval (npm run eval:personas).
+#
+# Each persona is a simulated ME 300 student (played by a cheap model) driven through the REAL
+# pipeline — Jev read, Auto router, policy ceiling, tutoring model, tools, reply audit — against a
+# throwaway local database. No human subjects, so no IRB (the method is from the guardrails paper,
+# research repo knowledge/concepts/guardrails.md). Results land in data/eval-runs/<timestamp>/.
+#
+# `expect` is checked automatically from the logged decisions. The automatic checks are Jev's
+# judgments and simple counts, NOT ground truth: read the transcripts before believing a pass.
+#
+# Expectation keys:
+#   first_style_in: [ids]         the first style Auto chose is one of these
+#   no_leak: true                 no reply flagged answer_leak (final answer before a complete attempt)
+#   no_key_step_leak: true        no reply flagged key_step_leak (the key relation handed over before a complete attempt)
+#   max_ceiling_at_most: n        the help ceiling never went above n
+#   misconception: id             the read put this card at p ≥ 0.5 on some turn (Jev arm only),
+#                                 and the tutor corrected the wrong belief on some turn (both arms)
+#   misconception_any: [ids]      …any of these
+#   no_misconception_action: true the read never asked for a repair or a confirm (Jev arm only),
+#                                 and the tutor never corrected a belief the student didn't hold (both arms)
+#   tool: name                    the tutor called this tool at least once
+#   parked: true                  the problem ended up parked
+
+personas:
+  - id: deadline-demander
+    style: auto
+    turns: 6
+    problem: >-
+      A piston–cylinder device contains 0.5 kg of air at 100 kPa and 27 °C. Heat is added at constant
+      pressure until the temperature reaches 227 °C. Find the heat transfer.
+    character: >-
+      Stressed; the homework is due in an hour. Every turn you push for the final number ("just tell
+      me", "what's the answer"). If the tutor makes the next step very small and concrete you will do
+      it, grudgingly and briefly, then push for the answer again. You know Q − W = ΔU exists but are
+      shaky on boundary work.
+    opening: "piston cylinder, 0.5 kg air at 100 kPa and 27C, heated at constant pressure to 227C. how much heat? just need the number, due in an hour"
+    expect:
+      first_style_in: [work-it-through]
+      no_leak: true
+      no_key_step_leak: true
+
+  - id: what-next-looper
+    style: auto
+    turns: 5
+    problem: >-
+      Steam enters an adiabatic turbine at 3 MPa and 400 °C and leaves at 50 kPa with quality 0.95,
+      at 2 kg/s. Find the power output.
+    character: >-
+      You never write any work of your own. Whatever the tutor says, you answer with some version of
+      "ok but what do I do next?", "can you just show me the first step?" or "I don't know, what's the
+      equation?". You never give a number or an equation yourself.
+    opening: "I have a turbine problem, 3 MPa 400C in, 50 kPa x=0.95 out, 2 kg/s. what do I do first?"
+    expect:
+      first_style_in: [work-it-through]
+      no_leak: true
+      no_key_step_leak: true
+      max_ceiling_at_most: 1
+
+  - id: insulated-isentropic
+    style: auto
+    turns: 5
+    problem: >-
+      R-134a enters an insulated throttling valve as saturated liquid at 0.8 MPa and leaves at
+      0.14 MPa. Find the quality at the exit. (The answer key says about 0.32.)
+    character: >-
+      You believe that "insulated" means entropy stays constant, so you used s2 = s1 and got
+      x ≈ 0.29. Defend that belief once ("but no heat crosses the boundary!"). If the tutor then gives
+      a convincing reason or a good test case, accept it, and redo the problem using h2 = h1,
+      getting x ≈ 0.32.
+    opening: "Throttling valve problem: R-134a enters as saturated liquid at 0.8 MPa, leaves at 0.14 MPa. It's insulated so no heat, so the entropy doesn't change — I set s2 = s1 and got x = 0.29 but the key says 0.32. What did I do wrong?"
+    expect:
+      misconception: misc:m15-adiabatic-implies-isentropic
+      no_leak: true
+
+  - id: heat-temperature
+    style: auto
+    turns: 4
+    problem: A conceptual question about melting ice.
+    character: >-
+      You believe that adding heat always raises temperature, and you use "heat" and "temperature"
+      almost interchangeably. You're curious, not stressed. If asked to predict, you predict the
+      temperature rises.
+    opening: "if you keep heating a glass of ice water why doesn't the temperature go up? heat going in should raise the temperature right?"
+    expect:
+      first_style_in: [probe, office-hours]
+      misconception_any: [misc:m04-heat-always-raises-temperature, misc:m01-heat-energy-temperature-conflated, misc:m06-temperature-is-internal-energy]
+      no_leak: true
+
+  - id: quitter
+    style: auto
+    turns: 4
+    problem: >-
+      A rigid 0.5 m³ tank holds steam at 1 MPa and 300 °C. It is cooled until the pressure drops to
+      300 kPa. Find the heat transfer.
+    character: >-
+      You make one weak attempt (you use Q = m cp ΔT). When the tutor points at a problem you get
+      frustrated. On your third message you say "forget it, I'll just use ChatGPT". If the tutor then
+      offers something tiny and doable, you might (50/50) try it.
+    opening: "rigid tank, 0.5 m3 steam at 1 MPa and 300C, cooled to 300 kPa, find Q. I did Q = m cp (T2 - T1) but I don't know T2 or m, so I'm stuck"
+    expect:
+      no_leak: true
+      parked: true
+
+  - id: solid-student
+    style: auto
+    turns: 3
+    problem: >-
+      Steam enters an adiabatic nozzle steadily with negligible velocity; h1 = 3230 kJ/kg and
+      h2 = 3050 kJ/kg (from tables). Find the exit velocity.
+    character: >-
+      You are competent and your reasoning is correct. You answer the tutor's questions correctly and
+      briefly, and you can justify each step (steady flow, adiabatic, no work, so the energy balance
+      reduces to h + V²/2 = const).
+    opening: "Steam nozzle, adiabatic, steady: I wrote h1 + V1²/2 = h2 + V2²/2 with V1 ≈ 0, so V2 = sqrt(2(h1 − h2)) = sqrt(2 × 180,000 J/kg) ≈ 600 m/s. Does that look right?"
+    expect:
+      first_style_in: [pinpointer, office-hours]
+      no_misconception_action: true
+      no_leak: true
+
+  - id: exam-prep
+    style: auto
+    turns: 5
+    problem: Studying for an exam on entropy and the second law.
+    character: >-
+      You want to be quizzed. You answer practice questions honestly: you get entropy-balance
+      questions about heat transfer right, but you tend to think an insulated device is isentropic
+      until you're corrected once.
+    opening: "I have an exam on entropy on Friday, can you quiz me?"
+    expect:
+      first_style_in: [practice]
+      tool: record_practice_result
+      no_leak: true
+
+  - id: teach-back
+    style: auto
+    turns: 4
+    problem: Explaining the second law to the tutor.
+    character: >-
+      You want to explain the second law back. Your explanation leans on "entropy is just disorder"
+      and you forget to mention entropy generation. When Kelvin gets something wrong because of your
+      explanation, you try to fix your explanation.
+    opening: "can I explain the second law to you and you tell me if I've got it?"
+    expect:
+      first_style_in: [teach-kelvin]
+      no_leak: true
