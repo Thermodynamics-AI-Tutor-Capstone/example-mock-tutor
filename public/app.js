@@ -981,6 +981,23 @@
   userMenu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeUserMenu(); userBtn.focus(); } });
   $('signOutBtn').addEventListener('click', () => window.KelvinAccount.signOut());
 
+  // Settings open as a modal over the chat (public/settings.js). Saving takes effect at once: the
+  // profile is swapped in, and turning "Show Kelvin's decisions" on or off redraws the open chat.
+  function openSettings() {
+    closeUserMenu();
+    window.KelvinSettings.open({
+      opener: userBtn,
+      onSaved: (profile) => {
+        if (!profile || !state.me) return;
+        const hadDecisions = showingDecisions();
+        state.me.profile = profile;
+        renderUser();
+        if (showingDecisions() !== hadDecisions && state.currentId && !state.streaming) openConversation(state.currentId);
+      },
+    });
+  }
+  $('settingsBtn').addEventListener('click', openSettings);
+
   window.KelvinAttachments.init({
     api,
     apiFetch,
@@ -997,6 +1014,14 @@
   state.me = me;
   renderUser();
   await loadStyles();
+  // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings.
+  const params = new URLSearchParams(location.search);
+  if (params.has('settings')) {
+    params.delete('settings');
+    const rest = params.toString();
+    history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    openSettings();
+  }
   const hashAtLoad = parseHash();
   refreshList().then((ok) => {
     if (!ok && !gate.hidden) return;
