@@ -39,7 +39,7 @@ const arg = (name) => {
   return i >= 0 ? args[i + 1] : null;
 };
 const since = arg('since') ? new Date(arg('since')) : new Date(0);
-const until = arg('until') ? new Date(arg('until')) : new Date(8.64e15);
+const until = arg('until') ? new Date(arg('until')) : new Date('9999-12-31T00:00:00Z');
 const accounts = arg('accounts');
 const asJson = args.includes('--json');
 
