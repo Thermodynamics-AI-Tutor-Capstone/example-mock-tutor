@@ -5,7 +5,7 @@ id: work-it-through
 name: Work It Through
 description: Stuck on a problem? You write each step; Kelvin keeps you moving until the answer is yours.
 icon: "🪜"
-order: 3
+order: 11
 connection: deepseek-pro
 tools:
   - search_course_files
@@ -48,4 +48,7 @@ route_when:
 ui:
   figures: true
   mermaid: true
-enabled: true
+# Merged into office-hours on 2026-09-23 (eval/findings/2026-09-23-round2.md). Kept, disabled, so old
+# conversations and settings that name it resolve to the style that replaced it.
+merged_into: office-hours
+enabled: false

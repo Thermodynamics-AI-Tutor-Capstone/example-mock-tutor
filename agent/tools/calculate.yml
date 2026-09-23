@@ -1,0 +1,21 @@
+# What the model sees for this tool. The code is lib/tools/calculate.js (mathjs, with units).
+name: calculate
+description: >-
+  Evaluate arithmetic and formulas exactly, with units. Use it for EVERY number you state or confirm
+  that isn't copied from the problem or from property_lookup: a result, a ratio, an efficiency, an
+  interpolation, and any comparison ("which is larger", "how much more sensitive"). Never do arithmetic
+  in your head. Give one or more expressions; they run in order and can assign names used by later
+  ones. Units work, e.g. "T2s = 300 K * 8^(0.4/1.4)", "w = 1.005 kJ/(kg K) * (T2s - 300 K)",
+  "to(w, kJ/kg)", "(3051.6 - 2943.1) * 0.35 + 2943.1". Use kelvin for any temperature arithmetic.
+status: Calculating
+parameters:
+  type: object
+  properties:
+    expressions:
+      type: array
+      minItems: 1
+      maxItems: 12
+      items:
+        type: string
+      description: Expressions or assignments (name = expression), evaluated in order.
+  required: [expressions]

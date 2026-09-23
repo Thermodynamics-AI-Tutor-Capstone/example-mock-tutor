@@ -23,3 +23,6 @@ parameters:
       maximum: 12000
       description: Maximum characters to return (500-12000, default 6000).
   required: [path]
+# Off until course files are uploaded to agent/raw-course-files (there are none yet, so it only cost
+# prompt space and wrong-tool calls). Turn it back on, and list it in the styles, when there are.
+enabled: false

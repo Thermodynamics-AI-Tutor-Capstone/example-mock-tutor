@@ -20,6 +20,10 @@ const { default: runUpdateState } = await import('../lib/tools/update_tutoring_s
 const { default: runChooseStyle } = await import('../lib/tools/choose_style.js');
 const { styleIndexSection } = await import('../lib/turn.js');
 const { deepseekCost, isDeepSeekPeak, deepseekUsageRow } = await import('../lib/usage.js');
+const { checkConstraints } = await import('../lib/constraints.js');
+const { default: runCalculate } = await import('../lib/tools/calculate.js');
+const { resolveStyleId } = await import('../lib/styles.js');
+const { shouldSolve, solveProblem, loadReference, referenceSection } = await import('../lib/solver.js');
 
 let n = 0;
 const t = async (name, fn) => {
@@ -155,7 +159,7 @@ await t('choose_style refuses unknown styles, a second switch, and a switch whil
 
 await t('after choose_style the rest of the reply runs under the new playbook, and the switch is reported', async () => {
   const oh = byId('office-hours');
-  const target = byId('teach-kelvin');
+  const target = byId('probe');
   const { out, shown, bodies } = await run(
     [{ text: [], tools: [{ name: 'choose_style', arguments: { style: target.id, reason: 'wants to explain it back' } }] }, { text: ['Go ahead, teach me.'] }],
     turnFor({ intent: 'teach_back' }),
@@ -205,6 +209,84 @@ await t('every tutor round is logged with its tokens and cost', async () => {
   assert.ok(rows[0].cost_usd > 0);
   const expected = deepseekUsageRow({ model: rows[0].model, usage: { prompt_tokens: 1000, prompt_cache_hit_tokens: 200, completion_tokens: 50 }, purpose: 'x', at: new Date(rows[0].at) }).costUsd;
   assert.ok(Math.abs(rows[0].cost_usd - expected) < 1e-12);
+});
+
+console.log('accuracy tools');
+
+await t('check_constraints flags the laws round 2 broke, and passes correct numbers', () => {
+  const bad = checkConstraints({
+    qualities: [{ label: 'q', x: 1.2 }],
+    compressors: [{ label: 'flipped efficiency', T1: 300, T2: 520, T2s: 543.4 }],
+    property_values: [{ fluid: 'water', given: { P: 10, x: 1 }, stated: { sg: 7.5 } }],
+    heat_flows: [{ from_T_K: 280, to_T_K: 300 }],
+    cops: [{ kind: 'refrigerator', value: 9, T_cold_K: 253, T_hot_K: 313 }],
+    energy_balances: [{ in: [100], out: [60], storage_change: 10 }],
+    efficiencies: [{ kind: 'thermal', value: 1.2 }],
+  });
+  assert.equal(bad.violations.length, 7);
+  assert.match(bad.violations.join(' '), /tables give 8\.1488/);
+  const good = checkConstraints({
+    qualities: [{ x: 0.94 }],
+    compressors: [{ T1: 300, T2: 586.4, T2s: 543.4 }],
+    turbines: [{ T1: 1300, T2: 787.5, T2s: 717.6 }],
+    property_values: [{ fluid: 'water', given: { P: 10, x: 1 }, stated: { sg: 8.149 } }],
+    cops: [{ kind: 'refrigerator', value: 3.11, T_cold_K: 253, T_hot_K: 313 }],
+    efficiencies: [{ kind: 'thermal', value: 0.317, T_hot_K: 1300, T_cold_K: 300 }],
+    energy_balances: [{ in: [717.2], out: [489.9], storage_change: 227.3 }],
+  });
+  assert.deepEqual(good.violations, []);
+});
+
+await t('calculate does exact arithmetic with units and refuses what mathjs flags as unsafe', async () => {
+  const { results } = await runCalculate({ expressions: ['T2s = 300 K * 8^(0.4/1.4)', 'to(1.005 kJ/(kg K) * (T2s - 300 K), kJ/kg)', 'import({a: 1})'] });
+  assert.equal(results[0].result, '543.434 K');
+  assert.equal(results[1].result, '244.651 kJ / kg');
+  assert.match(results[2].error, /disabled/);
+});
+
+await t('merged styles answer to their old ids', () => {
+  assert.equal(resolveStyleId('work-it-through'), 'office-hours');
+  assert.equal(resolveStyleId('teach-kelvin'), 'probe');
+  assert.equal(resolveStyleId('practice'), 'probe');
+  assert.equal(resolveStyleId('pinpointer'), 'pinpointer');
+  assert.equal(resolveStyleId('auto'), 'auto');
+});
+
+await t('solve first: only problem-shaped messages with numbers, once per problem', () => {
+  const history = [{ role: 'user', content: 'R-134a at -20 C, 1000 kPa condenser, COP 3.6?' }];
+  assert.equal(shouldSolve({ prepared: { turn: { intent: 'check_work' }, state: {} }, history, existing: null }), true);
+  assert.equal(shouldSolve({ prepared: { turn: { intent: 'check_work' }, state: {} }, history, existing: { ok: false } }), false);
+  assert.equal(shouldSolve({ prepared: { turn: { intent: 'concept' }, state: {} }, history, existing: null }), false);
+  assert.equal(shouldSolve({ prepared: { turn: { intent: 'stuck_on_problem' }, state: {} }, history: [{ role: 'user', content: 'where do i start' }], existing: null }), false);
+});
+
+await t('the solver runs its tools, saves a solution for the problem, and the tutor sees it', async () => {
+  const conv = crypto.randomUUID();
+  const replies = [
+    { tool_calls: [{ id: 'c1', type: 'function', function: { name: 'calculate', arguments: JSON.stringify({ expressions: ['131.06 / 42.13'] }) } }] },
+    { content: JSON.stringify({ problem: 'fridge COP', well_posed: true, answers: [{ quantity: 'COP', value: 3.11, unit: '-' }], constraint_check: 'passed' }) },
+  ];
+  const real = globalThis.fetch;
+  const seen = [];
+  globalThis.fetch = async (url, init) => {
+    const body = JSON.parse(init.body);
+    seen.push(body);
+    const msg = replies[seen.length - 1];
+    return new Response(JSON.stringify({ model: body.model, choices: [{ message: { role: 'assistant', ...msg } }], usage: { prompt_tokens: 100, completion_tokens: 20 } }), { status: 200 });
+  };
+  try {
+    const r = await solveProblem({ history: [{ role: 'user', content: 'COP of my fridge cycle is 3.6?' }], conversationId: conv, userId: 'u1' });
+    assert.equal(r.ok, true);
+    assert.equal(r.solution.answers[0].value, 3.11);
+  } finally {
+    globalThis.fetch = real;
+  }
+  assert.deepEqual(seen[0].tools.map((x) => x.function.name).sort(), ['calculate', 'check_constraints', 'property_lookup']);
+  assert.match(seen[1].messages.at(-1).content, /3\.110/);
+  const ref = await loadReference(conv);
+  assert.equal(ref.ok, true);
+  assert.match(referenceSection(ref), /Reference solution/);
+  assert.equal(referenceSection({ ok: false, solution: null }), '');
 });
 
 await closeDb();

@@ -7,3 +7,6 @@ status: Listing course materials
 parameters:
   type: object
   properties: {}
+# Off until course files are uploaded to agent/raw-course-files (there are none yet, so it only cost
+# prompt space and wrong-tool calls). Turn it back on, and list it in the styles, when there are.
+enabled: false

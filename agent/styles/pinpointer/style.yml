@@ -8,16 +8,15 @@ icon: "✅"
 order: 2
 connection: deepseek-pro
 tools:
-  - search_course_files
   - open_card
   - list_cards
-  - read_course_file
-  - list_course_files
   - load_skill
   - update_tutoring_state
   - read_attachment
   - note_student_assumption
   - property_lookup
+  - calculate
+  - check_constraints
   - plot_property_diagram
 skills:
   - misconception-repair
@@ -37,7 +36,8 @@ route_when:
   not_for: >-
     A question with no work shown yet; a question about an idea rather than their solution.
   leave_when: >-
-    Their solution is repaired and finished and they ask something new; or the error turns out to be a conceptual belief that needs talking through (Office Hours).
+    Their solution is repaired and finished and they ask something new; or the error turns out to be a
+    belief that needs talking through inside their problem (Coach) or an idea on its own (Concepts & Practice).
   examples:
     - "Here's my turbine solution, I got 950 kW but the answer is 1100 — where did I go wrong?"
     - "Can you check my work? [photo of handwritten solution]"
