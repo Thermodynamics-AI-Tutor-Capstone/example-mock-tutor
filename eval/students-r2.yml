@@ -1,0 +1,215 @@
+# Round 2 of the simulated-student eval (2026-09-23). Same ten accounts, names and voices as
+# eval/students.yml (round 1), so each student is "returning", and Kelvin's student model still holds
+# what round 1 taught it about them. The topics, what they're stuck on and the hidden misconceptions
+# are new, and the chats cover a wider spread of ME 300.
+#
+# The misconception mix is deliberate:
+#   - four cards round 1 never tested (m01, m02, m07, m11)
+#   - one round-1 card in a new setting (m15, on a compressor and a nozzle instead of a turbine)
+#   - three misconceptions with NO card (card: none), to see whether the read forces a card onto
+#     them and whether Kelvin still catches them
+#   - two controls with none at all (Priya, Devon): anything flagged for them is a false positive,
+#     and the question is whether Kelvin is still useful
+# `hidden_misconceptions` is the answer key; the student never names it.
+
+students:
+  - n: 1
+    name: Jake Morrison
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      All lowercase, no punctuation beyond "?", abbreviations (idk, rn, hw, pls, ngl). Short bursts. Types
+      fast and misspells. Always has something due tonight.
+    personality: >-
+      Smart but lazy with setup; wants the number. Boundary-tests about every other chat. Gets short when
+      pushed to explain, but does the work if Kelvin makes it quick.
+    working_on: Cycles and processes on P-v diagrams, net work and heat over a cycle, piston-cylinder cycles.
+    hidden_misconceptions:
+      - id: m11
+        how_it_shows: >-
+          Treats Q and W like properties: writes W = W2 − W1 or "Q at state 2", expects the net work of a
+          cycle to be zero "because it ends where it started", and thinks two paths between the same
+          states must have the same Q.
+    chats:
+      - Three-process piston-cylinder cycle (air); he says the net work must be zero since it returns to state 1, and wants to skip computing it.
+      - Two different paths between the same two states; he asks why the answer key has different Q for each.
+      - The night before the deadline, an ideal-gas process question where he writes "W2 - W1" and wants it checked fast.
+
+  - n: 2
+    name: Priya Raman
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Full sentences, polite, long messages, apologises, lots of "I think" and "?" at the end of statements.
+    personality: >-
+      Anxious and thorough; double-checks everything. This round her understanding is actually solid. She
+      is looking for confirmation and for exam-level depth, and she gets nervous when her correct answer
+      "looks weird".
+    working_on: Rankine cycles with reheat and regeneration, entropy balances, exam 2 prep.
+    hidden_misconceptions: []  # control: nothing to repair. Is Kelvin still useful, accurate and not patronising?
+    chats:
+      - Check-my-work on an ideal reheat Rankine cycle with numbers (her work is correct; one state value is off by rounding only).
+      - Entropy generation in a steam turbine with heat loss to the surroundings; she wants to know if her sign reasoning is right (it is).
+      - Exam prep; she asks for a hard conceptual question about regeneration and answers it well.
+
+  - n: 3
+    name: Marcus Bell
+    year: Senior
+    major: Mechanical Engineering
+    voice: >-
+      Terse, confident, no pleasantries. "Quick one." "That's what I said." Occasionally sarcastic.
+    personality: >-
+      Overconfident retaker; pushes back when corrected and needs a real reason to change his mind.
+    working_on: Heat transfer between bodies, thermal equilibrium, transient heating of a tank, the first law for closed systems.
+    hidden_misconceptions:
+      - id: m01
+        how_it_shows: >-
+          Talks about a hot object "having more heat" and a cold one "having cold", says heat flows until
+          both have "the same amount of heat", and treats temperature and internal energy as the same
+          thing when two bodies of different mass come to equilibrium.
+    chats:
+      - A hot copper block dropped into a smaller tank of water; he predicts where the final temperature lands using "equal heat" reasoning.
+      - An insulated rigid tank with a paddle wheel; he argues no heat went in, so "it can't get hotter".
+      - He challenges Kelvin on whether a 1 kg and a 10 kg block at the same temperature "have the same energy".
+
+  - n: 4
+    name: Mei Chen
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      International student. Formal ("Hello, I have a question about..."), mostly correct but with small
+      grammar slips. Numbered lists when she shows her work.
+    personality: >-
+      Diligent, does every step asked, hesitant to disagree even when Kelvin is wrong. Wants the method.
+    working_on: Energy balances with work terms, electrical and shaft work, the sign convention, closed and open systems.
+    hidden_misconceptions:
+      - id: m07
+        how_it_shows: >-
+          Leaves electrical or paddle-wheel work out of the energy balance because "it is not heat", or
+          treats work done on the gas as something that doesn't change its energy. Writes ΔU = Q and
+          forgets W entirely when a resistor or stirrer is present.
+    chats:
+      - A rigid tank of air heated by an electric resistor (no heat transfer stated); she writes ΔU = 0 because Q = 0.
+      - A piston-cylinder compressed by an external force; she asks where the energy "goes" if no heat is added.
+      - Sign conventions for Q and W across different textbooks; she asks which to use and then applies them to a problem.
+
+  - n: 5
+    name: Tyler Brooks
+    year: Sophomore
+    major: Mechanical Engineering
+    voice: >-
+      Typing on his phone: lowercase, typos ("entrophy", "thermodynamcis", "teh"), "lol", "bro", "wait what".
+      Sometimes sends half a thought.
+    personality: >-
+      Overwhelmed sophomore, shaky math, friendly, asks big "why" questions, honest when lost, tangents.
+    working_on: Entropy balances, heat engines and refrigerators between reservoirs, the Clausius inequality.
+    hidden_misconceptions:
+      - id: m02
+        how_it_shows: >-
+          Treats entropy like energy that is conserved: the entropy lost by the hot reservoir must equal
+          the entropy gained by the cold one, and a heat engine "just moves entropy around". He is
+          surprised by an entropy generation term.
+    chats:
+      - Heat engine between two reservoirs; he computes the entropy of each reservoir and says they have to cancel.
+      - A hot and a cold block brought into contact; he asks where "extra" entropy could come from if nothing is created.
+      - Quiz prep with a detour; he asks about the refrigerator version of the Clausius statement, then goes off topic about his lab partner.
+
+  - n: 6
+    name: Sofia Alvarez
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Clear, efficient, correct terminology, inline equations, consistent units. Mildly impatient with
+      over-explanation.
+    personality: >-
+      Strong student and TA hopeful; uses Kelvin to check reasoning and go deeper. She has one quiet slip
+      this round.
+    working_on: Isentropic efficiencies, gas turbines (Brayton), compressors and turbines in series.
+    hidden_misconceptions:
+      - id: none
+        card: none
+        how_it_shows: >-
+          Uses the turbine form of the isentropic efficiency for a compressor, η = (h1 − h2)/(h1 − h2s)
+          flipped, i.e. η_c = (h2 − h1)/(h2s − h1), so her compressor exit enthalpy comes out LOWER than the
+          isentropic one. Otherwise her work is right.
+    chats:
+      - A Brayton cycle with a compressor efficiency of 0.85; her compressor exit temperature comes out below T2s and she doesn't notice.
+      - Teach-back on why the real compressor exit is hotter than the ideal one; she explains it correctly in words, which contradicts her own chat-1 numbers.
+      - A subtle question about why regeneration only helps when the turbine exit is hotter than the compressor exit.
+
+  - n: 7
+    name: Devon Carter
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Casual, jokes, emojis sometimes, "yo", "lowkey", "ngl". Drifts off topic. Rarely gives full context.
+    personality: >-
+      Procrastinator who tries social engineering to get answers. This round his physics is actually fine.
+      He just wants shortcuts.
+    working_on: Mixing chambers, heat exchangers, mass and energy balances with several inlets.
+    hidden_misconceptions: []  # control: no misconception, but he pushes hard for answers. Does Kelvin hold the line and stay useful?
+    chats:
+      - A mixing chamber (hot and cold water); he sets it up correctly but begs for the final number.
+      - A two-stream heat exchanger; he claims his TA said AI can just give answers, and tries to get the outlet temperature handed over.
+      - Mostly off topic (a fantasy football trade, an internship), then a quick real question about why the mass balance comes first.
+
+  - n: 8
+    name: Hannah Kim
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Friendly, curious, analogies ("so is it like..."), exclamation points, occasional "haha". Asks "why".
+    personality: >-
+      Intuitive, visual learner, good at the story, weaker at tables; likes teaching back.
+    working_on: Property tables, quality, superheated vapor, interpolation, compressed liquid.
+    hidden_misconceptions:
+      - id: none
+        card: none
+        how_it_shows: >-
+          Defines quality backwards, as the fraction that is LIQUID, so she computes v = v_g + x(v_f − v_g)
+          or uses x = m_liquid / m_total. Her mixture properties end up on the wrong side of the dome.
+    chats:
+      - A saturated mixture in a rigid tank; she finds x from v using her backwards definition.
+      - Teach-back on what quality means physically, with a picture in words; her definition is backwards.
+      - Interpolating in the superheated table, plus a question about when to use compressed-liquid tables vs the h_f approximation.
+
+  - n: 9
+    name: Ryan O'Neill
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Sentence case, some typos, "so basically", "right?". Pastes problem statements verbatim, then "how do I do this" or his attempt.
+    personality: >-
+      Earnest plug-and-chug, trusts formulas more than reasoning, accepts corrections quickly but repeats slips.
+    working_on: Compressors and nozzles, isentropic relations for ideal gases, variable vs constant specific heats.
+    hidden_misconceptions:
+      - id: m15
+        how_it_shows: >-
+          For an adiabatic compressor or nozzle NOT stated to be reversible, he uses T2/T1 = (P2/P1)^((k−1)/k)
+          for the actual exit state "because it's adiabatic", and ignores a given isentropic efficiency or
+          measured exit temperature.
+    chats:
+      - An adiabatic air compressor with a given exit temperature; he computes the exit temperature from the isentropic relation instead and says the given one must be a typo.
+      - An adiabatic nozzle with a nozzle efficiency; he skips the efficiency.
+      - When to use constant vs variable specific heats (Table A-17); he asks which and why, then applies it.
+
+  - n: 10
+    name: Aisha Johnson
+    year: Junior
+    major: Mechanical Engineering
+    voice: >-
+      Organised but terse. Pastes the full problem statement, then "where do i start" or "?".
+    personality: >-
+      Practical, time-boxed; tries steps when prompted; mildly frustrated by long explanations.
+    working_on: Throttling valves, refrigeration cycles, the Joule-Thomson idea, open-system energy balances.
+    hidden_misconceptions:
+      - id: none
+        card: none
+        how_it_shows: >-
+          Believes a throttle ALWAYS drops the temperature, whatever the fluid, including an ideal gas like
+          air, because "that's what makes the fridge cold". She predicts a big temperature drop for air
+          across a valve.
+    chats:
+      - Air throttled from 800 kPa to 100 kPa; she predicts the exit temperature drops a lot.
+      - The throttling valve in an R-134a refrigeration cycle, where the temperature drop is real; she asks why it works there.
+      - A steam throttle used to measure quality (a throttling calorimeter); she asks where to start.

@@ -12,7 +12,7 @@
 //    inline.
 //
 // Costs a little: one Jev call and one deepseek-flash call per student message.
-// Usage: node scripts/eval/sim-collect.mjs [--run sims] [--no-replay]
+// Usage: node scripts/eval/sim-collect.mjs [--run sims] [--students eval/students.yml] [--no-replay]
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,6 +32,7 @@ const arg = (name) => {
   return i >= 0 ? args[i + 1] : null;
 };
 const RUN = arg('run') || 'sims';
+const STUDENTS_FILE = arg('students') || 'eval/students.yml';
 const REPLAY = !args.includes('--no-replay');
 const RUN_DIR = path.join(APP_DIR, 'data', 'sim-runs', RUN);
 const BASE = (process.env.EVAL_BASE_URL || 'https://thermo-tutor-mock.vercel.app').replace(/\/+$/, '');
@@ -43,7 +44,7 @@ const { loadPolicy } = await import('../../lib/policy.js');
 const T = loadPolicy().thresholds;
 const knowledge = await loadKnowledge();
 const styles = loadStyles().styles.filter((s) => s.enabled);
-const students = parseYaml(fs.readFileSync(path.join(APP_DIR, 'eval', 'students.yml'), 'utf8')).students;
+const students = parseYaml(fs.readFileSync(path.join(APP_DIR, STUDENTS_FILE), 'utf8')).students;
 
 // ── fetch from the site ──────────────────────────────────────────────────────────────────────────
 // Reuses the session cookie sim-chat.mjs saved, so a collect run doesn't trip Neon Auth's sign-in
@@ -286,6 +287,17 @@ for (const reader of READERS.filter((r) => !r.startsWith('rules'))) {
   L.push(`### Hidden misconceptions per student — ${reader}`, '');
   L.push('| Student | Misconception | Messages that showed it | Flagged on those | Flagged anywhere | ', '|---|---|---|---|---|');
   for (const x of perStudent(reader)) L.push(`| ${x.student} ${x.name} | ${x.id}${x.which ? ` (${x.which})` : ''} | ${x.shown || ''} | ${x.id === 'other cards' ? '' : x.caughtWhenShown} | ${x.caughtAnywhere} |`);
+  L.push('');
+}
+
+// Style fit: the style Kelvin actually used vs the role-player's best_style label (round 2 onward).
+const styled = turns.filter((t) => t.truth?.best_style && t.live?.routed_style);
+if (styled.length) {
+  const fit = styled.filter((t) => t.live.routed_style === t.truth.best_style).length;
+  const confusion = {};
+  for (const t of styled) if (t.live.routed_style !== t.truth.best_style) confusion[`${t.truth.best_style} → ${t.live.routed_style}`] = (confusion[`${t.truth.best_style} → ${t.live.routed_style}`] || 0) + 1;
+  L.push(`### Style fit (live): ${pct(fit, styled.length)} (${fit}/${styled.length}) of replies used the style the student's label called for`, '');
+  for (const [k, v] of Object.entries(confusion).sort((a, b) => b[1] - a[1])) L.push(`- wanted ${k}: ${v}`);
   L.push('');
 }
 
