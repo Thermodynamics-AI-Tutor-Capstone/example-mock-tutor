@@ -38,6 +38,8 @@ route_when:
   not_for: >-
     A student who already has a full worked solution and wants it checked; a question about an idea
     that isn't tied to finishing a problem.
+  leave_when: >-
+    They have carried the problem to a final answer and want it checked (Check My Work), or they stop working the problem to ask about an idea.
   examples:
     - "I have no idea how to start this piston-cylinder problem"
     - "what do I do next after the mass balance?"

@@ -59,6 +59,7 @@ for (const s of styles) {
   if (orders.has(s.order)) problems.push(`${where}: order ${s.order} is already used by ${orders.get(s.order)}`);
   orders.set(s.order, s.id);
   if (s.enabled && !s.routeWhen.use_for) problems.push(`${where}: route_when.use_for is required, so the Auto router knows when this style fits`);
+  if (s.enabled && !s.routeWhen.leave_when) problems.push(`${where}: route_when.leave_when is required, so Kelvin knows when to switch away from this style (skills pick)`);
   for (const intent of s.routeWhen.intents) {
     if (!(intent in INTENTS)) problems.push(`${where}: route_when.intents has unknown intent "${intent}" (known: ${Object.keys(INTENTS).join(', ')})`);
   }

@@ -52,6 +52,8 @@ jobs:
       # against exact CoolProp values and against printed textbook values.
       - name: Check the property tables
         run: node scripts/properties/test.mjs
+      - name: Tutor unit tests (policy, decider, agent loop; no network)
+        run: npm run agent:test
 
       # Informational. Retrieval quality is a number to watch, not a reason to
       # block a deploy — except for the one regression check the eval itself

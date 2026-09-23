@@ -36,6 +36,8 @@ route_when:
     The student wants practice problems, a quiz, a re-test, or help studying for an exam.
   not_for: >-
     A student working on their own homework problem; a single question about an idea.
+  leave_when: >-
+    They bring their own homework problem, or a practice answer exposes a misconception that needs repairing before the next problem.
   examples:
     - "can you give me some practice problems on entropy for the exam?"
     - "quiz me on control volumes"

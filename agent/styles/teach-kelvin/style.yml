@@ -26,6 +26,8 @@ route_when:
     game where Kelvin makes a mistake for them to find. Only when they ask for it.
   not_for: >-
     A student who is stuck or confused right now, or who wants their work checked.
+  leave_when: >-
+    Their explanation shows a real misconception that needs repairing first (Office Hours), then come back; or they stop explaining and ask for help.
   examples:
     - "can I explain the second law to you and you tell me if I've got it?"
     - "let's do the teach Kelvin thing on turbines"

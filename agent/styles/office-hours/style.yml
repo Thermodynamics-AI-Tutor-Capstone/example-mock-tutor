@@ -40,6 +40,8 @@ route_when:
   not_for: >-
     A pasted or uploaded solution that just needs checking line by line; a request for practice or
     a quiz; a request to play the teach-back game.
+  leave_when: >-
+    The student turns to a specific problem and gets stuck (Work It Through), pastes a full solution to check (Check My Work), or asks for practice.
   examples:
     - "I thought since the tank is rigid there's no work, so Q has to equal ΔU — but then why does the book use enthalpy here?"
     - "Can I talk through how I'm thinking about this compressor problem?"

@@ -34,10 +34,17 @@
         <div class="acct-field"><label for="set_default_style">Default teaching style for new chats</label><select id="set_default_style"></select></div>
         <div class="acct-section">Testing <span class="opt">(capstone team)</span></div>
         <label class="acct-toggle" for="set_use_jev">
-          <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev is a fast decision model that reads each message before Kelvin answers: whether you showed your own work, which misconception your words point to, how much help you've earned, which teaching style fits. Turn it off to see Kelvin run on simple keyword rules instead.</span></span>
+          <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev is a fast decision model that reads each message before Kelvin answers: whether you showed your own work, which misconception your words point to, how much help you've earned, which teaching style fits. Turn it off to see Kelvin run on its backup instead: a DeepSeek model answers the same questions (keyword rules only if that fails too), and Kelvin picks its own teaching style.</span></span>
           <input id="set_use_jev" type="checkbox" role="switch">
           <span class="acct-toggle-track" aria-hidden="true"></span>
         </label>
+        <div class="acct-field"><label for="set_style_router">Who picks the teaching style (in Auto)</label>
+          <select id="set_style_router">
+            <option value="jev">Jev picks</option>
+            <option value="skills">Kelvin picks (skills)</option>
+          </select>
+          <p class="acct-toggle-desc set-router-note">With Jev off, Kelvin always picks.</p>
+        </div>
         <label class="acct-toggle" for="set_show_decisions">
           <span class="acct-toggle-text"><span class="acct-toggle-name">Show Kelvin's decisions</span><span class="acct-toggle-desc">Above each reply, show what was decided before Kelvin answered, and whether Jev or the keyword rules decided it. Useful for demos.</span></span>
           <input id="set_show_decisions" type="checkbox" role="switch">
@@ -46,7 +53,9 @@
         <div class="set-error acct-error" role="alert"></div>
         <div class="set-ok acct-ok" role="status"></div>
         <button class="set-submit acct-btn" type="submit" disabled>Save changes</button>
-        <p class="acct-note">Kelvin AI is a capstone prototype. It stores your account email, the profile fields above, your chats, and notes Kelvin makes about what you've learned (deleted along with the chat they came from). The capstone team can see all of them. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies. While "Use Jev" is on, your messages and Kelvin's replies are also sent to TypeSafe's Jev model through OpenRouter.</p>
+        <div class="acct-section">Account</div>
+        <button class="set-delete acct-btn acct-btn-danger" type="button">Delete account</button>
+        <p class="acct-note">Kelvin AI is a capstone prototype and part of a Penn State research study. It stores your account email, the profile fields above, your chats and uploads, and notes Kelvin makes about what you've learned. The capstone team can see all of them. Deleting a chat hides it from you and stops it counting toward what Kelvin thinks you know, but the team keeps a copy; deleting your account signs you out and closes it, and the team keeps your data. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies. While "Use Jev" is on, your messages and Kelvin's replies are also sent to TypeSafe's Jev model through OpenRouter.</p>
       </form>
     </div>`;
 
@@ -68,6 +77,29 @@
     root.querySelector('[data-close]').addEventListener('click', close);
     root.addEventListener('keydown', onKey);
     root.querySelector('form').addEventListener('submit', save);
+    $('set_use_jev').addEventListener('change', syncRouter);
+    const del = root.querySelector('.set-delete');
+    del.addEventListener('click', async () => {
+      if (!del.dataset.armed) {
+        del.dataset.armed = '1';
+        del.textContent = 'Click again to delete your account';
+        return;
+      }
+      del.disabled = true;
+      try {
+        await window.KelvinAccount.deleteAccount();
+      } catch (err) {
+        message('error', err.message);
+        del.disabled = false;
+      }
+    });
+  }
+
+  // Without Jev only Kelvin can pick the style, so the choice is shown but locked.
+  function syncRouter() {
+    const jevOn = $('set_use_jev').checked;
+    $('set_style_router').disabled = !jevOn;
+    root.querySelector('.set-router-note').hidden = jevOn;
   }
 
   function focusables() {
@@ -122,6 +154,8 @@
     for (const f of FIELDS) $('set_' + f).value = p[f] || '';
     if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = 'auto';
     for (const [f, fallback] of Object.entries(SWITCHES)) $('set_' + f).checked = typeof p[f] === 'boolean' ? p[f] : fallback;
+    $('set_style_router').value = p.style_router === 'skills' ? 'skills' : 'jev';
+    syncRouter();
     submit.disabled = false;
   }
 
@@ -131,6 +165,7 @@
     const body = {};
     for (const f of FIELDS) body[f] = $('set_' + f).value.trim();
     for (const f of Object.keys(SWITCHES)) body[f] = $('set_' + f).checked;
+    body.style_router = $('set_style_router').value;
     if (!body.display_name) {
       message('error', 'Please enter your name.');
       return;
@@ -164,6 +199,9 @@
     if (!root || root.hidden) return;
     root.hidden = true;
     message(null, '');
+    const del = root.querySelector('.set-delete');
+    delete del.dataset.armed;
+    del.textContent = 'Delete account';
     if (opener && typeof opener.focus === 'function') opener.focus();
   }
 

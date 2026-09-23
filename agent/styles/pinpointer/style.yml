@@ -36,6 +36,8 @@ route_when:
     file) and wants to know whether it is right or where it goes wrong.
   not_for: >-
     A question with no work shown yet; a question about an idea rather than their solution.
+  leave_when: >-
+    Their solution is repaired and finished and they ask something new; or the error turns out to be a conceptual belief that needs talking through (Office Hours).
   examples:
     - "Here's my turbine solution, I got 950 kW but the answer is 1100 — where did I go wrong?"
     - "Can you check my work? [photo of handwritten solution]"

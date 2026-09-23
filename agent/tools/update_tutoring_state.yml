@@ -24,7 +24,7 @@ parameters:
       type: string
       enum: [working, finished, parked]
       description: >-
-        "finished" only when the final answer is the student's own and they can say why it holds.
+        "finished" only when the final answer is the student's own and they have already answered your justification and recognition questions. Never in the same reply that asks them. The server refuses "finished" before the student has made a complete attempt.
         "parked" when the student stops mid-problem and wants to come back to it.
     diagnosed_misconception:
       type: string

@@ -36,6 +36,8 @@ route_when:
   not_for: >-
     A student stuck partway through a problem; a student talking through their own reasoning at
     length about their work.
+  leave_when: >-
+    The idea is settled and they go back to a problem, or they want to talk through their own reasoning at length (Office Hours).
   examples:
     - "why does entropy go up in a throttle?"
     - "I don't get the difference between heat and temperature"

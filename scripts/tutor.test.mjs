@@ -388,7 +388,48 @@ await t('without Jev, the keyword read counts visible work but not a pasted prob
 
 console.log('the "Use Jev" switch');
 
-await t('with the switch off, no Jev request is made and the keyword read says why', async () => {
+// A fake network: DeepSeek's API answers every question with fixed values; anything else fails.
+function fakeDeepSeek(answer) {
+  const urls = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    urls.push(String(url));
+    if (!String(url).startsWith('https://api.deepseek.com')) throw new Error(`unexpected request to ${url}`);
+    const asked = JSON.parse(JSON.parse(init.body).messages[1].content).questions;
+    const out = {};
+    for (const [name, q] of Object.entries(asked)) out[name] = answer(name, q);
+    return new Response(JSON.stringify({ model: 'deepseek-flash', choices: [{ message: { content: JSON.stringify(out) } }] }), { status: 200 });
+  };
+  return { urls, restore: () => (globalThis.fetch = real) };
+}
+const withKey = async (fn) => {
+  const had = process.env.DEEPSEEK_API_KEY;
+  process.env.DEEPSEEK_API_KEY = 'test-key';
+  try {
+    await fn();
+  } finally {
+    if (had === undefined) delete process.env.DEEPSEEK_API_KEY;
+    else process.env.DEEPSEEK_API_KEY = had;
+  }
+};
+
+await t('with the switch off, Jev is never asked; the DeepSeek backup reads the message instead', async () =>
+  withKey(async () => {
+    const net = fakeDeepSeek((name, q) => (q.type === 'choice' ? { probabilities: { [Object.keys(q.options)[0]]: 1 } } : q.type === 'score' ? { level: 0 } : { p: name === 'shows_work' ? 0.9 : 0.1 }));
+    try {
+      const r = await readTurn({ history: [{ role: 'user', content: 'I used W = m(h1 - h2) and got 1403 kW' }], enabled: false, styles: [], knowledge: null });
+      assert.ok(net.urls.length === 1 && net.urls[0].startsWith('https://api.deepseek.com'));
+      assert.equal(r.provider, 'llm');
+      assert.equal(r.showsWork, 0.9);
+      assert.equal(r.reason, 'Jev is turned off in settings');
+    } finally {
+      net.restore();
+    }
+  }));
+
+await t('with the switch off and no backup key, the keyword read takes over and says why', async () => {
+  const had = process.env.DEEPSEEK_API_KEY;
+  delete process.env.DEEPSEEK_API_KEY;
   const realFetch = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = async () => {
@@ -399,29 +440,11 @@ await t('with the switch off, no Jev request is made and the keyword read says w
     const r = await readTurn({ history: [{ role: 'user', content: 'I used W = m(h1 - h2) and got 1403 kW' }], enabled: false, styles: [], knowledge: null });
     assert.equal(calls, 0);
     assert.equal(r.provider, 'heuristic');
-    assert.equal(r.reason, 'Jev is turned off in settings');
+    assert.ok(r.reason.startsWith('Jev is turned off in settings'));
     assert.equal(r.showsWork >= policy.thresholds.shows_work, true);
   } finally {
     globalThis.fetch = realFetch;
-  }
-});
-
-await t('with the switch off, finishing the turn makes no Jev call either (no audit)', async () => {
-  const realFetch = globalThis.fetch;
-  let calls = 0;
-  globalThis.fetch = async () => {
-    calls++;
-    throw new Error('network must not be used');
-  };
-  try {
-    const history = [{ role: 'user', content: 'just give me the answer' }];
-    const r = heuristicRead({ history }, 'Jev is turned off in settings');
-    const { turn, state } = applyPolicy({ style: OH, state: {}, read: r });
-    const out = await finishTurn({ prepared: { read: r, state, turn, route: { auto: true }, style: OH, useJev: false }, conversationId: null, userId: null, history, reply: 'The answer is 42 kJ.' });
-    assert.equal(calls, 0);
-    assert.equal(out.audit, null);
-  } finally {
-    globalThis.fetch = realFetch;
+    if (had !== undefined) process.env.DEEPSEEK_API_KEY = had;
   }
 });
 
@@ -438,6 +461,21 @@ await t('the decision summary says who decided, what, and how much help', () => 
   assert.equal(off.jev, false);
   assert.equal(off.reason, 'Jev is turned off in settings');
 });
+
+await t('with the switch off, the reply is still audited, by the backup and never by Jev', async () =>
+  withKey(async () => {
+    const net = fakeDeepSeek((name) => ({ p: name === 'gives_final_answer' ? 0.95 : 0.05 }));
+    try {
+      const history = [{ role: 'user', content: 'just give me the answer' }];
+      const r = heuristicRead({ history }, 'Jev is turned off in settings');
+      const { turn, state } = applyPolicy({ style: OH, state: {}, read: r });
+      const out = await finishTurn({ prepared: { read: r, state, turn, route: { auto: true }, style: OH, useJev: false }, conversationId: null, userId: null, history, reply: 'The answer is 42 kJ.' });
+      assert.ok(net.urls.every((u) => u.startsWith('https://api.deepseek.com')));
+      assert.deepEqual(out.audit.flags, ['answer_leak', 'no_handback']);
+    } finally {
+      net.restore();
+    }
+  }));
 
 console.log('update_tutoring_state');
 
