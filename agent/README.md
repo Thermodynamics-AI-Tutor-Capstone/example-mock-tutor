@@ -133,16 +133,15 @@ out of the score.
 
 ## How changes reach the live site
 
-- **Automatic:** a GitHub Action rebuilds the course-materials index and redeploys the site on
-  every push to `main` — including commits made in GitHub's web UI. This only works once a
-  `VERCEL_TOKEN` secret has been added to the repository (Settings → Secrets and variables →
-  Actions).
-- **Until that secret is set:** changes sit in GitHub but the live site does not update. Ask
-  whoever manages the Vercel project to redeploy manually.
+- **Automatic:** anything merged into `main` — including an edit made in GitHub's web UI — is built
+  and put on the live site by Vercel, which is connected to this repository. It takes a couple of
+  minutes.
+- **Before it merges:** a pull request gets its own preview link, so course materials and wording
+  changes can be read on a real copy of the site before they reach students.
 
 ## Checking what the tutor actually indexed
 
-- **GitHub:** Actions tab → latest deploy run → the run summary lists every indexed file and every
+- **GitHub:** Actions tab → latest checks run → the run summary lists every indexed file and every
   skipped file with the reason (for example "no extractable text (scanned? needs OCR)").
 - **Live site:** `GET /api/knowledge` (sign-in required) returns the same list.
   `GET /api/health` shows counts of skills, indexed files, and skipped files.
