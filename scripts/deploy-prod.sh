@@ -41,4 +41,13 @@ tail -1 /tmp/kelvin-validate.$$; rm -f /tmp/kelvin-validate.$$
 node scripts/validate-agent.mjs
 
 echo "Deploying $(git log --oneline -1) to production ..."
-VERCEL_TELEMETRY_DISABLED=1 npx -y vercel@latest deploy --prod --yes
+# `vercel deploy` can print an error and still exit 0, so judge it by what it printed: a
+# successful production deploy ends with the deployment URL.
+out=$(VERCEL_TELEMETRY_DISABLED=1 npx -y vercel@latest deploy --prod --yes 2>&1) || true
+echo "$out"
+url=$(printf '%s' "$out" | grep -Eo 'https://[a-z0-9.-]+\.vercel\.app' | tail -1)
+if [ -z "$url" ]; then
+  echo "Deploy FAILED: Vercel returned no deployment URL (see the output above). Production is unchanged."
+  exit 1
+fi
+echo "Deployed: $url"

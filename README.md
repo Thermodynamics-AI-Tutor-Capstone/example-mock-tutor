@@ -157,15 +157,17 @@ for local runs.
    Add it to every environment you deploy (production and preview). For accounts, enable
    **Auth** on the database in the Neon console (Project → Branch → Auth); the integration then
    provides `NEON_AUTH_BASE_URL`.
-4. **Deploy.** Push to the connected Git branch, or run `vercel deploy` (preview) or
-   `vercel deploy --prod`. The build runs `npm run build`, which copies the vendor libraries into
-   `public/vendor/`.
+4. **Deploy.** Merge to `main`: the Vercel project is connected to this repository, so it builds
+   and deploys `main` itself, and gives every pull request a preview URL. The build runs
+   `npm run build`, which copies the vendor libraries into `public/vendor/`.
 5. **Check it.** Open `https://<project>.vercel.app/api/health` and confirm `db` is
    `"postgres"`, there is no `dbError`, `accounts` is `true`, and the `agent` counts match
    what you expect.
 
-A GitHub Action rebuilds the knowledge index and deploys on every push to `main` once the
-repository has a `VERCEL_TOKEN` secret. Until then, deploy manually as above.
+GitHub Actions runs the checks (index, knowledge base, tools and styles, module imports, property
+tables) on every pull request and on `main`; Vercel does the deploying. To deploy a specific commit
+by hand — a rollback, or when the Git integration is down — use `scripts/deploy-prod.sh --yes`,
+which deploys a clean checkout of `origin/main` and never your working tree.
 
 `.vercelignore` keeps `.env`, `data/` and `node_modules/` out of CLI uploads. Vercel's built-in
 ignore list covers `.env.local` but not `.env`.
