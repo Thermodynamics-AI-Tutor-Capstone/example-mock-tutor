@@ -27,3 +27,6 @@ parameters:
         Restrict the pool: "card" for knowledge cards only, "chunk" for raw course-file passages
         only, "any" (default) for both.
   required: [query]
+# Off until course files are uploaded to agent/raw-course-files (there are none yet, so it only cost
+# prompt space and wrong-tool calls). Turn it back on, and list it in the styles, when there are.
+enabled: false

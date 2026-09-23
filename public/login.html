@@ -31,6 +31,13 @@
   </form>
   <p class="acct-switch"><span id="switchText">New here?</span> <button id="switchBtn" type="button">Create an account</button></p>
 </main>
+<!-- Capstone testing only: one-click sign-in to the ten simulated-student accounts (eval/students.yml),
+     whose shared password is known to the whole team. Remove before real students use the site. -->
+<aside class="test-accounts" aria-labelledby="testTitle">
+  <h2 id="testTitle" class="test-accounts-title">Test accounts</h2>
+  <p class="test-accounts-sub">Sign in as a simulated student to see their chats.</p>
+  <div id="testButtons" class="test-accounts-list"></div>
+</aside>
 <script>
 (function () {
   const A = window.KelvinAccount;
@@ -73,6 +80,28 @@
     }
   });
   A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
+  const TEST_ACCOUNTS = ['Jake Morrison', 'Priya Raman', 'Marcus Bell', 'Mei Chen', 'Tyler Brooks', 'Sofia Alvarez', 'Devon Carter', 'Hannah Kim', "Ryan O'Neill", 'Aisha Johnson'];
+  TEST_ACCOUNTS.forEach((name, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'acct-btn secondary test-account-btn';
+    b.innerHTML = '<span class="test-account-n"></span><span class="test-account-name"></span>';
+    b.querySelector('.test-account-n').textContent = 'Test ' + (i + 1);
+    b.querySelector('.test-account-name').textContent = name;
+    b.addEventListener('click', async () => {
+      $('error').textContent = '';
+      document.querySelectorAll('.test-account-btn').forEach((x) => (x.disabled = true));
+      try {
+        await A.signIn('test' + (i + 1) + '@tutor.test', 'password');
+        const me = await A.me();
+        location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
+      } catch (err) {
+        $('error').textContent = err.message;
+        document.querySelectorAll('.test-account-btn').forEach((x) => (x.disabled = false));
+      }
+    });
+    $('testButtons').appendChild(b);
+  });
   render();
   const q = new URLSearchParams(location.search);
   if (q.has('deleted')) $('error').textContent = 'Your account has been deleted.';

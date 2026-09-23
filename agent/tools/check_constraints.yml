@@ -1,0 +1,40 @@
+# What the model sees for this tool. The code is lib/tools/check_constraints.js → lib/constraints.js.
+name: check_constraints
+description: >-
+  Check numbers against the laws they must obey, before you confirm a student's result or state a
+  result of your own. Deterministic, not a model. Pass any of: qualities (0 ≤ x ≤ 1), temperatures_K
+  (above 0 K), entropy_generation (s_gen ≥ 0), efficiencies (in (0,1], thermal ≤ Carnot when T_hot_K
+  and T_cold_K are given), cops (heat pump ≥ 1, ≤ Carnot COP), compressors {h1,h2,h2s} or {T1,T2,T2s}
+  (real rise ≥ isentropic rise), turbines {h1,h2,h2s} (real drop ≤ isentropic drop; device "nozzle"
+  works too), heat_flows {from_T_K,to_T_K,with_work} (hot to cold unless driven), energy_balances
+  {in:[...],out:[...],storage_change} (must close), and property_values {fluid, given:{two props},
+  stated:{h,s,v,u,T,x or a saturation value like sg, hf}} (compared with the verified tables). Returns
+  the violations; an empty list means nothing checked is broken.
+status: Checking the physics
+parameters:
+  type: object
+  properties:
+    qualities: { type: array, items: { type: object, properties: { label: { type: string }, x: { type: number } } } }
+    temperatures_K: { type: array, items: { type: object, properties: { label: { type: string }, T: { type: number } } } }
+    entropy_generation: { type: array, items: { type: object, properties: { label: { type: string }, s_gen: { type: number } } } }
+    efficiencies:
+      type: array
+      items: { type: object, properties: { label: { type: string }, kind: { type: string, enum: [thermal, isentropic, second_law, other] }, value: { type: number }, T_hot_K: { type: number }, T_cold_K: { type: number } } }
+    cops:
+      type: array
+      items: { type: object, properties: { label: { type: string }, kind: { type: string, enum: [refrigerator, heat_pump] }, value: { type: number }, T_hot_K: { type: number }, T_cold_K: { type: number } } }
+    compressors:
+      type: array
+      items: { type: object, properties: { label: { type: string }, h1: { type: number }, h2: { type: number }, h2s: { type: number }, T1: { type: number }, T2: { type: number }, T2s: { type: number } } }
+    turbines:
+      type: array
+      items: { type: object, properties: { label: { type: string }, device: { type: string }, h1: { type: number }, h2: { type: number }, h2s: { type: number }, T1: { type: number }, T2: { type: number }, T2s: { type: number } } }
+    heat_flows:
+      type: array
+      items: { type: object, properties: { label: { type: string }, from_T_K: { type: number }, to_T_K: { type: number }, with_work: { type: boolean } } }
+    energy_balances:
+      type: array
+      items: { type: object, properties: { label: { type: string }, in: { type: array, items: { type: number } }, out: { type: array, items: { type: number } }, storage_change: { type: number } } }
+    property_values:
+      type: array
+      items: { type: object, properties: { label: { type: string }, fluid: { type: string, enum: [water, R-134a] }, given: { type: object }, stated: { type: object } } }

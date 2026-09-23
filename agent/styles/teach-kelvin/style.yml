@@ -36,4 +36,7 @@ route_when:
 ui:
   figures: false
   mermaid: false
-enabled: true
+# Merged into probe on 2026-09-23 (eval/findings/2026-09-23-round2.md). Kept, disabled, so old
+# conversations and settings that name it resolve to the style that replaced it.
+merged_into: probe
+enabled: false

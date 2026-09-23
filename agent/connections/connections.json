@@ -26,6 +26,10 @@
     "timeoutMs": 6000,
     "enabled": true
   },
+  "solver": {
+    "connection": "deepseek-flash",
+    "enabled": true
+  },
   "backupDecider": {
     "provider": "DeepSeek (backup for Jev)",
     "baseUrl": "https://api.deepseek.com",

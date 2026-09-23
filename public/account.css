@@ -7,6 +7,8 @@ body.account-page { min-height: 100vh; display: flex; align-items: flex-start; j
 .acct-sub { color: var(--text2); margin: 0 0 24px; text-align: center; font-size: 15px; line-height: 1.45; }
 .acct-form { display: flex; flex-direction: column; gap: 14px; }
 .acct-field { display: flex; flex-direction: column; gap: 6px; }
+/* display:flex above would otherwise beat the hidden attribute (the name box showed on sign-in). */
+.acct-field[hidden] { display: none; }
 .acct-field label { font-size: 13.5px; font-weight: 500; }
 .acct-field .opt { color: var(--text2); font-weight: 400; }
 .acct-field input, .acct-field select {
@@ -45,3 +47,13 @@ body.account-page { min-height: 100vh; display: flex; align-items: flex-start; j
 .acct-toggle input:checked + .acct-toggle-track::after { transform: translateX(16px); }
 .acct-toggle input:focus-visible + .acct-toggle-track { outline: 2px solid var(--text2); outline-offset: 2px; }
 @media (max-width: 420px) { .acct-row { grid-template-columns: 1fr; } }
+
+/* Login page: the capstone's one-click test accounts, to the right of the sign-in form. */
+body.account-page:has(.test-accounts) { gap: 48px; }
+.test-accounts { width: 220px; padding-top: 98px; }
+.test-accounts-title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+.test-accounts-sub { color: var(--text2); font-size: 13px; margin: 0 0 12px; line-height: 1.4; }
+.test-accounts-list { display: flex; flex-direction: column; gap: 6px; }
+.test-account-btn { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; font-size: 13.5px; text-align: left; }
+.test-account-n { font-weight: 600; }
+.test-account-name { color: var(--text2); }
