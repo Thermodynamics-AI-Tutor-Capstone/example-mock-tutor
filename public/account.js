@@ -33,12 +33,30 @@
     nextUrl,
     async me() {
       const r = await call('/api/me');
+      if (r.status === 403 && r.data && r.data.error === 'account_inactive') {
+        // A deleted (deactivated) account: end the session instead of looping through /login.
+        await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => {});
+        if (location.pathname !== '/login') location.replace('/login?inactive=1');
+        return null;
+      }
       return r.ok ? r.data : null;
     },
     async signIn(email, password) {
       const r = await call('/api/auth/sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
       if (!r.ok) throw new Error(authMessage(r));
+      const check = await call('/api/me');
+      if (check.status === 403 && check.data && check.data.error === 'account_inactive') {
+        await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => {});
+        throw new Error('This account has been deleted.');
+      }
       return r.data;
+    },
+    // Accounts are deactivated, never erased; the team keeps the data (see the note in Settings).
+    async deleteAccount() {
+      const r = await call('/api/me', { method: 'DELETE' });
+      if (!r.ok) throw new Error((r.data && r.data.error) || 'Could not delete the account (' + r.status + ')');
+      await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => {});
+      location.href = '/login?deleted=1';
     },
     async signUp(name, email, password) {
       const r = await call('/api/auth/sign-up/email', { method: 'POST', body: JSON.stringify({ name, email, password }) });

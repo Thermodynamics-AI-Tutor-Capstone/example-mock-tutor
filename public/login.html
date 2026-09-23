@@ -74,6 +74,9 @@
   });
   A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
   render();
+  const q = new URLSearchParams(location.search);
+  if (q.has('deleted')) $('error').textContent = 'Your account has been deleted.';
+  else if (q.has('inactive')) $('error').textContent = 'This account has been deleted.';
   (mode === 'signup' ? $('name') : $('email')).focus();
 })();
 </script>

@@ -22,6 +22,7 @@ body.account-page { min-height: 100vh; display: flex; align-items: flex-start; j
 }
 .acct-btn:disabled { opacity: .5; cursor: default; }
 .acct-btn.secondary { background: none; color: var(--text); border: 1px solid var(--border); }
+.acct-btn.acct-btn-danger { background: none; color: var(--error-text); border: 1px solid var(--error-border); }
 .acct-error { color: var(--error-text); font-size: 14px; min-height: 1em; }
 .acct-error:empty { display: none; }
 .acct-ok { color: #15803d; font-size: 14px; }

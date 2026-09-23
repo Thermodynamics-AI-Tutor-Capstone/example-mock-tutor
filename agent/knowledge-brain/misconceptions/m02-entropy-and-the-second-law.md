@@ -32,6 +32,10 @@ signatures:
 not_signatures:
   - "Energy is conserved between the blocks, but total entropy rises because S_gen > 0."
   - "Over a full cycle the working fluid's Δs is zero; the entropy change shows up in the reservoirs."
+  - "Describing entropy as disorder or messiness (that belief is m08, not this card)."
+  - "Saying one object's own entropy can't go down, or that a cooling cup or freezing water breaks the second law (that is m10)."
+  - "Blaming the gap below 100% efficiency on friction or losses (that is m09)."
+  - "Correct entropy bookkeeping: Δs from the tables, s_gen ≥ 0, Δs = 0 over a cycle for the working fluid."
 confusable_with:
   - id: misc:m10-entropy-of-an-isolated-system
     separating_question: "As a can of soda cools in the fridge, does the soda's own entropy go up or down, and what about soda plus kitchen together?"

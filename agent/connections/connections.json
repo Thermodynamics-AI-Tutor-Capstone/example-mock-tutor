@@ -26,6 +26,14 @@
     "timeoutMs": 6000,
     "enabled": true
   },
+  "backupDecider": {
+    "provider": "DeepSeek (backup for Jev)",
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-flash",
+    "apiKeyEnvVar": "DEEPSEEK_API_KEY",
+    "timeoutMs": 12000,
+    "enabled": true
+  },
   "chatHistory": {
     "provider": "Postgres (Neon on Vercel, embedded PGlite locally)",
     "urlEnvVar": "DATABASE_URL"

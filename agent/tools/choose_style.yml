@@ -1,0 +1,21 @@
+# What the model sees for this tool. The code is lib/tools/choose_style.js. It is offered only when
+# the student's style is picked by Kelvin ("skills pick", or Jev switched off) and the chat isn't
+# pinned to one style; styles don't need to list it.
+name: choose_style
+description: >-
+  Switch to the teaching style that fits what the student needs now. Call it BEFORE writing any of
+  your reply, only when the style in force doesn't fit (see "## Teaching styles"). The new style's
+  instructions and tools replace the current ones for the rest of this reply. The server allows one
+  switch per student message and refuses a switch while the student is only answering you in the
+  middle of a problem.
+status: Choosing an approach
+parameters:
+  type: object
+  properties:
+    style:
+      type: string
+      description: The style id from "## Teaching styles", e.g. "pinpointer".
+    reason:
+      type: string
+      description: One short line on what in the conversation calls for this style (logged, never shown to the student).
+  required: [style, reason]

@@ -213,6 +213,16 @@
     if (code) headers['x-app-passcode'] = code;
     o.headers = headers;
     const res = await fetch(url, o);
+    if (res.status === 403) {
+      let data = null;
+      try { data = await res.clone().json(); } catch (e) {}
+      if (data && data.error === 'account_inactive') {
+        location.replace('/login?inactive=1');
+        const err = new Error('account_inactive');
+        err.status = 403;
+        throw err;
+      }
+    }
     if (res.status === 401) {
       let data = null;
       try { data = await res.clone().json(); } catch (e) {}
@@ -459,9 +469,13 @@
     return Boolean(state.me && state.me.profile && state.me.profile.show_decisions);
   }
   function decisionLines(d) {
+    const secs = d.latencyMs ? ' · ' + (d.latencyMs / 1000).toFixed(2) + ' s' : '';
+    const modelRead = d.jev || d.source === 'llm';
     const source = d.jev
-      ? '⚡ Jev' + (d.latencyMs ? ' · ' + (d.latencyMs / 1000).toFixed(2) + ' s' : '')
-      : d.reason === 'Jev is turned off in settings'
+      ? '⚡ Jev' + secs
+      : d.source === 'llm'
+      ? '✦ DeepSeek backup (' + (String(d.reason || '').startsWith('Jev is turned off') ? 'Jev off' : 'Jev unavailable') + ')' + secs
+      : String(d.reason || '').startsWith('Jev is turned off')
         ? '⌨ Keyword rules (Jev off)'
         : '⌨ Keyword rules (Jev unavailable' + (d.reason ? ': ' + d.reason : '') + ')';
     const read = [];
@@ -476,11 +490,11 @@
     let misc;
     if (m.action === 'repair') misc = 'Misconception: ' + m.candidates[0].title + ' (' + m.candidates[0].p + ') → repair it';
     else if (m.action === 'confirm') misc = 'Possible misconception: ' + m.candidates.map((c) => c.title + ' (' + c.p + ')').join(', ') + ' → ask one question first';
-    else misc = d.jev ? 'No misconception in this message' : 'No misconception read (needs Jev)';
+    else misc = modelRead ? 'No misconception in this message' : 'No misconception read (needs a decision model)';
     const style = d.style ? (d.style.icon ? d.style.icon + ' ' : '') + d.style.name + (d.auto ? '' : ' (pinned)') : '—';
     return [
       source + ' — ' + (read.length ? read.join(' · ') : 'nothing detected'),
-      'Style: ' + style + ' · Help ceiling: rung ' + d.ceiling + ' of ' + d.maxRung + (d.rungName ? ' (' + d.rungName + ')' : ''),
+      'Style: ' + style + (d.router === 'skills' ? ' (picked by Kelvin)' : '') + ' · Help ceiling: rung ' + d.ceiling + ' of ' + d.maxRung + (d.rungName ? ' (' + d.rungName + ')' : ''),
       misc,
     ];
   }
