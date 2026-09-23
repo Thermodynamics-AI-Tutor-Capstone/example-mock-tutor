@@ -18,6 +18,7 @@
     "eval:personas": "node scripts/eval/personas.mjs",
     "eval:compare": "node scripts/eval/personas.mjs --jev both",
     "check:imports": "node scripts/smoke-imports.mjs",
+    "usage": "node scripts/usage-report.mjs",
     "properties:test": "node scripts/properties/test.mjs"
   },
   "engines": {

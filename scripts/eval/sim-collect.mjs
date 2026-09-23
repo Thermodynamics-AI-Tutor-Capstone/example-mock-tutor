@@ -135,7 +135,7 @@ let prevStyle = new Map();
 async function replay(t, decider) {
   if (decider === 'rules') return heuristicRead({ history: t.history }, 'replay');
   // enabled: false is "Jev switched off", which reads with the DeepSeek backup.
-  return readTurn({ history: t.history, tutoringState: {}, styles, knowledge, currentStyleId: t.prevStyle, enabled: decider === 'jev' });
+  return readTurn({ history: t.history, tutoringState: {}, styles, knowledge, currentStyleId: t.prevStyle, enabled: decider === 'jev', usage: { via: `eval_replay_${RUN}`, conversationId: t.conv } });
 }
 for (const t of turns) {
   t.prevStyle = prevStyle.get(t.conv) || null;
