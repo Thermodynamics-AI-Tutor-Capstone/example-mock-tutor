@@ -50,6 +50,7 @@ const { prepareTurn, finishTurn, listDecisions } = await import('../../lib/turn.
 const { runAgentTurn, connectionConfig, styleProblem } = await import('../../lib/agent.js');
 const { loadStudentModel } = await import('../../lib/student-model.js');
 const { deciderProblem } = await import('../../lib/jev.js');
+const { recordUsage, deepseekUsageRow } = await import('../../lib/usage.js');
 
 if (dbKind() !== 'pglite') throw new Error('refusing to run: the eval must use the embedded PGlite database');
 
@@ -96,8 +97,12 @@ async function studentSays(persona, transcript) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env[SIM.apiKeyEnvVar]}` },
     body: JSON.stringify({ model: SIM.model, messages, temperature: 0.7, max_tokens: 300 }),
   });
-  if (!res.ok) throw new Error(`simulated student: ${res.status} ${(await res.text()).slice(0, 200)}`);
+  if (!res.ok) {
+    await recordUsage(deepseekUsageRow({ model: SIM.model, usage: null, purpose: 'eval_sim_student', ok: false, error: `HTTP ${res.status}` }));
+    throw new Error(`simulated student: ${res.status} ${(await res.text()).slice(0, 200)}`);
+  }
   const j = await res.json();
+  await recordUsage(deepseekUsageRow({ model: SIM.model, usage: j.usage, purpose: 'eval_sim_student', meta: { persona: persona.id } }));
   return String(j.choices?.[0]?.message?.content || '').trim().replace(/^["']|["']$/g, '') || 'ok';
 }
 

@@ -5,6 +5,10 @@
 //
 // Run with: npm run agent:test
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import fsx from 'node:fs';
+import pathx from 'node:path';
+process.env.USAGE_LOG_DIR = fsx.mkdtempSync(pathx.join(os.tmpdir(), 'kelvin-usage-'));
 import { applyPolicy, routeStyle, policySection, loadPolicy } from '../lib/policy.js';
 import { foldStudentModel, studentModelSection, nextPracticeTargets, emptyModel, DEFAULTS } from '../lib/student-model.js';
 import { buildState, buildQuestions, misconceptionKey, normaliseRead, heuristicRead, readTurn, INTENTS } from '../lib/decide.js';

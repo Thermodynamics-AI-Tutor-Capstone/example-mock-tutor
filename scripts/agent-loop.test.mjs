@@ -11,6 +11,7 @@ delete process.env.DATABASE_URL;
 delete process.env.POSTGRES_URL;
 process.env.PGLITE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'kelvin-loop-'));
 process.env.DEEPSEEK_API_KEY ||= 'test-key';
+process.env.USAGE_LOG_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'kelvin-usage-'));
 
 const { runAgentTurn } = await import('../lib/agent.js');
 const { loadStyles } = await import('../lib/styles.js');
@@ -18,6 +19,7 @@ const { ensureSchema, query, closeDb } = await import('../lib/db.js');
 const { default: runUpdateState } = await import('../lib/tools/update_tutoring_state.js');
 const { default: runChooseStyle } = await import('../lib/tools/choose_style.js');
 const { styleIndexSection } = await import('../lib/turn.js');
+const { deepseekCost, isDeepSeekPeak, deepseekUsageRow } = await import('../lib/usage.js');
 
 let n = 0;
 const t = async (name, fn) => {
@@ -42,7 +44,13 @@ function fakeUpstream(rounds) {
     const body = lines.map((l) => `data: ${JSON.stringify(l)}\n\n`).join('') + 'data: [DONE]\n\n';
     return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
   };
-  return { calls, restore: () => (globalThis.fetch = real) };
+  const fetcher = globalThis.fetch;
+  return { calls, fetch: fetcher, restore: () => (globalThis.fetch = real) };
+}
+
+function usageLines() {
+  const dir = process.env.USAGE_LOG_DIR;
+  return fs.readdirSync(dir).filter((f) => f.startsWith('usage-')).flatMap((f) => fs.readFileSync(path.join(dir, f), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)));
 }
 
 await ensureSchema();
@@ -159,6 +167,44 @@ await t('after choose_style the rest of the reply runs under the new playbook, a
   const firstLine = target.prompt.split('\n').find((l) => l.trim().length > 20);
   assert.ok(bodies[1].messages[0].content.includes(firstLine), 'second round uses the new style prompt');
   assert.ok(bodies[0].tools.some((x) => x.function.name === 'choose_style'));
+});
+
+console.log('usage log');
+
+await t('DeepSeek cost: cache hits are cheap, peak hours double it, unknown models are priced high', () => {
+  const tokens = { promptTokens: 1_000_000, cachedTokens: 400_000, completionTokens: 100_000 };
+  assert.ok(Math.abs(deepseekCost({ model: 'deepseek-flash', ...tokens }) - (0.6 * 0.15 + 0.4 * 0.003 + 0.1 * 0.6)) < 1e-9);
+  assert.ok(Math.abs(deepseekCost({ model: 'deepseek-flash', ...tokens }, { peak: true }) - 2 * deepseekCost({ model: 'deepseek-flash', ...tokens })) < 1e-9);
+  assert.equal(deepseekCost({ model: 'new-model', ...tokens }), deepseekCost({ model: 'deepseek-v4-pro', ...tokens }));
+  assert.equal(isDeepSeekPeak(new Date('2026-09-23T07:30:00Z')), true);
+  assert.equal(isDeepSeekPeak(new Date('2026-09-23T05:30:00Z')), false);
+  assert.equal(isDeepSeekPeak(new Date('2026-09-26T07:30:00Z')), false);
+});
+
+await t('every tutor round is logged with its tokens and cost', async () => {
+  const before = usageLines().length;
+  const fake = fakeUpstream([{ text: ['Which row?'] }]);
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const res = await fake.fetch(url, init);
+    const body = await res.text();
+    const withUsage = body.replace('data: [DONE]', `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 1000, prompt_cache_hit_tokens: 200, completion_tokens: 50 } })}\n\ndata: [DONE]`);
+    return new Response(withUsage, { status: 200 });
+  };
+  try {
+    await runAgentTurn({ history: [{ role: 'user', content: 'hi' }], apiKey: 'k', emit: () => {}, style: pinpointer, conversationId, userId: 'u1', turn: turnFor(), tutoringState: {} });
+  } finally {
+    globalThis.fetch = realFetch;
+    fake.restore();
+  }
+  const rows = usageLines().slice(before);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].purpose, 'tutor_reply');
+  assert.equal(rows[0].conversation_id, conversationId);
+  assert.equal(rows[0].prompt_tokens, 1000);
+  assert.ok(rows[0].cost_usd > 0);
+  const expected = deepseekUsageRow({ model: rows[0].model, usage: { prompt_tokens: 1000, prompt_cache_hit_tokens: 200, completion_tokens: 50 }, purpose: 'x', at: new Date(rows[0].at) }).costUsd;
+  assert.ok(Math.abs(rows[0].cost_usd - expected) < 1e-12);
 });
 
 await closeDb();

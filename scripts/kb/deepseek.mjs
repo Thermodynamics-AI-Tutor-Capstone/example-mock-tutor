@@ -17,6 +17,7 @@ import {
   sha256,
 } from './ingest-common.mjs';
 import fsp from 'node:fs/promises';
+import { DEEPSEEK_PRICES, PEAK_MULTIPLIER, recordUsage, deepseekUsageRow } from '../../lib/usage.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,14 +35,11 @@ export const DEFAULT_MAX_SPEND_USD = 2.0;
  * so the spend guard always budgets at PEAK CACHE-MISS rates (the worst case) and
  * the closing report prints what the run actually cost at both rates.
  *
- * If DeepSeek changes prices this table is the single place to fix, and the
+ * The table lives in lib/usage.js (shared with the app's usage log); fix prices there. The
  * numbers it produces are estimates, not invoices — always check the real balance.
  */
-export const PRICES = {
-  'deepseek-flash': { inMiss: 0.15, inHit: 0.003, out: 0.6 },
-  'deepseek-v4-pro': { inMiss: 0.66, inHit: 0.022, out: 1.98 },
-};
-export const PEAK_MULTIPLIER = 2;
+export const PRICES = DEEPSEEK_PRICES;
+export { PEAK_MULTIPLIER };
 
 export class SpendLimitError extends Error {
   constructor(message) {
@@ -339,6 +337,7 @@ export function createClient(options = {}) {
         usage.costOffPeak += offPeak;
         usage.costPeak += peak;
         bump(stage, chosenModel, { calls: 1, promptTokens, cachedTokens, completionTokens, costOffPeak: offPeak, costPeak: peak });
+        await recordUsage(deepseekUsageRow({ model: chosenModel, usage: payload?.usage, purpose: `kb_${stage}`, meta: { label } }));
 
         const raw = payload?.choices?.[0]?.message?.content ?? '';
         const finish = payload?.choices?.[0]?.finish_reason;
