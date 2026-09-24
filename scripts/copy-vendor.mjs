@@ -12,6 +12,8 @@ const COPIES = [
   { from: path.join(NODE_MODULES, 'katex', 'dist'), to: path.join(VENDOR_DIR, 'katex') },
   // Only loaded when a reply actually contains a Mermaid diagram (see public/figures.js).
   { from: path.join(NODE_MODULES, 'mermaid', 'dist', 'mermaid.min.js'), to: path.join(VENDOR_DIR, 'mermaid.min.js') },
+  // The admin dashboard's charts (public/admin.js).
+  { from: path.join(NODE_MODULES, 'chart.js', 'dist', 'chart.umd.min.js'), to: path.join(VENDOR_DIR, 'chart.umd.min.js') },
 ];
 
 export function vendorReady() {

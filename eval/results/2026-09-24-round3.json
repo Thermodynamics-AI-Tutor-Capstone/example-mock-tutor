@@ -1,0 +1,761 @@
+{
+  "id": "2026-09-24-round3",
+  "label": "Round 3",
+  "date": "2026-09-24",
+  "harness": "Accuracy harness (PR #10): solve first, calculate, check_constraints; 3 styles; same personas as round 2; Opus students",
+  "findings": "eval/findings/2026-09-24-round3.md",
+  "counts": {
+    "students": 10,
+    "chats": 30,
+    "messages": 194,
+    "reviewedChats": 30
+  },
+  "summary": {
+    "helpfulness": {
+      "mean": 4.33,
+      "ci95": [
+        4.1,
+        4.57
+      ],
+      "n": 30
+    },
+    "thoroughness": {
+      "mean": 4.5,
+      "ci95": [
+        4.3,
+        4.7
+      ],
+      "n": 30
+    },
+    "accuracyErrors": 15,
+    "accuracyErrorsPer100Replies": 7.7,
+    "giveaways": {
+      "clear": 0,
+      "mild": 4
+    },
+    "misconceptionChats": 21,
+    "misconceptionCaught": 19,
+    "misconceptionCaughtRate": 90.5,
+    "styleFit": 56.2
+  },
+  "latency": {
+    "medianS": 25.4,
+    "p90S": 64.5,
+    "maxS": 150.8
+  },
+  "cost": {
+    "total": 2.08,
+    "deepseek": 1.997,
+    "jev": 0.084,
+    "byPurpose": {
+      "deepseek:backup_audit": 0.0002,
+      "deepseek:solver": 0.0832,
+      "deepseek:tutor_reply": 1.9133,
+      "openrouter:jev_audit": 0.0103,
+      "openrouter:jev_read": 0.074
+    },
+    "source": "model_usage"
+  },
+  "readers": {
+    "live Jev": {
+      "intent": 67,
+      "showsWork": {
+        "recall": 96.2,
+        "precision": 85.6
+      },
+      "completeAttempt": {
+        "recall": 73.8,
+        "precision": 92.2
+      },
+      "wantsAnswer": {
+        "recall": 55,
+        "precision": 84.6
+      },
+      "misconceptionRecall": 63.8,
+      "misconceptionPrecision": 42.3,
+      "falseFlagRate": 4.8,
+      "costUsd": 0.074
+    },
+    "Jev (replay)": {
+      "intent": 65.5,
+      "showsWork": {
+        "recall": 95.2,
+        "precision": 87
+      },
+      "completeAttempt": {
+        "recall": 53.1,
+        "precision": 89.5
+      },
+      "wantsAnswer": {
+        "recall": 60,
+        "precision": 85.7
+      },
+      "misconceptionRecall": 63.8,
+      "misconceptionPrecision": 42.3,
+      "falseFlagRate": 4.1,
+      "costUsd": 0.0739
+    },
+    "DeepSeek backup (replay)": {
+      "intent": 47.9,
+      "showsWork": {
+        "recall": 94.3,
+        "precision": 81.8
+      },
+      "completeAttempt": {
+        "recall": 57.2,
+        "precision": 91.2
+      },
+      "wantsAnswer": {
+        "recall": 40,
+        "precision": 88.9
+      },
+      "misconceptionRecall": 74.5,
+      "misconceptionPrecision": 41.2,
+      "falseFlagRate": 9.5,
+      "costUsd": 0.3068
+    },
+    "rules (replay)": {
+      "intent": 37.6,
+      "showsWork": {
+        "recall": 78.1,
+        "precision": 84.5
+      },
+      "completeAttempt": {
+        "recall": null,
+        "precision": null
+      },
+      "wantsAnswer": {
+        "recall": 25,
+        "precision": 71.4
+      },
+      "misconceptionRecall": null,
+      "misconceptionPrecision": null,
+      "falseFlagRate": null,
+      "costUsd": null
+    }
+  },
+  "styleConfusion": {
+    "probe": {
+      "office-hours": 13,
+      "pinpointer": 33,
+      "probe": 41
+    },
+    "office-hours": {
+      "office-hours": 26,
+      "pinpointer": 15,
+      "probe": 15
+    },
+    "pinpointer": {
+      "pinpointer": 42,
+      "office-hours": 6,
+      "probe": 3
+    }
+  },
+  "perStudent": [
+    {
+      "student": "Student 1",
+      "misconceptions": [
+        "m11"
+      ],
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 2",
+      "misconceptions": [],
+      "helpfulness": 3.67,
+      "thoroughness": 4.67,
+      "accuracyErrors": 2,
+      "misconceptionChats": 0,
+      "misconceptionCaught": 0
+    },
+    {
+      "student": "Student 3",
+      "misconceptions": [
+        "m01"
+      ],
+      "helpfulness": 4,
+      "thoroughness": 4.33,
+      "accuracyErrors": 3,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 4",
+      "misconceptions": [
+        "m07"
+      ],
+      "helpfulness": 4.67,
+      "thoroughness": 4.67,
+      "accuracyErrors": 1,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 5",
+      "misconceptions": [
+        "m02"
+      ],
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 1,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 6",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 4.67,
+      "thoroughness": 4.67,
+      "accuracyErrors": 1,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 7",
+      "misconceptions": [],
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "misconceptionChats": 0,
+      "misconceptionCaught": 0
+    },
+    {
+      "student": "Student 8",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": 4.67,
+      "accuracyErrors": 2,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 9",
+      "misconceptions": [
+        "m15"
+      ],
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 10",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    }
+  ],
+  "chats": [
+    {
+      "student": "Student 1",
+      "chat": 1,
+      "conv": "150e7c02-4b1b-46a9-a8a8-81a1d7fd5a81",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 6: \"The problem handed you single values ($c_v = 0.718$, $c_p = 1.005$)\". The problem gave no cv or cp. The student pulled them from Table A-2 and said so at turn 7. Kelvin answered the follow-up without admitting the slip. Checked and correct: T2 = 900 K; W23 = 0.5(0.287)(900)ln3 = 141.9 kJ; W31 = -86.1 kJ; net 55.8 kJ; Q12 = 215.4 kJ; Q31 = -301.5 kJ; the Q sum is 55.8 kJ; the rou",
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 2,
+      "conv": "66df5d4a-55ef-4665-b19c-1071ec9dd718",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 3,
+      "conv": "20dc1d4c-9fe7-4591-97d3-663cd0b3ee8d",
+      "helpfulness": 3,
+      "thoroughness": 3,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "partly"
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "59b29a07-0c9c-400f-b322-4770c8592ccd",
+      "helpfulness": 3,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors. About 20 other numbers are engine-exact.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 2,
+      "conv": "182c6d8f-bd92-4a3e-9fe1-1d0f9c96f893",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 3,
+      "conv": "74a4d80e-8bd6-4820-b5d8-da2e7dab1528",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "f99b0247-67b2-4f86-878c-056babecff0e",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 7: \"That gap is the latent heat of vaporization: adding ~2087 kJ/kg at *constant temperature* turns the liquid into vapor.\" The engine at 100 °C gives u_fg = 2506.02 − 419.06 = 2087, but the latent heat (the heat added at constant P) is **h_fg = 2256.4 kJ/kg**. The ~169 kJ/kg difference is P·v_fg of boundary work. Checked correct: T_f = 48 °C (237.6/4.95), the 117 kJ each way, batht",
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 2,
+      "conv": "7b13e1b7-f98f-4c4d-80f0-17dfaa86992c",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors (1 substantive, 1 minor).",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 3,
+      "conv": "22476dc4-ee3f-4ba3-8b27-e814e4080aa8",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 1,
+      "conv": "72ea2bff-8416-478c-8777-6f519afc29c4",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 2,
+      "conv": "6970dd36-d0c8-40f4-b3d5-f9054d3a6f40",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "partly"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 3,
+      "conv": "1f4525ca-d81e-4715-a19f-0920c7b631b7",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error, an unsupported course claim at reply 1. The physics is correct: the convention, the Q+W equivalence, E_in − E_out, and −5 kJ (25 in, 30 out). The course claims are not.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 1,
+      "conv": "39ac8de6-4bb2-4155-9640-0c9a0d4a2657",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 2,
+      "conv": "1d28175b-d0b2-4b01-b5a3-9c437b66c7b6",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 3,
+      "conv": "3118d57d-ed88-45ea-be28-b030b96c6986",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 minor error. Reply 2: \"the work lets the kitchen also gain an extra $S_{gen} \\ge 0$\". The kitchen gains extra entropy because it receives the extra heat W; S_gen belongs to the total, not to the kitchen. Reply 4 restated it correctly. Checked correct: −0.00364, +0.00333, −0.000303, +0.0015, heat-pump COP 12, COP_R = 275/25 = 11, W_min = 90.9 kJ.",
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 1,
+      "conv": "81f7c9c2-5af9-42f0-80cd-bc994f958029",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 substantive error. Reply 5 said \"the break-even η_c is set entirely by the ratio of ideal compressor work to turbine work, which is exactly the back-work ratio\", and asked what the cycle \"can never survive, no matter how much better the turbine gets\". Both are wrong. The threshold is w_c,s/w_t,actual = 280.6/596.9 = 0.470, a hybrid, while bwr = w_c,a/w_t = 0.553. A better turbine lowers the thre",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 2,
+      "conv": "1682af5f-04e0-4bcf-9a71-ea20545f5c28",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 3,
+      "conv": "76598b66-b07e-4894-b14a-e5405b26616a",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 1,
+      "conv": "46a1b811-e695-425d-8cdf-0d69fea54703",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 2,
+      "conv": "f2167ef1-c429-47c4-9ac8-f1629bf1eb81",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 7 said \"With your flow rates the best a parallel-flow exchanger could do is both streams meeting near 47 °C\". 47 °C is the limit for part (a) (0.4 kg/s: 0.6(T−15) = 0.4(95−T) → 47). The 35/45 cross under discussion is part (c) (0.3 kg/s), where the limit is 0.6(T−15) = 0.3(95−T) → 41.7 °C, checked in node. The conclusion (it must be counterflow) still holds. Also, reply 5 confirmed ",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 3,
+      "conv": "c42080ad-9bf5-4e47-b525-e01ee4309324",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 minor error. At reply 6 Kelvin endorsed \"Counting distinct fluids coming out gets you there too.\" That fails for the water-to-water exchanger from his own chat 2, where both outlets are water but each stream needs its own mass balance. The right count is separate (unmixed) streams, not fluids. Everything else is correct: B, dm/dt = ṁ_in, one balance per unmixed stream.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 1,
+      "conv": "883e5191-1707-49a6-838a-d10fabc0c90d",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 2,
+      "conv": "3c8b9327-2aae-41cc-a25c-e64f18af4b35",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "36cf8479-2778-4d3d-a3b6-6cfc5b413ff5",
+      "helpfulness": 3,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 minor errors.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 1,
+      "conv": "561ba677-6183-4ae7-96be-4e78eb614191",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 substantive error. Reply 3 said \"(Turbines use the same idea, with the ideal state in the numerator of the work ratio.)\" That is wrong: η_T = (h1 − h2a)/(h1 − h2s), so the ideal state is in the denominator. Checked: T2s 543.4, W 140.7 kW, η_c 0.869, \"about 15% more work\", Δs throttle 0.597, Δs actual 0.066, T2 579.8 at η = 0.87. All correct.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 2,
+      "conv": "263f307c-5691-494b-aeba-c44cf4d3cd76",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 3,
+      "conv": "ce99a615-d6b4-4416-a469-3b99ea39a0c0",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 substantive error and 1 probable minor error.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 1,
+      "conv": "05161c2d-a442-46da-a7a0-4f51e2a12b9d",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 2,
+      "conv": "645b5216-9a81-419b-8bb1-cee303fb9d91",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 3,
+      "conv": "dc8a711a-41be-448b-9eb5-d24da5ed2bb9",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "student": "Student 1",
+      "chat": 1,
+      "conv": "150e7c02-4b1b-46a9-a8a8-81a1d7fd5a81",
+      "errors": 1,
+      "note": "1 error. Reply 6: \"The problem handed you single values ($c_v = 0.718$, $c_p = 1.005$)\". The problem gave no cv or cp. The student pulled them from Table A-2 and said so at turn 7. Kelvin answered the follow-up without admitting the slip. Checked and correct: T2 = 900 K; W23 = 0.5(0.287)(900)ln3 = 141.9 kJ; W31 = -86.1 kJ; net 55.8 kJ; Q12 = 215.4 kJ; Q31 = -301.5 kJ; the Q sum is 55.8 kJ; the rou"
+    },
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "59b29a07-0c9c-400f-b322-4770c8592ccd",
+      "errors": 2,
+      "note": "2 errors. About 20 other numbers are engine-exact."
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "f99b0247-67b2-4f86-878c-056babecff0e",
+      "errors": 1,
+      "note": "1 error. Reply 7: \"That gap is the latent heat of vaporization: adding ~2087 kJ/kg at *constant temperature* turns the liquid into vapor.\" The engine at 100 °C gives u_fg = 2506.02 − 419.06 = 2087, but the latent heat (the heat added at constant P) is **h_fg = 2256.4 kJ/kg**. The ~169 kJ/kg difference is P·v_fg of boundary work. Checked correct: T_f = 48 °C (237.6/4.95), the 117 kJ each way, batht"
+    },
+    {
+      "student": "Student 3",
+      "chat": 2,
+      "conv": "7b13e1b7-f98f-4c4d-80f0-17dfaa86992c",
+      "errors": 2,
+      "note": "2 errors (1 substantive, 1 minor)."
+    },
+    {
+      "student": "Student 4",
+      "chat": 3,
+      "conv": "1f4525ca-d81e-4715-a19f-0920c7b631b7",
+      "errors": 1,
+      "note": "1 error, an unsupported course claim at reply 1. The physics is correct: the convention, the Q+W equivalence, E_in − E_out, and −5 kJ (25 in, 30 out). The course claims are not."
+    },
+    {
+      "student": "Student 5",
+      "chat": 3,
+      "conv": "3118d57d-ed88-45ea-be28-b030b96c6986",
+      "errors": 1,
+      "note": "1 minor error. Reply 2: \"the work lets the kitchen also gain an extra $S_{gen} \\ge 0$\". The kitchen gains extra entropy because it receives the extra heat W; S_gen belongs to the total, not to the kitchen. Reply 4 restated it correctly. Checked correct: −0.00364, +0.00333, −0.000303, +0.0015, heat-pump COP 12, COP_R = 275/25 = 11, W_min = 90.9 kJ."
+    },
+    {
+      "student": "Student 6",
+      "chat": 1,
+      "conv": "81f7c9c2-5af9-42f0-80cd-bc994f958029",
+      "errors": 1,
+      "note": "1 substantive error. Reply 5 said \"the break-even η_c is set entirely by the ratio of ideal compressor work to turbine work, which is exactly the back-work ratio\", and asked what the cycle \"can never survive, no matter how much better the turbine gets\". Both are wrong. The threshold is w_c,s/w_t,actual = 280.6/596.9 = 0.470, a hybrid, while bwr = w_c,a/w_t = 0.553. A better turbine lowers the thre"
+    },
+    {
+      "student": "Student 7",
+      "chat": 2,
+      "conv": "f2167ef1-c429-47c4-9ac8-f1629bf1eb81",
+      "errors": 1,
+      "note": "1 error. Reply 7 said \"With your flow rates the best a parallel-flow exchanger could do is both streams meeting near 47 °C\". 47 °C is the limit for part (a) (0.4 kg/s: 0.6(T−15) = 0.4(95−T) → 47). The 35/45 cross under discussion is part (c) (0.3 kg/s), where the limit is 0.6(T−15) = 0.3(95−T) → 41.7 °C, checked in node. The conclusion (it must be counterflow) still holds. Also, reply 5 confirmed "
+    },
+    {
+      "student": "Student 7",
+      "chat": 3,
+      "conv": "c42080ad-9bf5-4e47-b525-e01ee4309324",
+      "errors": 1,
+      "note": "1 minor error. At reply 6 Kelvin endorsed \"Counting distinct fluids coming out gets you there too.\" That fails for the water-to-water exchanger from his own chat 2, where both outlets are water but each stream needs its own mass balance. The right count is separate (unmixed) streams, not fluids. Everything else is correct: B, dm/dt = ṁ_in, one balance per unmixed stream."
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "36cf8479-2778-4d3d-a3b6-6cfc5b413ff5",
+      "errors": 2,
+      "note": "2 minor errors."
+    },
+    {
+      "student": "Student 9",
+      "chat": 1,
+      "conv": "561ba677-6183-4ae7-96be-4e78eb614191",
+      "errors": 1,
+      "note": "1 substantive error. Reply 3 said \"(Turbines use the same idea, with the ideal state in the numerator of the work ratio.)\" That is wrong: η_T = (h1 − h2a)/(h1 − h2s), so the ideal state is in the denominator. Checked: T2s 543.4, W 140.7 kW, η_c 0.869, \"about 15% more work\", Δs throttle 0.597, Δs actual 0.066, T2 579.8 at η = 0.87. All correct."
+    },
+    {
+      "student": "Student 9",
+      "chat": 3,
+      "conv": "ce99a615-d6b4-4416-a469-3b99ea39a0c0",
+      "errors": 1,
+      "note": "1 substantive error and 1 probable minor error."
+    }
+  ]
+}

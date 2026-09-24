@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kelvin AI — Admin</title>
+<link rel="stylesheet" href="/admin.css">
+<script src="/vendor/marked.umd.js"></script>
+<script src="/vendor/purify.min.js"></script>
+<script src="/vendor/chart.umd.min.js"></script>
+<script src="/account.js"></script>
+<script src="/admin.js" defer></script>
+</head>
+<body>
+<div id="app" class="app">
+  <div id="backdrop" class="backdrop"></div>
+  <aside id="rail" class="rail">
+    <div class="rail-top">
+      <a class="brand" href="/admin">Kelvin AI <span class="brand-tag">Admin</span></a>
+      <button id="closeRail" class="icon-btn only-mobile" title="Close menu" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <nav id="tabs" class="tabs" aria-label="Admin sections">
+      <a href="#overview" data-tab="overview">Overview</a>
+      <a href="#students" data-tab="students">Students</a>
+      <a href="#conversations" data-tab="conversations">Conversations</a>
+      <a href="#misconceptions" data-tab="misconceptions">Misconceptions</a>
+      <a href="#tutoring" data-tab="tutoring">Tutoring decisions</a>
+      <a href="#usage" data-tab="usage">Cost &amp; usage</a>
+      <a href="#evals" data-tab="evals">Evals</a>
+    </nav>
+    <div class="rail-foot">
+      <p>Read-only. Students are anonymized; admins are left out of every number.</p>
+      <a href="/">&larr; Back to chat</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="openRail" class="icon-btn only-mobile" title="Open menu" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <h1 id="title" class="title">Overview</h1>
+      <div id="groupFilter" class="seg" role="radiogroup" aria-label="Which students">
+        <button type="button" role="radio" data-group="all">All</button>
+        <button type="button" role="radio" data-group="real">Real</button>
+        <button type="button" role="radio" data-group="test">Test</button>
+        <button type="button" role="radio" data-group="eval">Eval</button>
+      </div>
+    </header>
+    <div id="view" class="view" aria-live="polite"></div>
+  </main>
+</div>
+</body>
+</html>

@@ -1008,6 +1008,7 @@
     $('userName').textContent = name;
     $('userAvatar').textContent = window.KelvinAccount.initials(name, state.me.user.email);
     $('userMenuEmail').textContent = state.me.user.email || '';
+    $('adminLink').hidden = !(state.me.profile && state.me.profile.is_admin);
   }
   function closeUserMenu() {
     userMenu.hidden = true;
