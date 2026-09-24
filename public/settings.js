@@ -13,7 +13,16 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
-      <form class="modal-body acct-form" novalidate>
+      <div class="set-tabs" role="tablist" aria-label="Settings sections">
+        <button type="button" role="tab" class="set-tab" data-tab="profile" aria-selected="true">Profile</button>
+        <button type="button" role="tab" class="set-tab" data-tab="learning" aria-selected="false">What Kelvin knows</button>
+      </div>
+      <div class="modal-body set-learning" data-panel="learning" hidden>
+        <p class="acct-note set-learning-intro">What Kelvin has worked out about you from your chats. It uses this to decide what to check first. If something is wrong, correct it here. Your corrections are kept, and Kelvin sees them from your next message.</p>
+        <div class="set-learning-error acct-error" role="alert"></div>
+        <div class="set-learning-body"></div>
+      </div>
+      <form class="modal-body acct-form" data-panel="profile" novalidate>
         <div class="acct-section">Account</div>
         <div class="acct-field"><label for="set_email">Email</label><input id="set_email" readonly></div>
         <div class="acct-field"><label for="set_display_name">Name</label><input id="set_display_name" maxlength="120" required></div>
@@ -77,6 +86,7 @@
     root.querySelector('[data-close]').addEventListener('click', close);
     root.addEventListener('keydown', onKey);
     root.querySelector('form').addEventListener('submit', save);
+    for (const tab of root.querySelectorAll('.set-tab')) tab.addEventListener('click', () => showTab(tab.dataset.tab));
     $('set_use_jev').addEventListener('change', syncRouter);
     const del = root.querySelector('.set-delete');
     del.addEventListener('click', async () => {
@@ -93,6 +103,167 @@
         del.disabled = false;
       }
     });
+  }
+
+  // ---- Tabs ----
+  function showTab(name) {
+    for (const tab of root.querySelectorAll('.set-tab')) tab.setAttribute('aria-selected', String(tab.dataset.tab === name));
+    for (const panel of root.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== name;
+    if (name === 'learning') loadLearning();
+  }
+
+  // ---- What Kelvin knows (GET/POST /api/me/learning) ----
+  const STATUS_WORDS = { suspected: 'Suspected', likely: 'Likely', confirmed: 'Confirmed', repaired: 'Fixed', relapsed: 'Came back' };
+  const BELIEF_WORDS = { solid: 'Solid', shaky: 'Shaky', misconception: 'Misconception', unknown: 'Not sure yet' };
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  };
+  const day = (d) => (d ? String(d).slice(0, 10) : '');
+
+  async function loadLearning() {
+    const body = root.querySelector('.set-learning-body');
+    root.querySelector('.set-learning-error').textContent = '';
+    body.textContent = 'Loading…';
+    const r = await window.KelvinAccount.call('/api/me/learning');
+    if (!r.ok) {
+      body.textContent = '';
+      root.querySelector('.set-learning-error').textContent = (r.data && r.data.error) || 'Could not load (' + r.status + ').';
+      return;
+    }
+    renderLearning(r.data);
+  }
+
+  async function learningEdit(payload) {
+    root.querySelector('.set-learning-error').textContent = '';
+    const r = await window.KelvinAccount.call('/api/me/learning', { method: 'POST', body: JSON.stringify(payload) });
+    if (!r.ok) {
+      root.querySelector('.set-learning-error').textContent = (r.data && r.data.error) || 'Could not save (' + r.status + ').';
+      return;
+    }
+    renderLearning(r.data);
+  }
+
+  function beliefSelect(value) {
+    const s = el('select', 'set-belief');
+    for (const [v, w] of Object.entries(BELIEF_WORDS)) {
+      const o = el('option', null, w);
+      o.value = v;
+      if (v === value) o.selected = true;
+      s.appendChild(o);
+    }
+    return s;
+  }
+
+  function renderLearning(view) {
+    const body = root.querySelector('.set-learning-body');
+    body.textContent = '';
+    const m = view.model || {};
+    const titles = view.titles || {};
+    const name = (ref) => titles[ref] || String(ref).replace(/^(misc|topic|eq|student):/, '');
+
+    // Misconceptions
+    body.appendChild(el('div', 'acct-section', 'Misconceptions Kelvin noticed'));
+    const miscs = Object.values(m.misconceptions || {}).sort((a, b) => String(b.lastEvidenceAt).localeCompare(String(a.lastEvidenceAt)));
+    if (!miscs.length) body.appendChild(el('p', 'set-learning-empty', 'None recorded.'));
+    for (const x of miscs) {
+      const item = el('div', 'set-learning-item');
+      const head = el('div', 'set-learning-head');
+      head.appendChild(el('span', 'set-learning-title', name(x.ref)));
+      head.appendChild(el('span', 'set-badge set-badge-' + x.status, STATUS_WORDS[x.status] || x.status));
+      item.appendChild(head);
+      const meta = [x.signals ? x.signals + ' sign' + (x.signals === 1 ? '' : 's') : '', x.lastEvidenceAt ? 'last seen ' + day(x.lastEvidenceAt) : '', x.stale ? 'old' : ''].filter(Boolean).join(' · ');
+      if (meta) item.appendChild(el('div', 'set-learning-meta', meta));
+      if (x.lastQuote) item.appendChild(el('div', 'set-learning-quote', '“' + x.lastQuote + '”'));
+      const actions = el('div', 'set-learning-actions');
+      const dismiss = el('button', 'acct-btn secondary set-small', "That's not me");
+      dismiss.type = 'button';
+      dismiss.addEventListener('click', () => learningEdit({ action: 'dismiss_misconception', ref: x.ref }));
+      actions.appendChild(dismiss);
+      if (x.status !== 'repaired') {
+        const fixed = el('button', 'acct-btn secondary set-small', "I've got this now");
+        fixed.type = 'button';
+        fixed.addEventListener('click', () => learningEdit({ action: 'repair_misconception', ref: x.ref }));
+        actions.appendChild(fixed);
+      }
+      item.appendChild(actions);
+      body.appendChild(item);
+    }
+
+    // Notes (hypotheses), editable
+    body.appendChild(el('div', 'acct-section', 'Notes about what you know'));
+    const notes = [...(m.hypotheses || [])].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+    if (!notes.length) body.appendChild(el('p', 'set-learning-empty', 'None yet.'));
+    for (const h of notes) {
+      const item = el('div', 'set-learning-item');
+      const head = el('div', 'set-learning-head');
+      head.appendChild(el('span', 'set-learning-title', name(h.about)));
+      head.appendChild(el('span', 'set-learning-meta', (h.source === 'student' ? 'by you' : 'by Kelvin') + ' · ' + day(h.updatedAt) + (h.stale ? ' · old' : '')));
+      item.appendChild(head);
+      const belief = beliefSelect(h.belief);
+      const note = el('textarea', 'set-note');
+      note.rows = 2;
+      note.maxLength = 300;
+      note.value = h.note || '';
+      item.appendChild(belief);
+      item.appendChild(note);
+      const actions = el('div', 'set-learning-actions');
+      const save = el('button', 'acct-btn secondary set-small', 'Save');
+      save.type = 'button';
+      save.addEventListener('click', () => learningEdit({ action: 'edit_note', ref: h.ref || h.about, belief: belief.value, note: note.value }));
+      const remove = el('button', 'acct-btn secondary set-small', 'Remove');
+      remove.type = 'button';
+      remove.addEventListener('click', () => learningEdit({ action: 'remove_note', ref: h.ref || h.about }));
+      actions.appendChild(save);
+      actions.appendChild(remove);
+      item.appendChild(actions);
+      body.appendChild(item);
+    }
+    const add = el('div', 'set-learning-item set-learning-add');
+    add.appendChild(el('div', 'set-learning-title', 'Add a note of your own'));
+    const about = el('input', 'set-about');
+    about.placeholder = 'Topic, e.g. steam tables';
+    about.maxLength = 120;
+    const addBelief = beliefSelect('solid');
+    const addNote = el('textarea', 'set-note');
+    addNote.rows = 2;
+    addNote.maxLength = 300;
+    addNote.placeholder = 'Optional: anything Kelvin should know';
+    const addBtn = el('button', 'acct-btn secondary set-small', 'Add note');
+    addBtn.type = 'button';
+    addBtn.addEventListener('click', () => learningEdit({ action: 'add_note', about: about.value, belief: addBelief.value, note: addNote.value }));
+    add.appendChild(about);
+    add.appendChild(addBelief);
+    add.appendChild(addNote);
+    add.appendChild(addBtn);
+    body.appendChild(add);
+
+    // Practice
+    body.appendChild(el('div', 'acct-section', 'Practice record'));
+    const kcs = Object.values(m.kcs || {});
+    if (!kcs.length) body.appendChild(el('p', 'set-learning-empty', 'No practice recorded yet.'));
+    for (const k of kcs) {
+      const item = el('div', 'set-learning-item');
+      const head = el('div', 'set-learning-head');
+      head.appendChild(el('span', 'set-learning-title', name(k.ref)));
+      head.appendChild(el('span', 'set-badge ' + (k.mastered ? 'set-badge-repaired' : 'set-badge-likely'), k.mastered ? 'Mastered' : 'Practising'));
+      item.appendChild(head);
+      item.appendChild(el('div', 'set-learning-meta', k.correct + ' of ' + k.attempts + ' right · streak ' + k.streak + ' · estimated ' + Math.round(k.pKnown * 100) + '% known' + (k.lastPracticedAt ? ' · ' + day(k.lastPracticedAt) : '')));
+      const actions = el('div', 'set-learning-actions');
+      const reset = el('button', 'acct-btn secondary set-small', 'Reset');
+      reset.type = 'button';
+      reset.addEventListener('click', () => learningEdit({ action: 'reset_practice', ref: k.ref }));
+      actions.appendChild(reset);
+      item.appendChild(actions);
+      body.appendChild(item);
+    }
+
+    // The exact text the tutor is given
+    body.appendChild(el('div', 'acct-section', 'Exactly what Kelvin sees'));
+    body.appendChild(el('p', 'acct-note', 'This is the Markdown that goes into Kelvin\'s instructions with every message you send. It is built from everything above, so it changes when you correct something.'));
+    body.appendChild(el('pre', 'set-learning-md', view.markdown || ''));
   }
 
   // Without Jev only Kelvin can pick the style, so the choice is shown but locked.
@@ -189,9 +360,10 @@
     opener = o.opener || document.activeElement;
     onSaved = o.onSaved || null;
     root.hidden = false;
-    root.querySelector('.modal-body').scrollTop = 0;
+    showTab(o.tab === 'learning' ? 'learning' : 'profile');
+    for (const b of root.querySelectorAll('.modal-body')) b.scrollTop = 0;
     load().then(() => {
-      if (!root.hidden) $('set_display_name').focus();
+      if (!root.hidden && !root.querySelector('[data-panel="profile"]').hidden) $('set_display_name').focus();
     });
   }
 
