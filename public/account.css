@@ -63,16 +63,9 @@ body.account-page:has(.test-accounts) { gap: 48px; }
 .set-tab { font: inherit; font-size: 14px; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 10px; color: var(--text2); cursor: pointer; }
 .set-tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
 .set-learning[hidden], .acct-form[hidden] { display: none; }
-.set-learning-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
-.set-learning-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.set-learning-title { font-weight: 600; font-size: 14.5px; }
-.set-learning-meta { color: var(--text2); font-size: 12.5px; }
-.set-learning-quote { color: var(--text2); font-size: 13px; font-style: italic; }
-.set-learning-empty { color: var(--text2); font-size: 13.5px; margin: 6px 0; }
-.set-learning-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.acct-btn.set-small { padding: 6px 12px; font-size: 13px; margin-top: 0; }
-.set-learning-item textarea, .set-learning-item input, .set-learning-item select { font: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--bg); color: var(--text); }
-.set-badge { font-size: 12px; border-radius: 999px; padding: 2px 8px; border: 1px solid var(--border); color: var(--text2); white-space: nowrap; }
-.set-badge-confirmed, .set-badge-relapsed { color: var(--error-text); border-color: var(--error-border); }
-.set-badge-repaired { color: var(--text); }
-.set-learning-md { white-space: pre-wrap; font-size: 12.5px; line-height: 1.45; background: var(--hover); border-radius: 10px; padding: 12px; margin: 6px 0 0; }
+.set-learning-doc { font-size: 14.5px; line-height: 1.55; }
+.set-learning-doc h1 { font-size: 20px; margin: 0 0 6px; }
+.set-learning-doc h2 { font-size: 15.5px; margin: 18px 0 6px; }
+.set-learning-doc p { color: var(--text2); margin: 0 0 8px; }
+.set-learning-doc ul { margin: 0; padding-left: 20px; }
+.set-learning-doc li { margin: 4px 0; }
