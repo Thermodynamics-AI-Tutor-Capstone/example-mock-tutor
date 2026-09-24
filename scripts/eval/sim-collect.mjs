@@ -39,7 +39,7 @@ const BASE = (process.env.EVAL_BASE_URL || 'https://thermo-tutor-mock.vercel.app
 
 const { readTurn, heuristicRead } = await import('../../lib/decide.js');
 const { loadKnowledge } = await import('../../lib/knowledge.js');
-const { loadStyles } = await import('../../lib/styles.js');
+const { loadStyles, resolveStyleId } = await import('../../lib/styles.js');
 const { loadPolicy } = await import('../../lib/policy.js');
 const T = loadPolicy().thresholds;
 const knowledge = await loadKnowledge();
@@ -291,6 +291,8 @@ for (const reader of READERS.filter((r) => !r.startsWith('rules'))) {
 }
 
 // Style fit: the style Kelvin actually used vs the role-player's best_style label (round 2 onward).
+// Labels written before the 2026-09-23 merge use the old style ids; map them the way the server does.
+for (const t of turns) if (t.truth?.best_style) t.truth.best_style = resolveStyleId(t.truth.best_style);
 const styled = turns.filter((t) => t.truth?.best_style && t.live?.routed_style);
 if (styled.length) {
   const fit = styled.filter((t) => t.live.routed_style === t.truth.best_style).length;
