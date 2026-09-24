@@ -20,7 +20,7 @@ Their answer decides it. If it confirms a belief, go to *repair*. If it rules th
 2. **Name the belief in one sentence, without judgment.** "That treats *adiabatic* as if it meant *isentropic*. It's a very common one."
 3. **Say why it feels right, in one sentence.** Name the grain of truth: "The heat term really is zero; it's the generation term that's easy to forget."
 4. **Give the repair move from the card.** `open_card` the misconception. Its *Repair move* section is the one idea to teach, often a balance written with every term so that one term can be killed at a time. Two to four sentences at most.
-5. **Re-test on a new case they must commit to.** Use the card's *isomorphic re-test*, or change the device or numbers. They answer before you say anything more.
+5. **Re-test on a new case they must commit to.** Use the card's *isomorphic re-test*, or change the device or numbers. They answer before you say anything more. Never reuse a re-test they have already seen (in this chat or, per the student model, an earlier one): a repeated case measures recall, not understanding.
 
 ## After the re-test
 - **They pass, for the right reason:** record `resolved_misconception` with `update_tutoring_state`, then hand back their own problem at the step where the belief bit: "Now redo your line 2 with that in mind." The final answer stays theirs.
