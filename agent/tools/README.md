@@ -28,6 +28,7 @@ say what the tool is for, when to use it, and when *not* to.
 | `update_tutoring_state` | Records the problem's name, the rung used, confirmed and repaired misconceptions, the assumption ledger, and whether the problem is finished or parked. It **cannot** raise the help ceiling, add attempts or reset the ladder: the server does those from Jev's read (`../policy.yml`). | always, for styles that list it |
 | `note_student_assumption` | Records a durable hypothesis about what this student knows ("shaky on h vs u"), shown as a draft in their later conversations. A later note on the same thing replaces the earlier one. | the student is signed in |
 | `record_practice_result` | Records one practice or re-test attempt (correct? independent?) and returns the updated mastery record, tracked in code with Bayesian Knowledge Tracing (textbook defaults, not fitted). | the student is signed in |
+| `show_on_board` | Validates and streams a small schematic or ordered solution steps to the chat. | styles with figures enabled |
 
 Which **style** gets which tool is set in that style's `style.yml` (`tools:`), in
 [`../styles/`](../styles/README.md).

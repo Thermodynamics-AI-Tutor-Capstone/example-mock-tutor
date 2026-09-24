@@ -137,12 +137,12 @@
     });
   }
 
-  // Mermaid and property-diagram blocks are drawn by public/figures.js, which is fetched the first
+  // Diagram and teaching-board blocks are drawn by public/figures.js, fetched the first
   // time a reply contains one.
   let figuresScript = null;
-  function renderFigures(el) {
-    if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram')) return;
-    if (window.KelvinFigures) return window.KelvinFigures.render(el, { api });
+  function renderFigures(el, opts) {
+    if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board')) return;
+    if (window.KelvinFigures) return window.KelvinFigures.render(el, { api, ...opts });
     if (!figuresScript) {
       figuresScript = new Promise((resolve, reject) => {
         const s = document.createElement('script');
@@ -157,15 +157,16 @@
     }
     figuresScript.then(
       () => {
-        if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api });
+        if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api, ...opts });
       },
       () => {}
     );
   }
 
-  function setMarkdown(el, text) {
+  function setMarkdown(el, text, { live = false } = {}) {
+    const reuse = new Map([...el.querySelectorAll('figure[data-kfig]')].map((fig) => [fig.dataset.kfig, fig]));
     el.innerHTML = renderMarkdown(text);
-    renderFigures(el);
+    renderFigures(el, { live, reuse });
     decorateCode(el);
   }
 
@@ -812,7 +813,7 @@
       rafPending = false;
       if (!row.isConnected) return;
       const stick = nearBottom();
-      setMarkdown(md, text2);
+      setMarkdown(md, text2, { live: state.streaming });
       if (stick) scrollToBottom();
       updateScrollBtn();
     };

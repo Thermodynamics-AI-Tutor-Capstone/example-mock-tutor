@@ -55,6 +55,9 @@ jobs:
       - name: Tutor unit tests (policy, decider, agent loop; no network)
         run: npm run agent:test
 
+      - name: Teaching board tool and renderer tests
+        run: npm run board:test
+
       # Informational. Retrieval quality is a number to watch, not a reason to
       # block a deploy — except for the one regression check the eval itself
       # enforces, which is reported here and does not gate this workflow.

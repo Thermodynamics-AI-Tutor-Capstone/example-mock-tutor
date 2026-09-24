@@ -1,20 +1,22 @@
 // Draws the figures in Kelvin's replies. Loaded on demand by app.js the first time a reply
 // contains one, so a chat without figures never pays for it.
 //
-// Two kinds of fenced block:
+// Three kinds of fenced block:
 //   ```mermaid          — a Mermaid diagram (cycle sketches, concept maps), drawn by the Mermaid
 //                         library, which is fetched only when the first one appears.
 //   ```kelvin-diagram   — a property diagram. The block holds only the request (fluid, diagram
 //                         type, states, processes); the server computes the saturation dome and
 //                         every curve from the property tables and this file draws the SVG. So a
 //                         saved reply redraws from the same tables rather than from stored pixels.
+//   ```kelvin-board     — a structured teaching sketch or equation board from show_on_board.
 //
-// Rendering is idempotent and cached by block text: app.js re-renders the whole reply on every
-// streamed token, and a finished figure is put straight back without redrawing or refetching.
+// Property and Mermaid figures are cached by block text. Boards render per instance so their SVG
+// marker and accessibility ids stay unique; app.js preserves the live figure across stream updates.
 (function () {
   const cache = new Map();
   const pending = new Map();
   let mermaidPromise = null;
+  let boardPromise = null;
   let uid = 0;
 
   const CSS = `
@@ -225,6 +227,19 @@
     return `<div class="kfig-mermaid">${svg}</div>`;
   }
 
+  function loadBoard() {
+    if (window.KelvinBoard) return Promise.resolve(window.KelvinBoard);
+    if (boardPromise) return boardPromise;
+    boardPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/board.js';
+      script.onload = () => window.KelvinBoard ? resolve(window.KelvinBoard) : reject(new Error('The board could not be loaded.'));
+      script.onerror = () => reject(new Error('The board could not be loaded.'));
+      document.head.appendChild(script);
+    }).catch((error) => { boardPromise = null; throw error; });
+    return boardPromise;
+  }
+
   // ---- wiring ----------------------------------------------------------------------------------
 
   function fill(key, html) {
@@ -261,17 +276,33 @@
   function render(root, opts) {
     injectCss();
     const api = opts && opts.api;
-    const blocks = root.querySelectorAll('pre > code.language-mermaid, pre > code.language-kelvin-diagram');
+    const blocks = root.querySelectorAll('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board');
     blocks.forEach((code) => {
-      const kind = code.classList.contains('language-mermaid') ? 'mermaid' : 'diagram';
+      const kind = code.classList.contains('language-mermaid') ? 'mermaid' : code.classList.contains('language-kelvin-board') ? 'board' : 'diagram';
       const text = code.textContent.trim();
       const key = kind + '\n' + text;
       const pre = code.parentElement;
       const host = pre.parentElement && pre.parentElement.classList.contains('code-wrap') ? pre.parentElement : pre;
+      const previous = opts?.reuse?.get(hash(key));
+      if (previous) {
+        host.replaceWith(previous);
+        return;
+      }
       const fig = document.createElement('figure');
       fig.className = 'kfig';
       fig.dataset.kfig = hash(key);
       host.replaceWith(fig);
+      if (kind === 'board') {
+        let spec;
+        try { spec = JSON.parse(text); }
+        catch { fig.innerHTML = '<div class="kfig-note">Drawing the board…</div>'; return; }
+        fig.innerHTML = '<div class="kfig-note">Drawing the board…</div>';
+        loadBoard().then(
+          (board) => { if (fig.isConnected) fig.innerHTML = board.render(spec, { animate: Boolean(opts?.live) }); },
+          (error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; }
+        ).catch((error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; });
+        return;
+      }
       if (cache.has(key)) {
         fig.innerHTML = cache.get(key);
         return;

@@ -123,6 +123,21 @@ await t('a round with no tools streams unchanged', async () => {
   assert.equal(shown, 'What does x mean here?');
 });
 
+await t('a board tool call streams a saved figure before the follow-up question', async () => {
+  const board = {
+    kind: 'solution', title: 'Energy balance',
+    steps: [{ label: 'Start here', latex: '\\Delta U=Q-W', note: 'Which term is zero?' }],
+  };
+  const { shown, out, bodies } = await run([
+    { tools: [{ name: 'show_on_board', arguments: board }] },
+    { text: ['Which term is zero?'] },
+  ]);
+  assert.match(shown, /^\n\n```kelvin-board\n/);
+  assert.match(shown, /Which term is zero\?$/);
+  assert.equal(out.text, shown);
+  assert.equal(bodies[1].messages.find((m) => m.role === 'tool').content.includes('"board"'), true);
+});
+
 await t('a tool call written as text markup is never shown, and it is run as a real call', async () => {
   const markup = 'Checking that.\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Ctool_calls>\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Cinvoke name="calculate">\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Cparameter name="expressions" string="false">["131.06 / 42.13"]</\uFF5C\uFF5CDSML\uFF5C\uFF5Cparameter>\n</\uFF5C\uFF5CDSML\uFF5C\uFF5Cinvoke>\n</\uFF5C\uFF5CDSML\uFF5C\uFF5Ctool_calls>';
   const { out, shown, bodies } = await run([{ text: markup.match(/[\s\S]{1,17}/g) }, { text: ['Your COP is 3.11.'] }]);

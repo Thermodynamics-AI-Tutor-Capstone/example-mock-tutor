@@ -19,6 +19,7 @@ tools:
   - calculate
   - check_constraints
   - plot_property_diagram
+  - show_on_board
   - record_practice_result
 skills:
   - misconception-repair

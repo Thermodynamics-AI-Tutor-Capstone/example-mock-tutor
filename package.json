@@ -15,6 +15,7 @@
     "kb:test": "node scripts/kb/ingest.test.mjs",
     "agent:validate": "node scripts/validate-agent.mjs",
     "agent:test": "node scripts/tutor.test.mjs && node scripts/agent-loop.test.mjs",
+    "board:test": "node scripts/board.test.mjs",
     "eval:personas": "node scripts/eval/personas.mjs",
     "eval:compare": "node scripts/eval/personas.mjs --jev both",
     "check:imports": "node scripts/smoke-imports.mjs",

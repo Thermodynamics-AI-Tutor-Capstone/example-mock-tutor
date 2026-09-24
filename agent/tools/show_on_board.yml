@@ -1,0 +1,61 @@
+# Structured teaching sketch and equation board; implementation: lib/tools/show_on_board.js.
+name: show_on_board
+description: >-
+  Make a small teaching board with labeled components/states, arrows, and up to six equation or
+  reasoning steps. Use for a control-volume sketch, a system boundary, energy flows, or the next
+  step in a student's solution. A board is schematic, not to scale. Use plot_property_diagram for
+  T-s, P-v, P-h, and T-v plots. Give only quantities already in the problem or checked with tools;
+  do not invent values or reveal later solution steps beyond the current help level. The result
+  contains validated board data. The app shows the board immediately when this tool succeeds;
+  continue with one short question and do not copy the figure block.
+status: Showing on board
+parameters:
+  type: object
+  additionalProperties: false
+  properties:
+    kind:
+      type: string
+      enum: [sketch, solution]
+      description: Sketch requires nodes; solution requires steps and may also have nodes.
+    title:
+      type: string
+      maxLength: 90
+    nodes:
+      type: array
+      maxItems: 8
+      description: Schematic boxes. Coordinates are 10-90 percent across/down. Keep boxes separated by about 23 x and 22 y units.
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          id: { type: string, description: Unique lowercase id, such as turbine or state1. }
+          label: { type: string, maxLength: 48 }
+          kind: { type: string, enum: [component, state, boundary, note] }
+          x: { type: integer, minimum: 10, maximum: 90 }
+          y: { type: integer, minimum: 10, maximum: 90 }
+        required: [id, label, kind, x, y]
+    arrows:
+      type: array
+      maxItems: 12
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          from: { type: string, description: Source node id. }
+          to: { type: string, description: Destination node id. }
+          label: { type: string, maxLength: 48, description: Short label such as mass flow, Q, or W. }
+          kind: { type: string, enum: [flow, heat, work, relationship] }
+        required: [from, to, kind]
+    steps:
+      type: array
+      maxItems: 6
+      description: Ordered lines already justified by the student or current help level.
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          label: { type: string, maxLength: 36, description: E.g. Known, Assumptions, Energy balance. }
+          latex: { type: string, maxLength: 180, description: Optional KaTeX equation, no $ delimiters. }
+          note: { type: string, maxLength: 180, description: Optional plain-language explanation. }
+        required: [label]
+  required: [kind, title]

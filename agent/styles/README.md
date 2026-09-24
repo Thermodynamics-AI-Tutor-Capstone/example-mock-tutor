@@ -78,7 +78,7 @@ Research references are to the capstone's survey,
 | `route_when.use_for` | **Required.** One or two sentences Jev reads to decide when this style fits. Say what the student is doing, not what the style does. |
 | `route_when.not_for`, `route_when.examples` | Optional. Neighbouring situations that belong to another style, and a few example student messages. These help Jev tell similar styles apart. |
 | `route_when.intents` | Optional. Intents (from `lib/decide.js`) this style serves when Jev has no style answer, e.g. `[check_work]`. |
-| `ui.figures`, `ui.mermaid` | Reserved for figure rendering (not built yet). |
+| `ui.figures`, `ui.mermaid` | Include figure guidance and enable the figure-rendering experience for this style. |
 | `enabled` | `false` hides the style from the menu *and* from Auto. |
 
 If a style's connection has no API key set, or it lists a tool whose own key is missing, the menu
