@@ -94,6 +94,12 @@ a { color: inherit; }
 .seg button { padding: 5px 12px; border-radius: 8px; font-size: 13px; color: var(--text2); }
 .seg button[aria-checked="true"] { background: var(--active); color: var(--text); font-weight: 600; }
 .seg[hidden] { display: none; }
+.seg.small button { padding: 3px 10px; font-size: 12px; }
+canvas { transition: opacity .15s ease; }
+.view.refreshing canvas { opacity: .5; }
+.headline-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.headline { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.caption { font-size: 13px; color: var(--text2); }
 
 .view { padding: 24px 28px 64px; max-width: 1240px; width: 100%; }
 .lede { color: var(--text2); margin: 0 0 20px; max-width: 760px; line-height: 1.5; }

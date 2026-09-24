@@ -16,6 +16,11 @@
   const GROUP_KEY = 'kelvin-admin-group';
   let group = 'all';
   try { group = sessionStorage.getItem(GROUP_KEY) || 'all'; } catch (e) {}
+  const RANGE_KEY = 'kelvin-admin-range';
+  const RANGES = [['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['6m', 'Last 6 months']];
+  let range = '30d';
+  try { range = sessionStorage.getItem(RANGE_KEY) || '30d'; } catch (e) {}
+  if (!RANGES.some(([k]) => k === range)) range = '30d';
   let charts = [];
   let pending = [];
   let renderSeq = 0;
@@ -72,6 +77,82 @@
       }))
     );
     return opts.bare ? t : h('div', { class: 'table-wrap' }, t);
+  }
+
+  // The 7 days / 30 days / 6 months switch. Shared by the activity chart and the misconceptions tab.
+  function rangeControl(onChange) {
+    const seg = h('div', { class: 'seg small', role: 'radiogroup', 'aria-label': 'Time window' });
+    const paint = () => seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.range === range)));
+    for (const [k, label] of RANGES) {
+      seg.append(h('button', {
+        type: 'button', role: 'radio', 'data-range': k,
+        onclick: () => {
+          if (k === range) return;
+          range = k;
+          try { sessionStorage.setItem(RANGE_KEY, range); } catch (e) {}
+          paint();
+          onChange();
+        },
+      }, label));
+    }
+    paint();
+    return seg;
+  }
+
+  // One over-time chart on the Overview: a headline for the window, the chart, and its table. update()
+  // swaps in a new window's data and the chart morphs in place.
+  function seriesCard(spec, first) {
+    const headline = h('div', { class: 'headline' });
+    const caption = h('div', { class: 'caption' });
+    const sub = h('p', { class: 'sub' });
+    const tableHolder = h('div', {});
+    const canvas = h('canvas', { role: 'img', 'aria-label': spec.title });
+    let chart = null;
+    const labelOf = (a, b) => (a.unit === 'week' ? `Wk of ${b.bucket.slice(5)}` : b.bucket.slice(5));
+    const datasets = (a) => spec.series(a).map((x, i) => (spec.type === 'line'
+      ? { label: x.label, data: x.values, borderColor: x.color, backgroundColor: x.color + '38', borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, tension: 0.25, fill: i === 0 ? 'origin' : '-1' }
+      : bar(x.label, x.values, x.color, { borderColor: css('--card'), borderWidth: { top: 2 } })));
+    function update(a) {
+      headline.textContent = spec.headline(a);
+      caption.textContent = spec.caption(a);
+      sub.textContent = `${spec.sub(a)}${a.unit === 'week' ? ' One point per week (weeks start Monday).' : ' One point per day.'}`;
+      const series = spec.series(a);
+      tableHolder.replaceChildren(table(
+        [{ label: a.unit === 'week' ? 'Week of' : 'Day' }, ...series.map((x) => ({ label: x.label, num: true }))],
+        a.buckets.map((b, j) => ({ cells: [b.bucket, ...series.map((x) => spec.format(x.values[j]))] })),
+        { bare: true }
+      ));
+      const labels = a.buckets.map((b) => labelOf(a, b));
+      if (!chart) return { labels, datasets: datasets(a) };
+      chart.data.labels = labels;
+      datasets(a).forEach((d, i) => { chart.data.datasets[i].data = d.data; });
+      chart.update();
+      return null;
+    }
+    const data = update(first);
+    pending.push(() => {
+      const tick = spec.tick ? { callback: spec.tick } : { precision: 0 };
+      chart = new window.Chart(canvas, {
+        type: spec.type || 'bar',
+        data,
+        options: baseOptions({
+          animation: { duration: 450, easing: 'easeOutCubic' },
+          interaction: { mode: 'index', intersect: false },
+          scales: { x: { stacked: true, ticks: { autoSkip: true, maxRotation: 0 } }, y: { stacked: true, beginAtZero: true, ticks: tick } },
+          plugins: { legend: { display: data.datasets.length > 1 }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${spec.format(c.parsed.y)}` } } },
+        }),
+      });
+      charts.push(chart);
+    });
+    const card = h('div', { class: 'card' },
+      h('h3', {}, spec.title),
+      h('div', { class: 'headline-row' }, headline, caption),
+      sub,
+      h('div', { class: 'chart-box' }, canvas),
+      h('details', { class: 'as-table' }, h('summary', {}, 'Show as table'), tableHolder)
+    );
+    card.update = update;
+    return card;
   }
 
   // A chart card: title, one-line explanation, the chart, and the same numbers as a table.
@@ -201,35 +282,66 @@
   // ── pages ────────────────────────────────────────────────────────────────────────────────────
   const PAGES = {
     async overview() {
-      const [o, evals] = await Promise.all([api('overview'), api('evals')]);
-      const k = o.kpis;
-      const cats = ['real', 'test', 'eval'];
-      const days = o.messagesPerDay;
+      const [o, evals, act] = await Promise.all([api('overview'), api('evals'), api(`activity?range=${range}`)]);
+      const cats = ['real', 'test', 'eval'].filter((c) => group === 'all' || c === group);
+      const byKind = (key) => (a) => cats.map((c) => ({ label: CATEGORY_LABEL[c], color: catColor(c), values: a.buckets.map((b) => b[key][c]) }));
+      const win = (a) => a.label.toLowerCase();
+      const count = (v) => fmt(v);
+      const cards = [
+        seriesCard({
+          title: 'Students', type: 'line', series: byKind('students'), format: count,
+          headline: (a) => fmt(a.totals.students),
+          caption: (a) => `in total · ${fmt(a.totals.newStudents)} new in the ${win(a)}`,
+          sub: (a) => `Total signed up over time, stacked by kind of account.${a.totals.deactivated ? ` Includes ${a.totals.deactivated} deactivated.` : ''}`,
+        }, act),
+        seriesCard({
+          title: 'Active students', series: byKind('active'), format: count,
+          headline: (a) => fmt(a.totals.activeStudents),
+          caption: (a) => `sent a message in the ${win(a)}`,
+          sub: () => 'Students who sent at least one message.',
+        }, act),
+        seriesCard({
+          title: 'New chats', series: byKind('chats'), format: count,
+          headline: (a) => fmt(a.totals.chats),
+          caption: (a) => `started in the ${win(a)}`,
+          sub: () => 'Chats started, including ones the student later deleted.',
+        }, act),
+        seriesCard({
+          title: 'Student messages', series: byKind('messages'), format: count,
+          headline: (a) => fmt(a.totals.messages),
+          caption: (a) => `sent in the ${win(a)}${a.totals.chats ? ` · ${fmt(a.totals.messages / a.totals.chats, 1)} per new chat` : ''}`,
+          sub: () => 'Messages students sent to Kelvin.',
+        }, act),
+        seriesCard({
+          title: 'Model cost',
+          series: (a) => [
+            { label: 'DeepSeek', color: SERIES()[0], values: a.buckets.map((b) => b.cost.deepseek) },
+            { label: 'Jev (OpenRouter)', color: SERIES()[1], values: a.buckets.map((b) => b.cost.openrouter) },
+          ],
+          format: (v) => usd(v, v && v < 1 ? 3 : 2), tick: (v) => '$' + v,
+          headline: (a) => usd(a.totals.cost),
+          caption: (a) => `spent in the ${win(a)}${a.totals.messages ? ` · ${usd(a.totals.cost / a.totals.messages, 3)} per student message` : ''}`,
+          sub: () => `From the usage log, by provider.${group === 'all' ? ' Includes offline scripts.' : ''}`,
+        }, act),
+      ];
+      const control = rangeControl(async () => {
+        view.classList.add('refreshing');
+        try {
+          const a = await api(`activity?range=${range}`);
+          cards.forEach((c) => c.update(a));
+        } catch (err) {
+          view.prepend(h('p', { class: 'error' }, err.message));
+        } finally {
+          view.classList.remove('refreshing');
+        }
+      });
       const latest = evals.runs.at(-1);
       return h('div', {},
-        h('p', { class: 'lede' }, `${groupNote()}. Real = signed-up students; Test = the simulated-student accounts used in eval rounds; Eval = the eval account and synthetic eval users. Admins are never counted.`),
-        h('div', { class: 'tiles' },
-          tile('Students', fmt(k.students), cats.map((c) => `${fmt(k.byCategory[c])} ${c}`).join(' · ')),
-          tile('Active in last 7 days', fmt(k.activeLast7Days), 'sent at least one message'),
-          tile('Chats', fmt(k.chats), `${fmt(k.deletedChats)} deleted by the student (kept)`),
-          tile('Student messages', fmt(k.studentMessages), `${fmt(k.messagesPerChat, 1)} per chat`),
-          tile('Tutor replies', fmt(k.tutorReplies)),
-          tile('Model cost, 30 days', usd(k.costLast30Days), 'DeepSeek + Jev, from the usage log'),
-          tile('Deactivated accounts', fmt(k.deactivated), 'kept, never erased')
-        ),
-        h('div', { class: 'grid2', style: 'margin-top:16px' },
-          chartCard({
-            title: 'Student messages per day',
-            sub: 'Last 30 days, stacked by kind of account.',
-            config: {
-              type: 'bar',
-              data: { labels: days.map((d) => d.day.slice(5)), datasets: cats.filter((c) => group === 'all' || c === group).map((c) => bar(CATEGORY_LABEL[c], days.map((d) => d[c]), catColor(c), { borderColor: css('--card'), borderWidth: { top: 2 }, borderSkipped: 'start' })) },
-              options: baseOptions({ scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: group === 'all' } } }),
-            },
-            head: [{ label: 'Day' }, ...cats.map((c) => ({ label: CATEGORY_LABEL[c], num: true }))],
-            rows: days.map((d) => [d.day, ...cats.map((c) => fmt(d[c]))]),
-          }),
-          hbarCard({ title: 'Tutoring styles used', sub: 'Which style handled each student turn.', items: o.styles.map((s) => ({ label: s.style, n: s.n })), valueLabel: 'Turns' })
+        h('div', { class: 'toolbar' }, control, h('span', { class: 'note' }, 'Every chart below follows this window.')),
+        h('p', { class: 'lede' }, `${groupNote()}. Real = signed-up students; Test = the simulated-student accounts used in eval rounds; Eval = the eval account and synthetic eval users. Admins are never counted. Deleted chats and deactivated accounts are included.`),
+        h('div', { class: 'grid2' },
+          ...cards,
+          hbarCard({ title: 'Tutoring styles used', sub: 'All time. Which style handled each student turn.', items: o.styles.map((x) => ({ label: x.style, n: x.n })), valueLabel: 'Turns' })
         ),
         latest ? latestEvalCard(latest) : null
       );
@@ -275,11 +387,14 @@
     },
 
     async misconceptions() {
-      const { misconceptions } = await api('misconceptions');
-      if (!misconceptions.length) return h('p', { class: 'empty' }, 'No misconception evidence in this group yet.');
+      const { misconceptions } = await api(`misconceptions?range=${range}`);
+      const windowLabel = RANGES.find(([k]) => k === range)[1].toLowerCase();
+      const control = h('div', { class: 'toolbar' }, rangeControl(render), h('span', { class: 'note' }, 'Counts only evidence from this window.'));
+      if (!misconceptions.length) return h('div', {}, control, h('p', { class: 'empty' }, `No misconception evidence in this group in the ${windowLabel}.`));
       const sum = (k) => misconceptions.reduce((s, m) => s + m[k], 0);
       return h('div', {},
-        h('p', { class: 'lede' }, `${groupNote()}. From the student-model ledger: a signal is a reader flag at 60% or more; confirmed means Kelvin diagnosed it in the conversation; fixed means the student passed a re-test.`),
+        control,
+        h('p', { class: 'lede' }, `${groupNote()}, ${windowLabel}. From the student-model ledger: a signal is a reader flag at 60% or more; confirmed means Kelvin diagnosed it in the conversation; fixed means the student passed a re-test.`),
         h('div', { class: 'tiles' },
           tile('Misconceptions seen', fmt(misconceptions.length)),
           tile('Signals', fmt(sum('signals'))),
