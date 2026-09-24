@@ -258,17 +258,22 @@ await t('students see their record and the exact Markdown, and every correction 
   ]);
   let v = await learningView(u);
   assert.equal(v.model.misconceptions['misc:m16-internal-energy-and-enthalpy-interchangeable'].status, 'likely');
-  assert.match(v.markdown, /Likely/);
+  assert.match(v.markdown, /# What Kelvin knows about you/);
+  assert.match(v.markdown, /probably, last noticed/);
+  assert.doesNotMatch(v.markdown, /misc:|topic:|`/);
+  assert.match(v.tutorMarkdown, /Likely/);
   assert.equal(v.model.hypotheses[0].source, 'tutor');
 
   v = await applyLearningEdit(u, { action: 'dismiss_misconception', ref: 'misc:m16-internal-energy-and-enthalpy-interchangeable' });
   assert.equal(Object.keys(v.model.misconceptions).length, 0);
-  assert.doesNotMatch(v.markdown, /m16/);
+  assert.doesNotMatch(v.tutorMarkdown, /m16/);
+  assert.doesNotMatch(v.markdown, /mixing up/);
 
   v = await applyLearningEdit(u, { action: 'edit_note', ref: 'topic:steam-tables', belief: 'solid', note: 'I use the pressure table now' });
   assert.equal(v.model.hypotheses[0].belief, 'solid');
   assert.equal(v.model.hypotheses[0].source, 'student');
-  assert.match(v.markdown, /solid: I use the pressure table now/);
+  assert.match(v.markdown, /you know this well\. I use the pressure table now \*\(your note/);
+  assert.match(v.tutorMarkdown, /The student says/);
 
   v = await applyLearningEdit(u, { action: 'add_note', about: 'Rankine cycles', belief: 'shaky', note: 'reheat confuses me' });
   assert.equal(v.model.hypotheses.length, 2);
