@@ -75,12 +75,14 @@ await test('isAdmin is true only for an active admin row; getProfile exposes it'
   await query('UPDATE user_profiles SET deactivated_at = NULL WHERE user_id = $1', ['u-admin']);
 });
 
-await test('categoryOf splits real, test and eval accounts', () => {
-  assert.equal(admin.categoryOf({ user_id: 'x', email: 'test3@tutor.test' }), 'test');
-  assert.equal(admin.categoryOf({ user_id: 'x', email: 'test10@tutor.com' }), 'test');
+await test('categoryOf puts every simulated-student account in eval', () => {
+  assert.equal(admin.categoryOf({ user_id: 'x', email: 'test3@tutor.test' }), 'eval');
+  assert.equal(admin.categoryOf({ user_id: 'x', email: 'test10@tutor.com' }), 'eval');
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'kelvin-eval@thermo-tutor.test' }), 'eval');
   assert.equal(admin.categoryOf({ user_id: 'eval-p1', email: null }), 'eval');
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'someone@psu.edu' }), 'real');
+  assert.equal(admin.categoryOf({ user_id: 'x', email: 'test@psu.edu' }), 'real');
+  assert.deepEqual(admin.GROUPS, ['all', 'real', 'eval']);
 });
 
 await test('population leaves admins out and keeps deactivated accounts', async () => {
@@ -93,14 +95,15 @@ await test('population leaves admins out and keeps deactivated accounts', async 
 await test('the group filter narrows every view', async () => {
   const all = await admin.overview('all');
   assert.equal(all.kpis.students, 4);
-  assert.deepEqual(all.kpis.byCategory, { real: 2, test: 1, eval: 1 });
+  assert.deepEqual(all.kpis.byCategory, { real: 2, eval: 2 });
   assert.equal(all.kpis.deletedChats, 1, 'deleted chats still count');
   assert.equal(all.kpis.deactivated, 1);
   const real = await admin.overview('real');
   assert.equal(real.kpis.students, 2);
   assert.equal(real.kpis.chats, 2);
-  assert.equal((await admin.students('test')).students.length, 1);
-  assert.equal((await admin.conversations('eval')).conversations.length, 1);
+  assert.equal((await admin.students('eval')).students.length, 2);
+  await assert.rejects(() => admin.students('test'), /group must be one of/);
+  assert.equal((await admin.conversations('eval')).conversations.length, 2);
   assert.equal((await admin.misconceptions('real')).misconceptions[0].students, 2);
   assert.equal((await admin.tutoring('all')).turns, 4, "the admin's own turn is not counted");
   await assert.rejects(() => admin.overview('everyone'), /group must be one of/);
@@ -112,13 +115,13 @@ await test('activity covers the whole window, bucketed by day or week', async ()
   assert.equal(d7.unit, 'day');
   assert.equal(d7.buckets.length, 7);
   const today = d7.buckets.at(-1);
-  assert.deepEqual(today.messages, { real: 2, test: 1, eval: 1 }, "today's messages, admin left out");
-  assert.deepEqual(today.active, { real: 2, test: 1, eval: 1 });
-  assert.deepEqual(today.chats, { real: 2, test: 1, eval: 1 }, 'deleted chats still count');
+  assert.deepEqual(today.messages, { real: 2, eval: 2 }, "today's messages, admin left out");
+  assert.deepEqual(today.active, { real: 2, eval: 2 });
+  assert.deepEqual(today.chats, { real: 2, eval: 2 }, 'deleted chats still count');
   assert.deepEqual(today.cost, { deepseek: 0.5, openrouter: 0.25 }, "the admin's own usage is left out");
   // Students joined 9, 8, 7 and 6 days ago: three before the 7-day window, one on its first day.
-  assert.deepEqual(d7.buckets[0].students, { real: 2, test: 1, eval: 1 });
-  assert.deepEqual(today.students, { real: 2, test: 1, eval: 1 });
+  assert.deepEqual(d7.buckets[0].students, { real: 2, eval: 2 });
+  assert.deepEqual(today.students, { real: 2, eval: 2 });
   assert.equal(d7.totals.newStudents, 1);
   assert.deepEqual({ ...d7.totals }, { students: 4, deactivated: 1, newStudents: 1, activeStudents: 4, chats: 4, messages: 4, cost: 0.75 });
   assert.equal((await admin.activity('all', '30d')).buckets.length, 30);
@@ -126,9 +129,9 @@ await test('activity covers the whole window, bucketed by day or week', async ()
   assert.equal(m6.unit, 'week');
   assert.ok(m6.buckets.length >= 26 && m6.buckets.length <= 28, `got ${m6.buckets.length} weeks`);
   assert.equal(m6.totals.messages, 4);
-  assert.deepEqual(m6.buckets[0].students, { real: 0, test: 0, eval: 0 });
+  assert.deepEqual(m6.buckets[0].students, { real: 0, eval: 0 });
   const real = await admin.activity('real', '7d');
-  assert.equal(real.buckets.at(-1).messages.test, 0, 'the group filter applies');
+  assert.equal(real.buckets.at(-1).messages.eval, 0, 'the group filter applies');
   assert.deepEqual(real.buckets.at(-1).cost, { deepseek: 0.5, openrouter: 0 });
   await assert.rejects(() => admin.activity('all', '1y'), /range must be one of/);
 });

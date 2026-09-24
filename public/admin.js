@@ -16,6 +16,7 @@
   const GROUP_KEY = 'kelvin-admin-group';
   let group = 'all';
   try { group = sessionStorage.getItem(GROUP_KEY) || 'all'; } catch (e) {}
+  if (!['all', 'real', 'eval'].includes(group)) group = 'all';
   const RANGE_KEY = 'kelvin-admin-range';
   const RANGES = [['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['6m', 'Last 6 months']];
   let range = '30d';
@@ -28,8 +29,8 @@
   // ── helpers ──────────────────────────────────────────────────────────────────────────────────
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const SERIES = () => [css('--s1'), css('--s2'), css('--s3'), css('--s4'), css('--s5')];
-  const CATEGORY = { real: 0, test: 1, eval: 2 };
-  const CATEGORY_LABEL = { real: 'Real', test: 'Test', eval: 'Eval' };
+  const CATEGORY = { real: 0, eval: 1 };
+  const CATEGORY_LABEL = { real: 'Real', eval: 'Eval' };
   const catColor = (c) => SERIES()[CATEGORY[c] ?? 0];
 
   function h(tag, attrs, ...kids) {
@@ -283,7 +284,7 @@
   const PAGES = {
     async overview() {
       const [o, evals, act] = await Promise.all([api('overview'), api('evals'), api(`activity?range=${range}`)]);
-      const cats = ['real', 'test', 'eval'].filter((c) => group === 'all' || c === group);
+      const cats = ['real', 'eval'].filter((c) => group === 'all' || c === group);
       const byKind = (key) => (a) => cats.map((c) => ({ label: CATEGORY_LABEL[c], color: catColor(c), values: a.buckets.map((b) => b[key][c]) }));
       const win = (a) => a.label.toLowerCase();
       const count = (v) => fmt(v);
@@ -338,7 +339,7 @@
       const latest = evals.runs.at(-1);
       return h('div', {},
         h('div', { class: 'toolbar' }, control, h('span', { class: 'note' }, 'Every chart below follows this window.')),
-        h('p', { class: 'lede' }, `${groupNote()}. Real = signed-up students; Test = the simulated-student accounts used in eval rounds; Eval = the eval account and synthetic eval users. Admins are never counted. Deleted chats and deactivated accounts are included.`),
+        h('p', { class: 'lede' }, `${groupNote()}. Real = signed-up students; Eval = every account Claude plays a student in (the simulated students and the eval account). Admins are never counted. Deleted chats and deactivated accounts are included.`),
         h('div', { class: 'grid2' },
           ...cards,
           hbarCard({ title: 'Tutoring styles used', sub: 'All time. Which style handled each student turn.', items: o.styles.map((x) => ({ label: x.style, n: x.n })), valueLabel: 'Turns' })
