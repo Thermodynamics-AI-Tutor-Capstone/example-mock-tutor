@@ -106,10 +106,50 @@ await test('the group filter narrows every view', async () => {
   await assert.rejects(() => admin.overview('everyone'), /group must be one of/);
 });
 
+await test('activity covers the whole window, bucketed by day or week', async () => {
+  await query("INSERT INTO model_usage (provider, model, purpose, user_id, cost_usd) VALUES ('deepseek', 'deepseek-v4-pro', 'tutor', 'u-real', 0.5), ('openrouter', 'jev', 'read', 'u-test', 0.25), ('deepseek', 'deepseek-v4-pro', 'tutor', 'u-admin', 9)");
+  const d7 = await admin.activity('all', '7d');
+  assert.equal(d7.unit, 'day');
+  assert.equal(d7.buckets.length, 7);
+  const today = d7.buckets.at(-1);
+  assert.deepEqual(today.messages, { real: 2, test: 1, eval: 1 }, "today's messages, admin left out");
+  assert.deepEqual(today.active, { real: 2, test: 1, eval: 1 });
+  assert.deepEqual(today.chats, { real: 2, test: 1, eval: 1 }, 'deleted chats still count');
+  assert.deepEqual(today.cost, { deepseek: 0.5, openrouter: 0.25 }, "the admin's own usage is left out");
+  // Students joined 9, 8, 7 and 6 days ago: three before the 7-day window, one on its first day.
+  assert.deepEqual(d7.buckets[0].students, { real: 2, test: 1, eval: 1 });
+  assert.deepEqual(today.students, { real: 2, test: 1, eval: 1 });
+  assert.equal(d7.totals.newStudents, 1);
+  assert.deepEqual({ ...d7.totals }, { students: 4, deactivated: 1, newStudents: 1, activeStudents: 4, chats: 4, messages: 4, cost: 0.75 });
+  assert.equal((await admin.activity('all', '30d')).buckets.length, 30);
+  const m6 = await admin.activity('all', '6m');
+  assert.equal(m6.unit, 'week');
+  assert.ok(m6.buckets.length >= 26 && m6.buckets.length <= 28, `got ${m6.buckets.length} weeks`);
+  assert.equal(m6.totals.messages, 4);
+  assert.deepEqual(m6.buckets[0].students, { real: 0, test: 0, eval: 0 });
+  const real = await admin.activity('real', '7d');
+  assert.equal(real.buckets.at(-1).messages.test, 0, 'the group filter applies');
+  assert.deepEqual(real.buckets.at(-1).cost, { deepseek: 0.5, openrouter: 0 });
+  await assert.rejects(() => admin.activity('all', '1y'), /range must be one of/);
+});
+
+await test('misconceptions only count evidence inside the window', async () => {
+  await query(
+    `INSERT INTO student_evidence (user_id, conversation_id, kind, ref, source, probability, created_at) VALUES ('u-test', $1, 'misconception_signal', 'misc:m17-cop-treated-as-an-efficiency', 'jev', 0.9, now() - interval '60 days')`,
+    [convs['u-test']]
+  );
+  const refs = async (r) => (await admin.misconceptions('all', r)).misconceptions.map((m) => m.ref);
+  assert.ok(!(await refs('30d')).includes('misc:m17-cop-treated-as-an-efficiency'));
+  assert.ok((await refs('6m')).includes('misc:m17-cop-treated-as-an-efficiency'));
+  assert.ok((await refs('7d')).includes('misc:m04-adiabatic-isentropic'));
+  await assert.rejects(() => admin.misconceptions('all', 'forever'), /range must be one of/);
+});
+
 await test('no payload carries a name, email or raw user id', async () => {
   const s = (await admin.students('all')).students;
   const payloads = [
     await admin.overview('all'),
+    await admin.activity('all', '6m'),
     { students: s },
     await admin.student(s[0].key),
     await admin.conversations('all'),
