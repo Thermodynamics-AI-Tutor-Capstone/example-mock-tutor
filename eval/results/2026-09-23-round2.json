@@ -1,0 +1,753 @@
+{
+  "id": "2026-09-23-round2",
+  "label": "Round 2",
+  "date": "2026-09-23",
+  "harness": "Round-1 fixes (PRs #7–#9); 7 styles, Jev picks; new personas and misconceptions; Opus students",
+  "findings": "eval/findings/2026-09-23-round2.md",
+  "counts": {
+    "students": 10,
+    "chats": 30,
+    "messages": 186,
+    "reviewedChats": 30
+  },
+  "summary": {
+    "helpfulness": {
+      "mean": 4.17,
+      "ci95": [
+        3.93,
+        4.4
+      ],
+      "n": 30
+    },
+    "thoroughness": {
+      "mean": 4.37,
+      "ci95": [
+        4.17,
+        4.57
+      ],
+      "n": 30
+    },
+    "accuracyErrors": 15,
+    "accuracyErrorsPer100Replies": 8.1,
+    "giveaways": {
+      "clear": 1,
+      "mild": 4
+    },
+    "misconceptionChats": 22,
+    "misconceptionCaught": 20,
+    "misconceptionCaughtRate": 90.9,
+    "styleFit": 57.5
+  },
+  "latency": {
+    "medianS": 24.3,
+    "p90S": 69.3,
+    "maxS": 236.2
+  },
+  "cost": {
+    "total": 1.99,
+    "deepseek": 1.904,
+    "jev": 0.085,
+    "byPurpose": {
+      "deepseek:tutor_reply": 1.904,
+      "openrouter:jev_audit": 0.0102,
+      "openrouter:jev_read": 0.0744
+    },
+    "source": "model_usage"
+  },
+  "readers": {
+    "live Jev": {
+      "intent": 61.3,
+      "showsWork": {
+        "recall": 88.7,
+        "precision": 81.6
+      },
+      "completeAttempt": {
+        "recall": 75.4,
+        "precision": 86
+      },
+      "wantsAnswer": {
+        "recall": 64.7,
+        "precision": 78.6
+      },
+      "misconceptionRecall": 76.5,
+      "misconceptionPrecision": 54.2,
+      "falseFlagRate": 3.3,
+      "costUsd": 0.0744
+    },
+    "Jev (replay)": {
+      "intent": 61.3,
+      "showsWork": {
+        "recall": 86.1,
+        "precision": 80.5
+      },
+      "completeAttempt": {
+        "recall": 62.3,
+        "precision": 88
+      },
+      "wantsAnswer": {
+        "recall": 70.6,
+        "precision": 80
+      },
+      "misconceptionRecall": 73.5,
+      "misconceptionPrecision": 53.2,
+      "falseFlagRate": 2.6,
+      "costUsd": 0.0743
+    },
+    "DeepSeek backup (replay)": {
+      "intent": 47.6,
+      "showsWork": {
+        "recall": 89.6,
+        "precision": 84.4
+      },
+      "completeAttempt": {
+        "recall": 66.2,
+        "precision": 89.6
+      },
+      "wantsAnswer": {
+        "recall": 58.8,
+        "precision": 100
+      },
+      "misconceptionRecall": 82.4,
+      "misconceptionPrecision": 42.4,
+      "falseFlagRate": 8.6,
+      "costUsd": 0.3064
+    },
+    "rules (replay)": {
+      "intent": 36.4,
+      "showsWork": {
+        "recall": 73.9,
+        "precision": 89.5
+      },
+      "completeAttempt": {
+        "recall": null,
+        "precision": null
+      },
+      "wantsAnswer": {
+        "recall": 17.6,
+        "precision": 75
+      },
+      "misconceptionRecall": null,
+      "misconceptionPrecision": null,
+      "falseFlagRate": null,
+      "costUsd": null
+    }
+  },
+  "styleConfusion": {
+    "probe": {
+      "office-hours": 18,
+      "pinpointer": 32,
+      "probe": 39
+    },
+    "office-hours": {
+      "office-hours": 31,
+      "pinpointer": 6,
+      "probe": 12
+    },
+    "pinpointer": {
+      "pinpointer": 37,
+      "office-hours": 10,
+      "probe": 1
+    }
+  },
+  "perStudent": [
+    {
+      "student": "Student 1",
+      "misconceptions": [
+        "m11"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": 4.33,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 2",
+      "misconceptions": [],
+      "helpfulness": 3.67,
+      "thoroughness": 4,
+      "accuracyErrors": 3,
+      "misconceptionChats": 0,
+      "misconceptionCaught": 0
+    },
+    {
+      "student": "Student 3",
+      "misconceptions": [
+        "m01"
+      ],
+      "helpfulness": 3.67,
+      "thoroughness": 4.33,
+      "accuracyErrors": 3,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 4",
+      "misconceptions": [
+        "m07"
+      ],
+      "helpfulness": 4.67,
+      "thoroughness": 4.67,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 5",
+      "misconceptions": [
+        "m02"
+      ],
+      "helpfulness": 4,
+      "thoroughness": 4.33,
+      "accuracyErrors": 3,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 6",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 4,
+      "thoroughness": 4.33,
+      "accuracyErrors": 4,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 7",
+      "misconceptions": [],
+      "helpfulness": 3.67,
+      "thoroughness": 3.67,
+      "accuracyErrors": 1,
+      "misconceptionChats": 0,
+      "misconceptionCaught": 0
+    },
+    {
+      "student": "Student 8",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": 4.33,
+      "accuracyErrors": 1,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 9",
+      "misconceptions": [
+        "m15"
+      ],
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 10",
+      "misconceptions": [
+        "no card"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": 4.67,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 2
+    }
+  ],
+  "chats": [
+    {
+      "student": "Student 1",
+      "chat": 1,
+      "conv": "7d6eaa41-4ff2-400b-aa30-accb098ff8d7",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 2,
+      "conv": "e68329d4-b1f4-4340-bdfb-adae14dcb78d",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 3,
+      "conv": "f3bb5609-8ccf-4011-b218-f7b9ff9bd0d9",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "64a5c084-bacd-460f-9771-89a0ee0e586d",
+      "helpfulness": 3,
+      "thoroughness": 3,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors, both Kelvin's own.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 2,
+      "conv": "8596e1b8-a037-478d-9075-429f04d28787",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 1,
+      "accuracyNote": "checked 10 claims, 1 minor error.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 3,
+      "conv": "34710d6f-0f0a-4f33-a70a-296c7bd6e0f3",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "3d4cb802-eb1e-4923-a566-9c2298b00d07",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 4 used absolute internal energies from 0 °C as evidence (\"compute the stored internal energy of each side relative to 0 °C ... Which one is bigger\"). That comparison is datum-dependent and proves nothing about \"same U\". When the student objected, Kelvin conceded: \"my illustration was bad ... Strike it.\"",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 2,
+      "conv": "29926bae-d6ab-4328-b613-23dcf6abffdf",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 3,
+      "conv": "106af487-590a-4f3b-a493-f24de10abbef",
+      "helpfulness": 3,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors, both leads confirmed.",
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 1,
+      "conv": "c070cb59-fb45-4a0d-a8fa-f3661038c467",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 2,
+      "conv": "0109b9a8-c5fd-477e-829f-5f933320a86f",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "partly"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 3,
+      "conv": "1fa3eb23-d0bb-4477-ac40-ea04ca71e92e",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 1,
+      "conv": "3b4fd625-cb39-49c0-8d25-be64faf4e74d",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 1's re-test, \"a hot metal block at 400 K loses 200 kJ\", is a finite block, whose temperature drops. Kelvin accepted ΔS_block = −200/400 as exact at reply 2. That is only valid for a reservoir. Kelvin itself corrected exactly this Q/T-at-fixed-T error in chat 2, so the two chats are inconsistent.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 2,
+      "conv": "6ea9a9f2-6b76-4062-843e-0eca7f1a5beb",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 3,
+      "conv": "b93d3bb8-bfac-48d5-9836-139eded78865",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 1,
+      "conv": "69d81903-91d2-4d3a-aaa8-cf27e55f83be",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 substantive error. At reply 4 Kelvin said \"your sensitivity guess is right\" (that η_th is more sensitive to ηc than to ηt) and gave a reason: \"ηc appears in two [places] — w_c *and* T2, which sits in q_in.\" That is wrong. The student's numbers show ηc 0.85→0.80 gives η_th 0.344→0.326, and ηt 0.88→0.80 gives 0.274. The q_in term Kelvin cited actually offsets the ηc loss. I also checked with equal",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 2,
+      "conv": "bf10bcec-f8ce-4ec0-b84f-f52e97133667",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 minor error. At reply 1, in teach-back, Kelvin invented \"say 550 K instead of 500 K for the isentropic one\". T2s for rp = 8 from 300 K is 543.4 K. It may have been a deliberate plant, but nothing marked it as one. The student corrected it. The T·Δs puzzle (44.9 vs 43.2) at reply 3 was a deliberate probe. Everything else checks: 543.4, w_s 244.6, 286.4, 586.4, 287.8, Δs 0.0765, T_avg 565, T0·s_ge",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 3,
+      "conv": "0b8f48a0-6f44-4542-871b-bd51b6d3ab8b",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 2,
+      "accuracyNote": "2 errors in reply 5, both admitted in reply 6 after she pushed back.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 1,
+      "conv": "ba064aa0-c409-4120-8afa-b46a34989d50",
+      "helpfulness": 3,
+      "thoroughness": 3,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "clear",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 2,
+      "conv": "fe3d8969-4d39-4ac4-a333-14555b35abe4",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 error. Reply 3 said: \"water should land *below* the oil's 60°C outlet — that's how you know the sign choices were right.\" That is true only for parallel flow, and the arrangement was not given. Kelvin owned the error clearly at reply 4 and explained counterflow correctly. Its example checks (297/4.18 + 20 = 91.05 °C). Other numbers check: 297 kW, 55.5 °C, 43.7 °C. The claim that 55.5 °C works fo",
+      "giveaway": "mild",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 3,
+      "conv": "14bfbf4f-5821-45a4-90a5-5c75b8c13390",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 1,
+      "conv": "d278290b-7842-4f2f-9bb7-618030f60410",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 2,
+      "conv": "e8da5889-c297-4329-b69e-8ac67d4ccc37",
+      "helpfulness": 3,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "f8416a41-e565-4d49-8504-bc11974e846f",
+      "helpfulness": 5,
+      "thoroughness": 4,
+      "accuracyErrors": 1,
+      "accuracyNote": "1 minor error. Reply 1 said the 0.4 gap between 3008.2 and 3008.6 was \"just rounding in the tabulated endpoints\". That is wrong. With the engine's endpoints (2943.12 and 3051.63), linear interpolation gives 3008.23 against the true 3008.61, so the gap comes from curvature. Reply 2 said exactly that and contradicted reply 1. Values checked:",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 1,
+      "conv": "582671eb-0eab-4483-8b5a-cc9250b58f73",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 2,
+      "conv": "16da8958-9197-44f7-ad27-5fa9aaa76b33",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 3,
+      "conv": "050a9e5e-f05b-45ee-980f-9ad9438665b8",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 1,
+      "conv": "e731c34c-f0cb-4932-b32d-19e7e4ff10f0",
+      "helpfulness": 4,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "partly"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 2,
+      "conv": "cb6c89e0-798b-4fd2-ac96-b77d0cb6adbc",
+      "helpfulness": 4,
+      "thoroughness": 4,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 3,
+      "conv": "fcd144e0-d212-409b-b2c2-46f438beabf0",
+      "helpfulness": 5,
+      "thoroughness": 5,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "64a5c084-bacd-460f-9771-89a0ee0e586d",
+      "errors": 2,
+      "note": "2 errors, both Kelvin's own."
+    },
+    {
+      "student": "Student 2",
+      "chat": 2,
+      "conv": "8596e1b8-a037-478d-9075-429f04d28787",
+      "errors": 1,
+      "note": "checked 10 claims, 1 minor error."
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "3d4cb802-eb1e-4923-a566-9c2298b00d07",
+      "errors": 1,
+      "note": "1 error. Reply 4 used absolute internal energies from 0 °C as evidence (\"compute the stored internal energy of each side relative to 0 °C ... Which one is bigger\"). That comparison is datum-dependent and proves nothing about \"same U\". When the student objected, Kelvin conceded: \"my illustration was bad ... Strike it.\""
+    },
+    {
+      "student": "Student 3",
+      "chat": 3,
+      "conv": "106af487-590a-4f3b-a493-f24de10abbef",
+      "errors": 2,
+      "note": "2 errors, both leads confirmed."
+    },
+    {
+      "student": "Student 5",
+      "chat": 1,
+      "conv": "3b4fd625-cb39-49c0-8d25-be64faf4e74d",
+      "errors": 1,
+      "note": "1 error. Reply 1's re-test, \"a hot metal block at 400 K loses 200 kJ\", is a finite block, whose temperature drops. Kelvin accepted ΔS_block = −200/400 as exact at reply 2. That is only valid for a reservoir. Kelvin itself corrected exactly this Q/T-at-fixed-T error in chat 2, so the two chats are inconsistent."
+    },
+    {
+      "student": "Student 5",
+      "chat": 2,
+      "conv": "6ea9a9f2-6b76-4062-843e-0eca7f1a5beb",
+      "errors": 2,
+      "note": "2 errors."
+    },
+    {
+      "student": "Student 6",
+      "chat": 1,
+      "conv": "69d81903-91d2-4d3a-aaa8-cf27e55f83be",
+      "errors": 1,
+      "note": "1 substantive error. At reply 4 Kelvin said \"your sensitivity guess is right\" (that η_th is more sensitive to ηc than to ηt) and gave a reason: \"ηc appears in two [places] — w_c *and* T2, which sits in q_in.\" That is wrong. The student's numbers show ηc 0.85→0.80 gives η_th 0.344→0.326, and ηt 0.88→0.80 gives 0.274. The q_in term Kelvin cited actually offsets the ηc loss. I also checked with equal"
+    },
+    {
+      "student": "Student 6",
+      "chat": 2,
+      "conv": "bf10bcec-f8ce-4ec0-b84f-f52e97133667",
+      "errors": 1,
+      "note": "1 minor error. At reply 1, in teach-back, Kelvin invented \"say 550 K instead of 500 K for the isentropic one\". T2s for rp = 8 from 300 K is 543.4 K. It may have been a deliberate plant, but nothing marked it as one. The student corrected it. The T·Δs puzzle (44.9 vs 43.2) at reply 3 was a deliberate probe. Everything else checks: 543.4, w_s 244.6, 286.4, 586.4, 287.8, Δs 0.0765, T_avg 565, T0·s_ge"
+    },
+    {
+      "student": "Student 6",
+      "chat": 3,
+      "conv": "0b8f48a0-6f44-4542-871b-bd51b6d3ab8b",
+      "errors": 2,
+      "note": "2 errors in reply 5, both admitted in reply 6 after she pushed back."
+    },
+    {
+      "student": "Student 7",
+      "chat": 2,
+      "conv": "fe3d8969-4d39-4ac4-a333-14555b35abe4",
+      "errors": 1,
+      "note": "1 error. Reply 3 said: \"water should land *below* the oil's 60°C outlet — that's how you know the sign choices were right.\" That is true only for parallel flow, and the arrangement was not given. Kelvin owned the error clearly at reply 4 and explained counterflow correctly. Its example checks (297/4.18 + 20 = 91.05 °C). Other numbers check: 297 kW, 55.5 °C, 43.7 °C. The claim that 55.5 °C works fo"
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "f8416a41-e565-4d49-8504-bc11974e846f",
+      "errors": 1,
+      "note": "1 minor error. Reply 1 said the 0.4 gap between 3008.2 and 3008.6 was \"just rounding in the tabulated endpoints\". That is wrong. With the engine's endpoints (2943.12 and 3051.63), linear interpolation gives 3008.23 against the true 3008.61, so the gap comes from curvature. Reply 2 said exactly that and contradicted reply 1. Values checked:"
+    }
+  ]
+}

@@ -145,6 +145,21 @@ have people label a sample for the quality ones.
 6. Suite 2 once Milestone 3 is merged.
 7. Findings written to `eval/findings/`, dated, in the same honest format as the 2026-09-22 one.
 
+## Publishing a simulated-student round to the admin dashboard
+
+Raw run data stays in git-ignored `data/sim-runs/<run>/`. The dashboard (`/admin` → Evals) reads the
+anonymized summary in `eval/results/<id>.json`, which is committed so everyone sees it after deploy.
+Once the two reviewer files (`review-A.md`, `review-B.md`) are in the run folder:
+
+```
+node scripts/eval/sim-collect.mjs --run r4 --students eval/students-r2.yml \
+  --export 2026-10-01-round4 --label "Round 4" --harness "what changed" --findings eval/findings/<file>.md
+```
+
+(or `npm run eval:export -- --run r4 --id … ` with the same flags). Cost comes from `model_usage` over
+`data/ops/<run>-start|end` when those exist. Commit `eval/results/<id>.json` with the findings and merge
+it to `main`; `npm run admin:test` checks that no persona name or email is in it.
+
 ## Cost
 
 Jev cost $0.033 for 144 turns (reads and audits) in the last run. The DeepSeek cost of that run

@@ -337,3 +337,11 @@ for (const n of logs) {
   fs.writeFileSync(path.join(RUN_DIR, `transcript-student${n}.md`), out.join('\n'));
 }
 console.log(`Report: ${path.relative(APP_DIR, path.join(RUN_DIR, 'report.md'))}`);
+
+// The committed, anonymized copy the admin dashboard reads. Re-run the same command once the reviewer
+// files (review-A.md, review-B.md) are written so the grades are in it, then commit eval/results/.
+if (arg('export')) {
+  const { execFileSync } = await import('node:child_process');
+  const pass = ['label', 'harness', 'findings', 'cost-note'].flatMap((k) => (arg(k) ? [`--${k}`, arg(k)] : []));
+  execFileSync(process.execPath, [path.join(APP_DIR, 'scripts', 'eval', 'export-results.mjs'), '--run', RUN, '--id', arg('export'), '--students', STUDENTS_FILE, ...pass], { stdio: 'inherit' });
+}

@@ -1,0 +1,698 @@
+{
+  "id": "2026-09-23-round1",
+  "label": "Round 1",
+  "date": "2026-09-23",
+  "harness": "Jev read + DeepSeek v4-pro tutor, 7 styles; no calculator, solver or constraint checks; Sonnet students",
+  "findings": "eval/findings/2026-09-23-simulated-students.md",
+  "counts": {
+    "students": 10,
+    "chats": 30,
+    "messages": 179,
+    "reviewedChats": 30
+  },
+  "summary": {
+    "helpfulness": {
+      "mean": 3.93,
+      "ci95": [
+        3.67,
+        4.2
+      ],
+      "n": 30
+    },
+    "thoroughness": null,
+    "accuracyErrors": 11,
+    "accuracyErrorsPer100Replies": 6.1,
+    "giveaways": {
+      "clear": 0,
+      "mild": 6
+    },
+    "misconceptionChats": 24,
+    "misconceptionCaught": 23,
+    "misconceptionCaughtRate": 95.8,
+    "styleFit": null
+  },
+  "latency": {
+    "medianS": 19,
+    "p90S": 54.7,
+    "maxS": 292.2
+  },
+  "cost": {
+    "total": null,
+    "note": "Before usage logging: Jev about $0.08; DeepSeek not measured",
+    "source": "manual"
+  },
+  "readers": {
+    "live Jev": {
+      "intent": 58.4,
+      "showsWork": {
+        "recall": 88.7,
+        "precision": 88.7
+      },
+      "completeAttempt": {
+        "recall": 90.2,
+        "precision": 85.2
+      },
+      "wantsAnswer": {
+        "recall": 57.1,
+        "precision": 100
+      },
+      "misconceptionRecall": 71,
+      "misconceptionPrecision": 55,
+      "falseFlagRate": 4.1,
+      "costUsd": 0.0698
+    },
+    "Jev (replay)": {
+      "intent": 55.9,
+      "showsWork": {
+        "recall": 86.9,
+        "precision": 86.9
+      },
+      "completeAttempt": {
+        "recall": 64.7,
+        "precision": 84.6
+      },
+      "wantsAnswer": {
+        "recall": 57.1,
+        "precision": 100
+      },
+      "misconceptionRecall": 71,
+      "misconceptionPrecision": 62.9,
+      "falseFlagRate": 3.4,
+      "costUsd": 0.0663
+    },
+    "DeepSeek backup (replay)": {
+      "intent": 51.4,
+      "showsWork": {
+        "recall": 86,
+        "precision": 84.4
+      },
+      "completeAttempt": {
+        "recall": 65.7,
+        "precision": 88.2
+      },
+      "wantsAnswer": {
+        "recall": 28.6,
+        "precision": 80
+      },
+      "misconceptionRecall": 80.6,
+      "misconceptionPrecision": 65.8,
+      "falseFlagRate": 5.4,
+      "costUsd": null
+    },
+    "rules (replay)": {
+      "intent": 36.3,
+      "showsWork": {
+        "recall": 72,
+        "precision": 86.5
+      },
+      "completeAttempt": {
+        "recall": null,
+        "precision": null
+      },
+      "wantsAnswer": {
+        "recall": 21.4,
+        "precision": 100
+      },
+      "misconceptionRecall": null,
+      "misconceptionPrecision": null,
+      "falseFlagRate": null,
+      "costUsd": null
+    }
+  },
+  "styleConfusion": null,
+  "perStudent": [
+    {
+      "student": "Student 1",
+      "misconceptions": [
+        "m16"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 2",
+      "misconceptions": [
+        "m17"
+      ],
+      "helpfulness": 3.33,
+      "thoroughness": null,
+      "accuracyErrors": 4,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 3",
+      "misconceptions": [
+        "m15",
+        "m09"
+      ],
+      "helpfulness": 3.67,
+      "thoroughness": null,
+      "accuracyErrors": 3,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 4",
+      "misconceptions": [
+        "m05"
+      ],
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 5",
+      "misconceptions": [
+        "m08",
+        "m10"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 6",
+      "misconceptions": [],
+      "helpfulness": 4.33,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "misconceptionChats": 0,
+      "misconceptionCaught": 0
+    },
+    {
+      "student": "Student 7",
+      "misconceptions": [
+        "m13"
+      ],
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 8",
+      "misconceptions": [
+        "m04",
+        "m06"
+      ],
+      "helpfulness": 4.33,
+      "thoroughness": null,
+      "accuracyErrors": 1,
+      "misconceptionChats": 2,
+      "misconceptionCaught": 2
+    },
+    {
+      "student": "Student 9",
+      "misconceptions": [
+        "no card",
+        "m14"
+      ],
+      "helpfulness": 3.67,
+      "thoroughness": null,
+      "accuracyErrors": 1,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    },
+    {
+      "student": "Student 10",
+      "misconceptions": [
+        "m12",
+        "m03"
+      ],
+      "helpfulness": 3.33,
+      "thoroughness": null,
+      "accuracyErrors": 2,
+      "misconceptionChats": 3,
+      "misconceptionCaught": 3
+    }
+  ],
+  "chats": [
+    {
+      "student": "Student 1",
+      "chat": 1,
+      "conv": "f6739f93-fe2e-48de-b0f5-42db12e2cf0c",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 2,
+      "conv": "c0d9381d-3df9-4c39-ba81-96fcf7189c43",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 1",
+      "chat": 3,
+      "conv": "6aaa3a36-5f5d-42b2-bfa7-bde83092947e",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "02c41dff-78c0-4d44-874f-774e3269dd62",
+      "helpfulness": 2,
+      "thoroughness": null,
+      "accuracyErrors": 4,
+      "accuracyNote": "**4 errors, 1 independent false alarm plus a chain of confirmed wrong values**. Checked against the engine for R-134a:",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 2,
+      "conv": "75667d7e-6052-4059-83fb-70f0d02d925d",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 2",
+      "chat": 3,
+      "conv": "9e2a3d93-deb0-4ffc-9c5c-4418329185e2",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "9afc1a1b-fd9c-411f-8714-5c41afd1efb7",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 1,
+      "accuracyNote": "checked 7 claims and found 1 minor error. Tsat at 20 kPa ≈ 60 °C (60.06) ✓. \"100 °C at 20 kPa is superheated\" ✓. The student's h2 = 2687.5 and s2 = 8.1338 are within 0.1% of the engine (2686.2, 8.1263) ✓, and 11 MW (engine: 11.05 MW) ✓. s2 > s1 ✓, and the difference of about 6.3 MW (17.35 − 11.05) ✓. **Minor error:** \"the roughly 6.3 MW between your two answers is the lost work.\" That is the short",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 2,
+      "conv": "1ea60ffd-1dd7-48ea-ab59-e5241b36845d",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 2,
+      "accuracyNote": "**2 errors**. Checked against the engine:",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "partly"
+      }
+    },
+    {
+      "student": "Student 3",
+      "chat": 3,
+      "conv": "dabe5013-167d-4fb9-a702-1cd33eb915eb",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 1,
+      "conv": "a218c379-d870-4217-aca7-076a4f7b0ac2",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 2,
+      "conv": "7798ae14-7bac-4e3b-b3bc-6501c0b25eb4",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 4",
+      "chat": 3,
+      "conv": "c1cec6e3-71c3-4c98-8f43-f9b9eb3fd19c",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 1,
+      "conv": "1e9b0e2e-3b58-4c4c-9a24-d298c1c8ae74",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 2,
+      "conv": "94ee97ec-3fda-46bc-80fa-d0c68fbeb9b5",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 5",
+      "chat": 3,
+      "conv": "3905e223-f00e-4a9f-98bd-f95b0e03786c",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 1,
+      "conv": "010f80c3-aa27-4c76-be31-1afea28fc9f9",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 2,
+      "conv": "ee7a6a73-8cd5-46f3-832e-602ae7a554a2",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 6",
+      "chat": 3,
+      "conv": "f61164d2-4d49-46f1-a1e6-d0f4a65f25aa",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 1,
+      "conv": "7f1604ce-07bb-42ee-9d64-07448a24b167",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 2,
+      "conv": "2cddfc10-f413-437b-a116-34405677af37",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 7",
+      "chat": 3,
+      "conv": "a6c1a8ff-390c-44b1-8f34-a111033566ef",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 1,
+      "conv": "b4ef7446-d5fe-4d26-b292-9128ac17c7e0",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 2,
+      "conv": "0b8ee467-039d-4732-b5c4-c7165bed4599",
+      "helpfulness": 5,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "7bf6096b-e73d-4296-908a-e7792c1d718b",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 1,
+      "accuracyNote": "checked 9 claims, 1 error. The engine gives v_f = 0.0011565, v_g = 0.12721, h_g = 2792.0, u_f = 850.5 and u_g = 2594.2 at 200 °C, so x = 0.3875 and u = 1526 (student 1525). At 500 kPa, Tsat = 151.83, and at 300 °C, v = 0.52261 and h = 3064.6. All match. Error: reply 8 says \"you caught your own column slips both times\", but there was only one slip (turn 2), and the units cue came from Kelvin. This ",
+      "giveaway": "none",
+      "misconception": {
+        "shown": false
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 1,
+      "conv": "122ad1b5-9ef6-4e4a-bea9-56c21e7d506b",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 2,
+      "conv": "1fafc6db-d4da-4e16-9b47-816e9441e263",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 9",
+      "chat": 3,
+      "conv": "8b871fc8-4b47-46b1-975d-4c3c95a2c94d",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 1,
+      "accuracyNote": "checked 5 claims, 1 error. m = 1200/(0.287·300) = 13.94. Density 400/(0.287·300) = 4.65 kg/m³, and \"near 4 atm\" is right (3.95 atm). P2 = 400·360/300 = 480. Error: reply 5 says \"You did catch it yourself both times\", but Kelvin caught it both times (replies 1 and 4); the student caught neither. The same false praise appears in reply 4 (\"you caught in part a\").",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 1,
+      "conv": "4e64b4a2-2d42-4e94-874d-5b4fc0db8748",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 2,
+      "accuracyNote": "checked 8 claims, 2 errors.",
+      "giveaway": "none",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 2,
+      "conv": "a560e2f4-9e65-45e2-a2eb-72eee2ca4dcb",
+      "helpfulness": 4,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    },
+    {
+      "student": "Student 10",
+      "chat": 3,
+      "conv": "372ad534-69e7-4bca-8ced-5114b41b6239",
+      "helpfulness": 3,
+      "thoroughness": null,
+      "accuracyErrors": 0,
+      "accuracyNote": null,
+      "giveaway": "mild",
+      "misconception": {
+        "shown": true,
+        "addressed": "yes"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "student": "Student 2",
+      "chat": 1,
+      "conv": "02c41dff-78c0-4d44-874f-774e3269dd62",
+      "errors": 4,
+      "note": "**4 errors, 1 independent false alarm plus a chain of confirmed wrong values**. Checked against the engine for R-134a:"
+    },
+    {
+      "student": "Student 3",
+      "chat": 1,
+      "conv": "9afc1a1b-fd9c-411f-8714-5c41afd1efb7",
+      "errors": 1,
+      "note": "checked 7 claims and found 1 minor error. Tsat at 20 kPa ≈ 60 °C (60.06) ✓. \"100 °C at 20 kPa is superheated\" ✓. The student's h2 = 2687.5 and s2 = 8.1338 are within 0.1% of the engine (2686.2, 8.1263) ✓, and 11 MW (engine: 11.05 MW) ✓. s2 > s1 ✓, and the difference of about 6.3 MW (17.35 − 11.05) ✓. **Minor error:** \"the roughly 6.3 MW between your two answers is the lost work.\" That is the short"
+    },
+    {
+      "student": "Student 3",
+      "chat": 2,
+      "conv": "1ea60ffd-1dd7-48ea-ab59-e5241b36845d",
+      "errors": 2,
+      "note": "**2 errors**. Checked against the engine:"
+    },
+    {
+      "student": "Student 8",
+      "chat": 3,
+      "conv": "7bf6096b-e73d-4296-908a-e7792c1d718b",
+      "errors": 1,
+      "note": "checked 9 claims, 1 error. The engine gives v_f = 0.0011565, v_g = 0.12721, h_g = 2792.0, u_f = 850.5 and u_g = 2594.2 at 200 °C, so x = 0.3875 and u = 1526 (student 1525). At 500 kPa, Tsat = 151.83, and at 300 °C, v = 0.52261 and h = 3064.6. All match. Error: reply 8 says \"you caught your own column slips both times\", but there was only one slip (turn 2), and the units cue came from Kelvin. This "
+    },
+    {
+      "student": "Student 9",
+      "chat": 3,
+      "conv": "8b871fc8-4b47-46b1-975d-4c3c95a2c94d",
+      "errors": 1,
+      "note": "checked 5 claims, 1 error. m = 1200/(0.287·300) = 13.94. Density 400/(0.287·300) = 4.65 kg/m³, and \"near 4 atm\" is right (3.95 atm). P2 = 400·360/300 = 480. Error: reply 5 says \"You did catch it yourself both times\", but Kelvin caught it both times (replies 1 and 4); the student caught neither. The same false praise appears in reply 4 (\"you caught in part a\")."
+    },
+    {
+      "student": "Student 10",
+      "chat": 1,
+      "conv": "4e64b4a2-2d42-4e94-874d-5b4fc0db8748",
+      "errors": 2,
+      "note": "checked 8 claims, 2 errors."
+    }
+  ]
+}

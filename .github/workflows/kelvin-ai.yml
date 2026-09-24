@@ -58,6 +58,9 @@ jobs:
       - name: Teaching board tool and renderer tests
         run: npm run board:test
 
+      - name: Admin dashboard tests (access, anonymization, eval results)
+        run: npm run admin:test
+
       # Informational. Retrieval quality is a number to watch, not a reason to
       # block a deploy — except for the one regression check the eval itself
       # enforces, which is reported here and does not gate this workflow.
