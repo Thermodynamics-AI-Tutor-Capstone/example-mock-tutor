@@ -121,6 +121,24 @@ await t('a round with no tools streams unchanged', async () => {
   assert.equal(shown, 'What does x mean here?');
 });
 
+await t('a tool call written as text markup is never shown, and it is run as a real call', async () => {
+  const markup = 'Checking that.\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Ctool_calls>\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Cinvoke name="calculate">\n<\uFF5C\uFF5CDSML\uFF5C\uFF5Cparameter name="expressions" string="false">["131.06 / 42.13"]</\uFF5C\uFF5CDSML\uFF5C\uFF5Cparameter>\n</\uFF5C\uFF5CDSML\uFF5C\uFF5Cinvoke>\n</\uFF5C\uFF5CDSML\uFF5C\uFF5Ctool_calls>';
+  const { out, shown, bodies } = await run([{ text: markup.match(/[\s\S]{1,17}/g) }, { text: ['Your COP is 3.11.'] }]);
+  assert.ok(!shown.includes('DSML') && !shown.includes('\uFF5C'), shown);
+  assert.equal(out.toolLog[0].name, 'calculate');
+  const toolMsg = bodies[1].messages.find((m) => m.role === 'tool');
+  assert.match(toolMsg.content, /3\.11/);
+  assert.ok(shown.endsWith('Your COP is 3.11.'));
+});
+
+await t('after a mid-reply lookup, the model is told to continue rather than repeat what is on screen', async () => {
+  const long = 'Your energy balance is set up correctly for a steady-flow compressor: one inlet, one outlet, heat loss to the surroundings, and negligible kinetic and potential energy changes. ';
+  const { bodies } = await run([{ text: [long, long], tools: [{ name: 'calculate', arguments: { expressions: ['2+2'] } }] }, { text: ['Which row did you read?'] }]);
+  assert.ok(bodies[1].messages.some((m) => m.role === 'system' && /already on the student's screen/.test(m.content)));
+  const { bodies: quiet } = await run([{ text: ['Hmm.'], tools: [{ name: 'calculate', arguments: { expressions: ['2+2'] } }] }, { text: ['Which row?'] }]);
+  assert.ok(!quiet[1].messages.some((m) => m.role === 'system' && /already on the student's screen/.test(m.content)));
+});
+
 console.log('update_tutoring_state');
 
 await t('"finished" is refused before the student has a complete attempt', async () => {
