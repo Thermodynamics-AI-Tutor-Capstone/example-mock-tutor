@@ -1024,9 +1024,10 @@
 
   // Settings open as a modal over the chat (public/settings.js). Saving takes effect at once: the
   // profile is swapped in, and turning "Show Kelvin's decisions" on or off redraws the open chat.
-  function openSettings() {
+  function openSettings(tab) {
     closeUserMenu();
     window.KelvinSettings.open({
+      tab: typeof tab === 'string' ? tab : 'profile',
       opener: userBtn,
       onSaved: (profile) => {
         if (!profile || !state.me) return;
@@ -1037,7 +1038,7 @@
       },
     });
   }
-  $('settingsBtn').addEventListener('click', openSettings);
+  $('settingsBtn').addEventListener('click', () => openSettings());
 
   window.KelvinAttachments.init({
     api,
@@ -1055,13 +1056,15 @@
   state.me = me;
   renderUser();
   await loadStyles();
-  // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings.
+  // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings;
+  // /?settings=learning opens it on "What Kelvin knows".
   const params = new URLSearchParams(location.search);
   if (params.has('settings')) {
+    const tab = params.get('settings') === 'learning' ? 'learning' : 'profile';
     params.delete('settings');
     const rest = params.toString();
     history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
-    openSettings();
+    openSettings(tab);
   }
   const hashAtLoad = parseHash();
   refreshList().then((ok) => {

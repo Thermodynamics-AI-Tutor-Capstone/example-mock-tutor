@@ -24,6 +24,8 @@ const { checkConstraints } = await import('../lib/constraints.js');
 const { default: runCalculate } = await import('../lib/tools/calculate.js');
 const { resolveStyleId } = await import('../lib/styles.js');
 const { shouldSolve, solveProblem, loadReference, referenceSection } = await import('../lib/solver.js');
+const { learningView, applyLearningEdit } = await import('../lib/learning.js');
+const { recordEvidence } = await import('../lib/student-model.js');
 
 let n = 0;
 const t = async (name, fn) => {
@@ -227,6 +229,44 @@ await t('every tutor round is logged with its tokens and cost', async () => {
   assert.ok(rows[0].cost_usd > 0);
   const expected = deepseekUsageRow({ model: rows[0].model, usage: { prompt_tokens: 1000, prompt_cache_hit_tokens: 200, completion_tokens: 50 }, purpose: 'x', at: new Date(rows[0].at) }).costUsd;
   assert.ok(Math.abs(rows[0].cost_usd - expected) < 1e-12);
+});
+
+console.log('settings: what Kelvin knows');
+
+await t('students see their record and the exact Markdown, and every correction is kept', async () => {
+  const u = 'learn-user';
+  await recordEvidence(u, null, [
+    { kind: 'misconception_signal', ref: 'misc:m16-internal-energy-and-enthalpy-interchangeable', source: 'jev', probability: 0.9, data: { quote: 'used h for the tank' } },
+    { kind: 'misconception_signal', ref: 'misc:m16-internal-energy-and-enthalpy-interchangeable', source: 'jev', probability: 0.8 },
+    { kind: 'hypothesis', ref: 'topic:steam-tables', source: 'tutor', data: { about: 'topic:steam-tables', belief: 'shaky', note: 'reads the wrong column' } },
+    { kind: 'practice_result', ref: 'misc:m15', source: 'tutor', data: { correct: true, independent: true } },
+  ]);
+  let v = await learningView(u);
+  assert.equal(v.model.misconceptions['misc:m16-internal-energy-and-enthalpy-interchangeable'].status, 'likely');
+  assert.match(v.markdown, /Likely/);
+  assert.equal(v.model.hypotheses[0].source, 'tutor');
+
+  v = await applyLearningEdit(u, { action: 'dismiss_misconception', ref: 'misc:m16-internal-energy-and-enthalpy-interchangeable' });
+  assert.equal(Object.keys(v.model.misconceptions).length, 0);
+  assert.doesNotMatch(v.markdown, /m16/);
+
+  v = await applyLearningEdit(u, { action: 'edit_note', ref: 'topic:steam-tables', belief: 'solid', note: 'I use the pressure table now' });
+  assert.equal(v.model.hypotheses[0].belief, 'solid');
+  assert.equal(v.model.hypotheses[0].source, 'student');
+  assert.match(v.markdown, /solid: I use the pressure table now/);
+
+  v = await applyLearningEdit(u, { action: 'add_note', about: 'Rankine cycles', belief: 'shaky', note: 'reheat confuses me' });
+  assert.equal(v.model.hypotheses.length, 2);
+  v = await applyLearningEdit(u, { action: 'remove_note', ref: 'student:rankine-cycles' });
+  assert.equal(v.model.hypotheses.length, 1);
+
+  v = await applyLearningEdit(u, { action: 'reset_practice', ref: 'misc:m15' });
+  assert.equal(Object.keys(v.model.kcs).length, 0);
+
+  await assert.rejects(applyLearningEdit(u, { action: 'dismiss_misconception', ref: 'misc:nope' }), /not in your record/);
+  await assert.rejects(applyLearningEdit(u, { action: 'add_note', about: 'x', belief: 'great' }), /belief must be/);
+  const { rows } = await query("SELECT count(*)::int AS n, count(*) FILTER (WHERE source = 'student')::int AS s FROM student_evidence WHERE user_id = $1", [u]);
+  assert.deepEqual(rows[0], { n: 9, s: 5 });
 });
 
 console.log('accuracy tools');
