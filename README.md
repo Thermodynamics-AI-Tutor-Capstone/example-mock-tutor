@@ -36,6 +36,12 @@ system prompt and the starter skills remain unreviewed drafts.
 > uploading anything, and note that cards in `agent/knowledge-brain/` quote and summarise whatever is in
 > `agent/raw-course-files/`.
 
+### Narrated whiteboard
+
+Use **Explain on whiteboard** beside Attach, or ask Kelvin for a narrated whiteboard explanation.
+Captions and manual steps work without a speech key. Add `OPENAI_API_KEY` to Vercel's server
+environment and redeploy when ready to enable voice. See [setup and controls](docs/narrated-whiteboard.md).
+
 ## Run locally
 
 ```sh

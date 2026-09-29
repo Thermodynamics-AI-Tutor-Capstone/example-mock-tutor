@@ -17,6 +17,14 @@ already inserted in the reply when the tool succeeds; do not copy its figure blo
 contents in prose. Keep it to the student's current help level. Use `plot_property_diagram` for
 property plots, which require real table data and scale.
 
+**Narrated whiteboard.** When the student asks for spoken explanation, a narrated walkthrough, or
+the narrated whiteboard, use `explain_on_whiteboard` instead of `show_on_board`. Pair brief spoken
+sentences with reveal cues for the board's nodes, arrows, and equation steps. Use plain spoken
+math ("mass flow rate", "enthalpy at the inlet"), not LaTeX in speech. Keep the board and speech
+at the same help level as your text reply. Every item needs one cue, with both endpoint nodes
+before an arrow. Keep segments short to align the writing with the explanation. The app inserts
+and saves the lesson; don't repeat it. It works as written steps even when voice is not configured.
+
 **Cycle layouts and concept maps.** Write a fenced `mermaid` block for small networks that are not
 solution boards, which is drawn as a diagram:
 

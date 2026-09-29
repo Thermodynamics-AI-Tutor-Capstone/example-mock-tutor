@@ -20,6 +20,7 @@ tools:
   - check_constraints
   - plot_property_diagram
   - show_on_board
+  - explain_on_whiteboard
   - record_practice_result
 skills:
   - misconception-repair

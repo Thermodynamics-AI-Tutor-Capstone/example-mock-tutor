@@ -1,0 +1,26 @@
+.knarration { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.knarration-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; }
+.knarration-disclosure { font-size: 11px; font-weight: 400; color: var(--text2); }
+.knarration-caption { min-height: 3em; font-size: 15px; line-height: 1.6; margin: 12px 0; color: var(--text); }
+.knarration-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.knarration-button { min-height: 40px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 13px; background: var(--bg); }
+.knarration-button:hover:not(:disabled) { background: var(--hover); }
+.knarration-button:disabled { opacity: .45; cursor: default; }
+.knarration-play { background: var(--send-bg); color: var(--send-fg); }
+.knarration-play:hover:not(:disabled) { background: var(--send-bg); opacity: .85; }
+.knarration-rate { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+.knarration-rate select { min-height: 36px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
+.knarration-seek { width: 100%; margin: 14px 0 5px; accent-color: #2563eb; }
+.knarration-status { min-height: 2em; font-size: 12px; line-height: 1.5; color: var(--text2); }
+.knarration-transcript { font-size: 13px; margin-top: 8px; }
+.knarration-transcript summary { cursor: pointer; color: var(--text2); }
+.knarration-transcript li { margin-bottom: 8px; line-height: 1.6; }
+.knarration :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+.whiteboard-btn { align-self: flex-end; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; border-radius: 9px; color: var(--text2); }
+.whiteboard-btn:hover { background: var(--hover); }
+.whiteboard-btn[aria-pressed="true"] { color: #2563eb; background: #2563eb1a; }
+.whiteboard-btn:disabled { opacity: .45; }
+@media (max-width: 480px) {
+  .knarration-toolbar { gap: 6px; }
+  .knarration-button { padding: 8px 9px; font-size: 12px; }
+}

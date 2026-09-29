@@ -19,6 +19,7 @@ tools:
   - check_constraints
   - plot_property_diagram
   - show_on_board
+  - explain_on_whiteboard
 skills:
   - misconception-repair
   - answer-requests

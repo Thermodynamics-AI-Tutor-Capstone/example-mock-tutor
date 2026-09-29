@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 delete process.env.DATABASE_URL;
 delete process.env.POSTGRES_URL;
@@ -170,7 +171,7 @@ await test("an admin's own conversation is not reachable", async () => {
 });
 
 await test('committed eval results are anonymized and complete', () => {
-  const dir = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'eval', 'results');
+  const dir = fileURLToPath(new URL('../eval/results/', import.meta.url));
   const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.ok(files.length >= 3);
   const personaNames = ['students.yml', 'students-r2.yml'].flatMap((f) => {

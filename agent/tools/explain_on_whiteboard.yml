@@ -1,0 +1,89 @@
+name: explain_on_whiteboard
+description: >-
+  Create a spoken, animated whiteboard explanation when the student asks to hear an explanation,
+  watch a walkthrough, or use the narrated whiteboard. Pair short plain-language speech with
+  reveal cues for a schematic and equation steps. Respect the current teaching style and help
+  ceiling: explain the next justified step or a checked analogous example, not unearned answers.
+  Use only problem givens or quantities verified by tools. Use plot_property_diagram for scaled
+  property plots. The app saves and shows the lesson; do not copy its figure or repeat the transcript.
+  Audio starts only when the student presses Play; captions and manual steps work without audio.
+status: Preparing a narrated whiteboard
+parameters:
+  type: object
+  additionalProperties: false
+  properties:
+    board:
+      type: object
+      additionalProperties: false
+      properties:
+        kind: { type: string, enum: [sketch, solution] }
+        title: { type: string, maxLength: 90 }
+        nodes:
+          type: array
+          maxItems: 8
+          description: Schematic boxes. Coordinates 10–90; separate boxes by at least 23 x or 22 y units.
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              id: { type: string, description: Unique lowercase id starting with a letter. }
+              label: { type: string, maxLength: 48 }
+              kind: { type: string, enum: [component, state, boundary, note] }
+              x: { type: integer, minimum: 10, maximum: 90 }
+              y: { type: integer, minimum: 10, maximum: 90 }
+            required: [id, label, kind, x, y]
+        arrows:
+          type: array
+          maxItems: 12
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              from: { type: string }
+              to: { type: string }
+              label: { type: string, maxLength: 48 }
+              kind: { type: string, enum: [flow, heat, work, relationship] }
+            required: [from, to, kind]
+        steps:
+          type: array
+          maxItems: 6
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              label: { type: string, maxLength: 36 }
+              latex: { type: string, maxLength: 180, description: KaTeX without dollar delimiters. }
+              note: { type: string, maxLength: 180 }
+            required: [label]
+      required: [kind, title]
+    segments:
+      type: array
+      minItems: 1
+      maxItems: 8
+      description: Short spoken steps, at most 2500 characters total. Every board item must be revealed exactly once across all segments.
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          speech:
+            type: string
+            maxLength: 500
+            description: One or two short spoken sentences. Write mathematical names and units as spoken words, not LaTeX or markup. No new numerical claims.
+          cues:
+            type: array
+            maxItems: 26
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                target:
+                  type: string
+                  description: 'node:ID, arrow:INDEX, or step:INDEX (indexes start at 0). Reveal both endpoint nodes before an arrow.'
+                at:
+                  type: number
+                  minimum: 0
+                  maximum: 0.85
+                  description: Fraction through this spoken clip to start revealing the item. Sort cues by at. Use short clips for close synchronization.
+              required: [target, at]
+        required: [speech, cues]
+  required: [board, segments]

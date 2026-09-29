@@ -9,6 +9,14 @@
   const composer = $('composer');
   const input = $('input');
   const sendBtn = $('sendBtn');
+  const whiteboardBtn = $('whiteboardBtn');
+  let requestWhiteboard = false;
+  whiteboardBtn.addEventListener('click', () => {
+    requestWhiteboard = !requestWhiteboard;
+    whiteboardBtn.setAttribute('aria-pressed', String(requestWhiteboard));
+    input.placeholder = requestWhiteboard ? 'What should Kelvin explain on the whiteboard?' : 'Ask anything';
+    input.focus();
+  });
   const scrollDownBtn = $('scrollDown');
   const emptySlot = $('emptyComposerSlot');
   const bottomSlot = $('bottomComposerSlot');
@@ -142,7 +150,7 @@
   let figuresScript = null;
   function renderFigures(el, opts) {
     if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board')) return;
-    if (window.KelvinFigures) return window.KelvinFigures.render(el, { api, ...opts });
+    if (window.KelvinFigures) return window.KelvinFigures.render(el, { api, apiFetch, ...opts });
     if (!figuresScript) {
       figuresScript = new Promise((resolve, reject) => {
         const s = document.createElement('script');
@@ -157,7 +165,7 @@
     }
     figuresScript.then(
       () => {
-        if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api, ...opts });
+        if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api, apiFetch, ...opts });
       },
       () => {}
     );
@@ -336,6 +344,9 @@
   }
 
   function goEmpty(pushUrl) {
+    requestWhiteboard = false;
+    whiteboardBtn.setAttribute('aria-pressed', 'false');
+    input.placeholder = 'Ask anything';
     state.loadToken++;
     state.currentId = null;
     if (window.KelvinAttachments) window.KelvinAttachments.clear();
@@ -681,6 +692,7 @@
   }
 
   function updateSendBtn() {
+    whiteboardBtn.disabled = state.streaming;
     if (state.streaming) {
       sendBtn.classList.add('stop');
       sendBtn.disabled = false;
@@ -712,8 +724,16 @@
     const typed = (text != null ? text : input.value).trim();
     if (state.streaming || files.busy()) return;
     const sentFiles = text != null ? [] : files.pendingList();
-    const content = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
+    const baseContent = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
+    const content = baseContent && requestWhiteboard
+      ? baseContent + '\n\nPlease explain this on the narrated whiteboard, with spoken explanation and drawing together.'
+      : baseContent;
     if (!content) return;
+
+    window.KelvinNarration?.pauseAll();
+    requestWhiteboard = false;
+    whiteboardBtn.setAttribute('aria-pressed', 'false');
+    input.placeholder = 'Ask anything';
 
     state.streaming = true;
     input.value = '';

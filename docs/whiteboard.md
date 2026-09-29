@@ -1,5 +1,9 @@
 # Kelvin teaching board prototype
 
+For the spoken version with synchronized drawing, captions, and playback controls, see
+[Narrated whiteboard](narrated-whiteboard.md). It extends this renderer and works in reading mode
+until the server speech key is configured.
+
 The `show_on_board` tool accepts a bounded JSON board: up to eight labeled nodes, twelve arrows,
 and six solution steps. The server validates the structure, streams a `kelvin-board` block into the
 assistant reply, and saves that block with the message. The browser draws the SVG and KaTeX steps

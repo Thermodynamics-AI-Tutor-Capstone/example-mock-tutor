@@ -298,7 +298,11 @@
         catch { fig.innerHTML = '<div class="kfig-note">Drawing the board…</div>'; return; }
         fig.innerHTML = '<div class="kfig-note">Drawing the board…</div>';
         loadBoard().then(
-          (board) => { if (fig.isConnected) fig.innerHTML = board.render(spec, { animate: Boolean(opts?.live) }); },
+          (board) => {
+            if (!fig.isConnected) return;
+            fig.innerHTML = board.render(spec, { animate: Boolean(opts?.live) && !spec.lesson });
+            if (spec.lesson) window.KelvinNarration.mount(fig, spec, opts);
+          },
           (error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; }
         ).catch((error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; });
         return;

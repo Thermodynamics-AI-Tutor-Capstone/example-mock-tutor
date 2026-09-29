@@ -58,6 +58,9 @@ jobs:
       - name: Teaching board tool and renderer tests
         run: npm run board:test
 
+      - name: Narrated whiteboard tests (no speech key required)
+        run: npm run narration:test
+
       - name: Admin dashboard tests (access, anonymization, eval results)
         run: npm run admin:test
 

@@ -62,6 +62,11 @@ reads those parameters, so change both together.
 
 ## Adding a tool
 
+`explain_on_whiteboard` extends `show_on_board` with saved narration segments and reveal cues.
+It stays available without a speech key: captions and manual steps always work. Speech is generated
+on demand by authenticated routes in `lib/whiteboard.js`, using server-side `OPENAI_API_KEY`.
+See [narrated whiteboard setup](../../docs/narrated-whiteboard.md).
+
 1. Write `agent/tools/<name>.yml`.
 2. Write `lib/tools/<name>.js`: `export default async function run(args, ctx) { … }` returns
    whatever the model should see (an object, sent as JSON). Optional exports:
