@@ -8,6 +8,7 @@ icon: "✅"
 order: 2
 connection: deepseek-pro
 tools:
+  - search_cards
   - open_card
   - list_cards
   - load_skill

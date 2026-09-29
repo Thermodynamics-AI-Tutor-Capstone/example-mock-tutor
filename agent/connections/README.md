@@ -78,11 +78,12 @@ database in `data/pglite/`. Only the final text of each reply is saved.
 | Setting | Value |
 |---|---|
 | `folder` | `agent/raw-course-files` |
-| `tools` | `list_course_files`, `search_course_files`, `read_course_file` |
+| `tools` | `search_cards`, `open_card`, `list_cards` |
 
-Files dropped into [`agent/raw-course-files/`](../raw-course-files/README.md) are turned into a searchable index
-when the site is built. The model uses the three tools to list, search, and read them. The tools
-are left out automatically when the folder has no usable files.
+Files dropped into [`agent/raw-course-files/`](../raw-course-files/README.md) are raw inputs to ingestion
+and are never shown to the model. Ingestion turns them into cards in
+[`agent/knowledge-brain/`](../knowledge-brain/README.md), and the model uses the three tools to search,
+open and list those cards. The tools are left out automatically when there are no cards.
 
 Skills work the same way: `skills.folder` is [`agent/skills`](../skills/README.md) and the model
 loads one with the `load_skill` tool.
