@@ -10,7 +10,8 @@
 .knarration-play:hover:not(:disabled) { background: var(--send-bg); opacity: .85; }
 .knarration-rate { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
 .knarration-rate select { min-height: 36px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
-.knarration-seek { width: 100%; margin: 14px 0 5px; accent-color: #2563eb; }
+.knarration-voice { flex-basis: 100%; min-width: 0; }
+.knarration-voice select { max-width: min(100%, 320px); min-width: 0; text-overflow: ellipsis; }
 .knarration-status { min-height: 2em; font-size: 12px; line-height: 1.5; color: var(--text2); }
 .knarration-transcript { font-size: 13px; margin-top: 8px; }
 .knarration-transcript summary { cursor: pointer; color: var(--text2); }
@@ -20,6 +21,21 @@
 .whiteboard-btn:hover { background: var(--hover); }
 .whiteboard-btn[aria-pressed="true"] { color: #2563eb; background: #2563eb1a; }
 .whiteboard-btn:disabled { opacity: .45; }
+.kboard.kboard-narrated { position: relative; background: #fffef9; border: 5px solid #b9c2c9; box-shadow: inset 0 0 0 1px #fff, 0 3px 8px #0000000a; --text: #253243; --text2: #536173; --border: #d8dde2; --bg: #fffef9; --bubble: #fffef9; --hover: #eef1f5; --send-bg: #2458b4; --send-fg: #fff; }
+.kboard-narrated .kboard-title { font-size: 16px; }
+.kboard-narrated .kboard-title::after { content: ''; display: block; width: 65px; height: 4px; border-radius: 50%; background: #2458b4; margin-top: 7px; transform: rotate(-1deg); }
+.kboard-narrated .kboard-arrow, .kboard-narrated .kboard-marker-outline { stroke-linecap: round; stroke-linejoin: round; }
+.kboard-narrated .kboard-node text, .kboard-narrated .kboard-arrow-label, .kboard-narrated .kboard-step strong { font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; }
+.kboard-narrated .kboard-step { color: var(--step-ink); border-top: 0; border-left: 3px solid currentColor; padding: 4px 0 4px 12px; }
+.kboard-narrated .kboard-note { color: #536173; }
+.kboard-narrated .knarration { color: var(--text); }
+.kboard-narrated .knarration-button { color: var(--text); }
+.kboard-narrated .knarration-play { color: var(--send-fg); }
+.kboard-marker { pointer-events: none; position: absolute; z-index: 2; width: 12px; height: 44px; background: linear-gradient(90deg, #d4d9df, #fff 45%, #c8ced5); border: 1px solid #8b95a1; border-radius: 3px 3px 2px 2px; transform-origin: 50% 100%; transform: translate(-50%, -100%) rotate(32deg); box-shadow: 2px 2px 3px #0002; }
+.kboard-marker::before { content: ''; position: absolute; inset: 0 0 auto; height: 9px; background: var(--marker-ink, #2458b4); border-radius: 2px 2px 0 0; }
+.kboard-marker::after { content: ''; position: absolute; bottom: -5px; left: 3px; width: 5px; height: 7px; border-radius: 0 0 2px 1px; background: var(--marker-ink, #2458b4); }
+.kboard-marker[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .kboard-marker { display: none; } }
 @media (max-width: 480px) {
   .knarration-toolbar { gap: 6px; }
   .knarration-button { padding: 8px 9px; font-size: 12px; }

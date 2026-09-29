@@ -83,7 +83,7 @@ parameters:
                   type: number
                   minimum: 0
                   maximum: 0.85
-                  description: Fraction through this spoken clip to start revealing the item. Sort cues by at. Use short clips for close synchronization.
+                  description: Fraction through the spoken words to start revealing the item. The browser splits speech at cues and sentence breaks. Sort cues by at; place each cue at the words that introduce its element.
               required: [target, at]
         required: [speech, cues]
   required: [board, segments]

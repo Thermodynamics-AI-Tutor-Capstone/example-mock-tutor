@@ -1,5 +1,5 @@
 // Optional real-browser checks. Install playwright locally, or set PLAYWRIGHT_MODULE to its
-// index.mjs file. No credentials or paid API: the fixture serves a silent WAV as a voice clip.
+// index.mjs file. Uses a controllable browser speech stub: no credentials or paid API.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,12 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const saved = validateLesson(lessonInput);
 const board = { ...saved.board, lesson: { id: '11111111-1111-4111-8111-111111111111', segments: saved.segments } };
 const content = '```kelvin-board\n' + JSON.stringify(board) + '\n```\n\nWhich words justify steady state?';
-let available = false, audioRequests = 0, postedMessage = '', pendingStream;
-const wav = Buffer.alloc(44 + 8000 * 4 * 2);
-wav.write('RIFF', 0); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8);
-wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
-wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34);
-wav.write('data', 36); wav.writeUInt32LE(wav.length - 44, 40);
+let audioRequests = 0, postedMessage = '', pendingStream;
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://test');
   const json = (value, status = 200) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
@@ -34,12 +29,7 @@ const server = http.createServer(async (req, res) => {
     pendingStream = () => { res.end('data: ' + JSON.stringify({ type: 'delta', content: 'Which words justify steady state?' }) + '\n\ndata: {"type":"done"}\n\n'); };
     return;
   }
-  if (url.pathname === '/api/whiteboard/voice') return json({ available });
-  if (url.pathname.startsWith('/api/whiteboard/') && url.pathname.includes('/audio/')) {
-    audioRequests++;
-    if (!available) return json({ error: 'Voice is not set up yet. You can still read the captions and use Next step.' }, 503);
-    res.writeHead(200, { 'Content-Type': 'audio/wav' }); res.end(wav); return;
-  }
+  if (url.pathname.startsWith('/api/whiteboard/')) { audioRequests++; return json({ error: 'Speech API must not be used' }, 500); }
   if (url.pathname.startsWith('/api/')) return json({});
   const file = path.resolve(root, 'public', '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
   if (!file.startsWith(path.join(root, 'public') + path.sep) || !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
@@ -56,53 +46,83 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
-    const NativeAudio = window.Audio;
-    window.testClips = [];
-    window.Audio = function (...args) { const audio = new NativeAudio(...args); window.testClips.push(audio); return audio; };
+    let active = null;
+    const history = [];
+    const local = { voiceURI: 'local-en', name: 'Local English', lang: 'en-US', localService: true };
+    const remote = { voiceURI: 'remote-en', name: 'Browser English', lang: 'en-US', localService: false };
+    const synth = new EventTarget();
+    synth.getVoices = () => window.testSpeech.delayedVoices ? [] : [remote, local];
+    synth.speak = (utterance) => { active = utterance; history.push(utterance); if (!window.testSpeech.holdStart) setTimeout(() => { if (active === utterance) utterance.onstart?.(); }, 0); };
+    synth.cancel = () => { const old = active; active = null; setTimeout(() => old?.onerror?.({ error: 'canceled' }), 0); };
+    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: class { constructor(text) { this.text = text; } } });
+    window.testSpeech = { history, delayedVoices: false, holdStart: false,
+      finish() { const old = active; active = null; old?.onend?.(); },
+      fail() { active?.onerror?.({ error: 'synthesis-failed' }); },
+      get active() { return active; },
+      voicesChanged() { synth.dispatchEvent(new Event('voiceschanged')); },
+    };
   });
   await page.goto(origin + '/#/c/chat');
   await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
-  await page.getByText('Voice is not set up yet. Use Next step and the captions.').waitFor();
-  assert.equal(audioRequests, 0, 'loading history must not generate audio');
+  assert.equal(await page.evaluate(() => testSpeech.history.length), 0, 'no autoplay from history');
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'local-en', 'prefer local English voice');
   await page.getByRole('button', { name: 'Next step', exact: true }).click();
   assert.equal(await page.locator('[data-board-target="node:turbine"]').evaluate((el) => el.style.opacity), '1');
   assert.equal(await page.locator('[data-board-target="node:inlet"]').evaluate((el) => el.style.opacity), '0');
-  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
-  await page.getByText('Voice is not set up yet. You can still read the captions and use Next step.').waitFor();
   await page.getByText('Read full transcript', { exact: true }).click();
   assert.equal(await page.locator('.knarration-transcript li').count(), 3);
-  const output = path.join(root, 'data', 'narration-ui');
-  fs.mkdirSync(output, { recursive: true });
-  await page.screenshot({ path: path.join(output, 'desktop-no-key.png'), fullPage: true });
-  console.log('ok  history, no autoplay, missing-key fallback, manual reveal, transcript');
+  console.log('ok  no autoplay, local voice preferred, manual reveal, transcript');
 
-  available = true;
+  await page.reload();
+  await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
+  await page.evaluate(() => { testSpeech.delayedVoices = true; testSpeech.voicesChanged(); testSpeech.holdStart = true; });
+  assert.equal(await page.getByLabel('Narration voice').locator('option').count(), 1);
+  await page.evaluate(() => { testSpeech.delayedVoices = false; testSpeech.voicesChanged(); });
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'local-en');
+  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
+  assert.equal(await page.locator('[data-board-target="node:turbine"]').evaluate((el) => el.style.opacity), '0', 'do not draw before speech starts');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.evaluate(() => { testSpeech.history[0].onstart(); testSpeech.holdStart = false; });
+  assert.equal(await page.locator('.kboard-marker').evaluate((el) => el.hidden), true, 'ignore canceled start event');
   await page.reload();
   await page.getByRole('button', { name: 'Play narration', exact: true }).click();
-  await page.getByRole('button', { name: 'Pause', exact: true }).waitFor();
-  await page.waitForFunction(() => window.testClips.at(-1).currentTime > .1);
+  await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
+  await page.waitForFunction(() => !document.querySelector('.kboard-marker').hidden);
+  const output = path.join(root, 'data', 'narration-ui');
+  fs.mkdirSync(output, { recursive: true });
+  await page.screenshot({ path: path.join(output, 'marker-drawing.png'), fullPage: true });
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  const pausedAt = await page.evaluate(() => window.testClips.at(-1).currentTime);
-  const pausedDrawing = await page.locator('[data-board-target="node:turbine"]').evaluate((el) => el.style.clipPath);
-  await page.waitForTimeout(250);
-  assert.equal(await page.evaluate(() => window.testClips.at(-1).currentTime), pausedAt);
-  assert.equal(await page.locator('[data-board-target="node:turbine"]').evaluate((el) => el.style.clipPath), pausedDrawing);
-  await page.getByLabel('Position in current spoken step').evaluate((el) => { el.value = '800'; el.dispatchEvent(new Event('input')); });
-  await page.waitForFunction(() => window.testClips.at(-1).currentTime > 3);
-  assert.equal(await page.locator('[data-board-target="step:0"]').evaluate((el) => el.style.clipPath), 'inset(0px 0% 0px 0px)');
+  const pausedDrawing = await page.locator('.kboard-marker-outline').nth(1).evaluate((el) => el.style.strokeDashoffset);
+  await page.waitForTimeout(150);
+  assert.equal(await page.locator('.kboard-marker-outline').nth(1).evaluate((el) => el.style.strokeDashoffset), pausedDrawing);
+  assert.equal(await page.evaluate(() => testSpeech.active), null);
+  await page.getByRole('button', { name: 'Resume phrase', exact: true }).click();
+  await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => testSpeech.history[0].text === testSpeech.history[1].text), true);
   await page.getByLabel('Narration speed').selectOption('2');
-  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
-  await page.waitForFunction(() => window.testClips.at(-1).playbackRate === 2);
-  await page.getByText('Step 2 of 3 · Listening', { exact: true }).waitFor();
-  await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  await page.getByRole('button', { name: 'Previous', exact: true }).click();
-  const beforeReplay = audioRequests;
+  await page.waitForFunction(() => testSpeech.active?.rate === 2);
+  // Force a stale callback after changing speed: it must not advance the replacement phrase.
+  await page.evaluate(() => testSpeech.history[0].onend());
+  assert.equal(await page.evaluate(() => testSpeech.active.rate), 2);
+  await page.getByLabel('Narration voice').selectOption('remote-en');
+  await page.waitForFunction(() => testSpeech.active?.voice.voiceURI === 'remote-en');
+  for (let i = 0; i < 30; i++) {
+    if (await page.getByText('Explanation complete. Replay a step or continue the conversation.', { exact: true }).isVisible()) break;
+    await page.evaluate(() => testSpeech.finish());
+  }
+  await page.getByText('Explanation complete. Replay a step or continue the conversation.', { exact: true }).waitFor();
+  assert.equal(await page.locator('[data-board-target]').evaluateAll((els) => els.every((el) => el.style.opacity === '1')), true);
+  assert.equal(await page.locator('[data-board-target="step:0"]').evaluate((el) => getComputedStyle(el).color) === await page.locator('[data-board-target="step:1"]').evaluate((el) => getComputedStyle(el).color), false);
+  await page.screenshot({ path: path.join(output, 'desktop-complete.png'), fullPage: true });
   await page.getByRole('button', { name: 'Replay step', exact: true }).click();
   await page.getByRole('button', { name: 'Pause', exact: true }).waitFor();
-  assert.equal(audioRequests, beforeReplay, 'within-player replay must reuse the object URL');
+  await page.evaluate(() => testSpeech.fail());
+  await page.getByText('This browser voice could not speak. Choose another voice and press Play, or use Next step to read.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
   await page.getByRole('button', { name: 'New chat', exact: true }).click();
-  await page.waitForFunction(() => window.testClips.every((clip) => clip.paused));
-  console.log('ok  real audio clock, pause, seek, speed, sequential clips, replay cache, navigation cleanup');
+  await page.waitForFunction(() => testSpeech.active === null);
+  console.log('ok  marker drawing, pause, phrase resume, speed, voice, stale callbacks, completion, errors, navigation');
 
   await page.goto(origin + '/#/c/chat');
   await page.getByRole('button', { name: 'Explain on whiteboard', exact: true }).click();
@@ -112,29 +132,38 @@ try {
   assert.match(postedMessage, /narrated whiteboard/);
   await page.locator('.knarration').nth(1).getByRole('button', { name: 'Play narration', exact: true }).click();
   await page.locator('.knarration').nth(1).getByRole('button', { name: 'Pause', exact: true }).waitFor();
-  const count = await page.evaluate(() => window.testClips.length);
+  const count = await page.evaluate(() => testSpeech.history.length);
   pendingStream();
   await page.getByRole('button', { name: 'Send', exact: true }).waitFor();
-  assert.equal(await page.evaluate(() => window.testClips.length), count);
-  assert.equal(await page.evaluate(() => window.testClips.at(-1).paused), false, 'streamed text must preserve playback');
+  assert.equal(await page.evaluate(() => testSpeech.history.length), count, 'streaming must preserve player');
+  assert.equal(await page.evaluate(() => Boolean(testSpeech.active)), true);
   await page.locator('.knarration').nth(0).getByRole('button', { name: 'Play narration', exact: true }).click();
-  await page.locator('.knarration').nth(0).getByRole('button', { name: 'Pause', exact: true }).waitFor();
-  assert.equal(await page.evaluate(() => window.testClips.filter((clip) => !clip.paused).length), 1);
-  console.log('ok  composer request, streamed board reuse, only one narration playing');
+  assert.equal(await page.getByRole('button', { name: 'Pause', exact: true }).count(), 1);
+  await page.locator('.knarration').nth(1).getByRole('button', { name: 'Next step', exact: true }).click();
+  assert.equal(await page.evaluate(() => Boolean(testSpeech.active)), true, 'inactive player must not cancel active speech');
+  console.log('ok  composer, streaming reuse, one active voice, independent manual controls');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
   await page.reload();
-  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
+  await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
+  assert.equal(await page.locator('.kboard-marker').evaluate((el) => el.hidden), true);
   await page.getByRole('button', { name: 'Next step', exact: true }).click();
   await page.getByRole('button', { name: 'Next step', exact: true }).click();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   await page.screenshot({ path: path.join(output, 'mobile-dark.png'), fullPage: true });
-  await page.setViewportSize({ width: 1280, height: 1050 });
-  await page.emulateMedia({ reducedMotion: 'no-preference', colorScheme: 'light' });
-  await page.screenshot({ path: path.join(output, 'desktop-complete.png'), fullPage: true });
+  const unsupported = await browser.newPage();
+  await unsupported.addInitScript(() => Object.defineProperty(window, 'speechSynthesis', { value: undefined }));
+  await unsupported.goto(origin + '/#/c/chat');
+  await unsupported.getByText('Speech is unavailable in this browser. Use Next step and the captions.', { exact: true }).waitFor();
+  assert.equal(await unsupported.getByRole('button', { name: 'Play narration', exact: true }).isDisabled(), true);
+  await unsupported.getByRole('button', { name: 'Next step', exact: true }).click();
+  assert.equal(await unsupported.getByRole('button', { name: 'Replay step', exact: true }).isDisabled(), true);
+  assert.equal(audioRequests, 0, 'no speech capability or paid audio requests');
   assert.deepEqual(errors, []);
-  console.log('ok  mobile, dark mode, reduced motion, no JavaScript errors');
+  console.log('ok  mobile, dark mode, reduced motion, unsupported browser, zero speech API requests');
+
 } finally {
   await browser?.close();
   server.closeAllConnections();

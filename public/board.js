@@ -83,6 +83,10 @@
     injectCss();
     const nodes = checked(spec);
     const id = 'kb' + ++serial;
+    const marker = Boolean(spec.lesson);
+    const inks = marker ? { flow: '#2458b4', heat: '#c03236', work: '#98500e', relationship: '#7345aa' } : colors;
+    const nodeInks = { component: '#2458b4', state: '#207148', boundary: '#7345aa', note: '#303b48' };
+    const stepInks = ['#2458b4', '#207148', '#7345aa', '#c03236'];
     const out = [`<div class="kboard${animate ? ' kboard-live' : ''}"><div class="kboard-title">${esc(spec.title)}</div>`];
     if (nodes.size) {
       const ys = [...nodes.values()].map((node) => node.py);
@@ -92,7 +96,7 @@
       const summary = `Schematic, not to scale. Components: ${spec.nodes.map((node) => node.label).join(', ')}. Connections: ${spec.arrows.map((arrow) => `${nodes.get(arrow.from).label} to ${nodes.get(arrow.to).label}${arrow.label ? `, ${arrow.label}` : ''}`).join('; ') || 'none'}.`;
       out.push(`<title id="${id}-title">${esc(spec.title)}</title><desc id="${id}-desc">${esc(summary)}</desc>`);
       out.push('<defs>');
-      for (const [kind, color] of Object.entries(colors)) {
+      for (const [kind, color] of Object.entries(inks)) {
         out.push(`<marker id="${id}-${kind}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="${color}"/></marker>`);
       }
       out.push('</defs>');
@@ -107,13 +111,18 @@
         };
         const [x1, y1] = edge(a, 1), [x2, y2] = edge(b, -1);
         const delay = (nodes.size * .24 + i * .34).toFixed(2);
-        out.push(`<line class="kboard-arrow" data-board-target="arrow:${i}" style="--delay:${delay}s" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${colors[arrow.kind]}" stroke-width="2.4" marker-end="url(#${id}-${arrow.kind})"/>`);
-        if (arrow.label) out.push(`<text class="kboard-arrow-label" data-board-target="arrow:${i}" style="--delay:${(Number(delay) + .3).toFixed(2)}s" x="${((x1 + x2) / 2).toFixed(1)}" y="${((y1 + y2) / 2 - 8).toFixed(1)}" text-anchor="middle" font-size="12" fill="${colors[arrow.kind]}" stroke="var(--bubble)" stroke-width="4" paint-order="stroke">${esc(arrow.label)}</text>`);
+        out.push(`<path class="kboard-arrow" data-board-target="arrow:${i}" style="--delay:${delay}s" d="M${x1.toFixed(1)},${y1.toFixed(1)} Q${((x1 + x2) / 2).toFixed(1)},${((y1 + y2) / 2 + (marker ? 2 : 0)).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${inks[arrow.kind]}" stroke-width="${marker ? 3.2 : 2.4}" marker-end="url(#${id}-${arrow.kind})"/>`);
+        if (arrow.label) out.push(`<text class="kboard-arrow-label" data-board-target="arrow:${i}" style="--delay:${(Number(delay) + .3).toFixed(2)}s" x="${((x1 + x2) / 2).toFixed(1)}" y="${((y1 + y2) / 2 - 8).toFixed(1)}" text-anchor="middle" font-size="12" fill="${inks[arrow.kind]}" stroke="${marker ? '#fffef9' : 'var(--bubble)'}" stroke-width="4" paint-order="stroke">${esc(arrow.label)}</text>`);
       }
       for (const [i, node] of [...nodes.values()].entries()) {
         const lines = labelLines(node.label);
-        out.push(`<g class="kboard-node" data-board-target="node:${esc(node.id)}" style="--delay:${(i * .24).toFixed(2)}s"><rect x="${(node.px - 76).toFixed(1)}" y="${(node.py - 34).toFixed(1)}" width="152" height="68" rx="10" fill="${fills[node.kind]}" stroke="var(--text2)" stroke-width="1.4"/>`);
-        out.push(`<text x="${node.px.toFixed(1)}" y="${(node.py - (lines.length - 1) * 8).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="600" fill="#172033">`);
+        out.push(`<g class="kboard-node" data-board-target="node:${esc(node.id)}" style="--delay:${(i * .24).toFixed(2)}s">`);
+        if (marker) {
+          const x = node.px - 76, y = node.py - 34;
+          // Slightly bowed edges and round joins suggest a dry-erase sketch without distorting labels.
+          out.push(`<path class="kboard-marker-outline" d="M${x + 10},${y} Q${x + 77},${y - 1.5} ${x + 142},${y + 1} Q${x + 153},${y} ${x + 152},${y + 11} L${x + 151},${y + 57} Q${x + 153},${y + 69} ${x + 142},${y + 68} Q${x + 74},${y + 70} ${x + 10},${y + 67} Q${x - 1},${y + 68} ${x},${y + 57} L${x + 1},${y + 11} Q${x},${y - 1} ${x + 10},${y}" fill="none" stroke="${nodeInks[node.kind]}" stroke-width="3.2"/>`);
+        } else out.push(`<rect x="${(node.px - 76).toFixed(1)}" y="${(node.py - 34).toFixed(1)}" width="152" height="68" rx="10" fill="${fills[node.kind]}" stroke="var(--text2)" stroke-width="1.4"/>`);
+        out.push(`<text x="${node.px.toFixed(1)}" y="${(node.py - (lines.length - 1) * 8).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="600" fill="${marker ? nodeInks[node.kind] : '#172033'}">`);
         lines.forEach((line, index) => out.push(`<tspan x="${node.px.toFixed(1)}" dy="${index ? 16 : 0}">${esc(line)}</tspan>`));
         out.push('</text></g>');
       }
@@ -123,7 +132,7 @@
       out.push('<ol class="kboard-steps">');
       for (const [i, step] of spec.steps.entries()) {
         const delay = (nodes.size * .24 + spec.arrows.length * .34 + i * .38).toFixed(2);
-        out.push(`<li class="kboard-step" data-board-target="step:${i}" style="--delay:${delay}s"><strong>${esc(step.label)}</strong>`);
+        out.push(`<li class="kboard-step" data-board-target="step:${i}" style="--delay:${delay}s${marker ? ';--step-ink:' + stepInks[i % stepInks.length] : ''}"><strong>${esc(step.label)}</strong>`);
         if (step.latex) {
           try { out.push(katex.renderToString(step.latex, { displayMode: true, throwOnError: false, trust: false })); }
           catch { out.push(`<code>${esc(step.latex)}</code>`); }

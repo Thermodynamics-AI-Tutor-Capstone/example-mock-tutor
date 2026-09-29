@@ -63,8 +63,8 @@ reads those parameters, so change both together.
 ## Adding a tool
 
 `explain_on_whiteboard` extends `show_on_board` with saved narration segments and reveal cues.
-It stays available without a speech key: captions and manual steps always work. Speech is generated
-on demand by authenticated routes in `lib/whiteboard.js`, using server-side `OPENAI_API_KEY`.
+The browser speaks the saved explanation while drawing with colored marker strokes. No speech
+API key is needed; captions and manual steps also work when browser speech is unavailable.
 See [narrated whiteboard setup](../../docs/narrated-whiteboard.md).
 
 1. Write `agent/tools/<name>.yml`.

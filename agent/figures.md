@@ -23,7 +23,7 @@ sentences with reveal cues for the board's nodes, arrows, and equation steps. Us
 math ("mass flow rate", "enthalpy at the inlet"), not LaTeX in speech. Keep the board and speech
 at the same help level as your text reply. Every item needs one cue, with both endpoint nodes
 before an arrow. Keep segments short to align the writing with the explanation. The app inserts
-and saves the lesson; don't repeat it. It works as written steps even when voice is not configured.
+and saves the lesson; don't repeat it. The browser speaks it with no speech key. Use short phrases and align each cue with the words describing that element; written steps remain available if browser speech is unavailable.
 
 **Cycle layouts and concept maps.** Write a fenced `mermaid` block for small networks that are not
 solution boards, which is drawn as a diagram:
