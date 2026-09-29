@@ -82,6 +82,8 @@ await test('categoryOf puts every simulated-student account in eval', () => {
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'test10@tutor.com' }), 'eval');
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'kelvin-eval@thermo-tutor.test' }), 'eval');
   assert.equal(admin.categoryOf({ user_id: 'eval-p1', email: null }), 'eval');
+  assert.equal(admin.categoryOf({ user_id: 'x', email: 'kelvin.demo.video2@example.com' }), 'eval');
+  assert.equal(admin.categoryOf({ user_id: 'x', email: 'kelvin.demo@example.com' }), 'real');
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'someone@psu.edu' }), 'real');
   assert.equal(admin.categoryOf({ user_id: 'x', email: 'test@psu.edu' }), 'real');
   assert.deepEqual(admin.GROUPS, ['all', 'real', 'eval']);
