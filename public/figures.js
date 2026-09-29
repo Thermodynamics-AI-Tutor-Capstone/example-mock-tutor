@@ -301,7 +301,7 @@
           (board) => {
             if (!fig.isConnected) return;
             fig.innerHTML = board.render(spec, { animate: Boolean(opts?.live) && !spec.lesson });
-            if (spec.lesson) window.KelvinNarration.mount(fig, spec, opts);
+            if (spec.lesson && window.KelvinNarration) window.KelvinNarration.mount(fig, spec, opts);
           },
           (error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; }
         ).catch((error) => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; });

@@ -11,6 +11,7 @@
 <script src="/vendor/marked.umd.js"></script>
 <script src="/vendor/purify.min.js"></script>
 <script src="/vendor/katex/katex.min.js"></script>
+<script src="/markdown.js"></script>
 <script src="/account.js"></script>
 <script src="/settings.js" defer></script>
 <script src="/attachments.js" defer></script>
@@ -40,6 +41,11 @@
     <div class="sb-user-wrap">
       <div id="userMenu" class="user-menu" role="menu" hidden>
         <div id="userMenuEmail" class="user-menu-head"></div>
+        <div id="switcher" class="switcher" hidden>
+          <div class="user-menu-label">Switch account</div>
+          <div id="switcherList" class="switcher-list" role="group" aria-label="Switch account"></div>
+          <div class="user-menu-sep"></div>
+        </div>
         <button id="settingsBtn" class="user-menu-item" role="menuitem" type="button">Settings</button>
         <a class="user-menu-item" role="menuitem" href="/browse">Course map</a>
         <button id="signOutBtn" class="user-menu-item" role="menuitem" type="button">Sign out</button>
@@ -52,6 +58,10 @@
   </aside>
 
   <main class="main">
+    <div id="viewAsBar" class="view-as-bar" role="status" hidden>
+      <span id="viewAsText"></span>
+      <button id="viewAsBack" class="view-as-back" type="button">Switch back</button>
+    </div>
     <header class="topbar">
       <div class="topbar-left">
         <button id="openSidebar" class="icon-btn only-collapsed" title="Open sidebar" aria-label="Open sidebar">

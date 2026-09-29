@@ -36,62 +36,9 @@
   const ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
   const ICON_TRASH = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
 
-  const PURIFY_CFG = {
-    ADD_TAGS: ['semantics', 'annotation', 'math', 'mrow', 'mi', 'mo', 'mn', 'msup', 'msub', 'mfrac', 'msqrt', 'mtext', 'mspace', 'mover', 'munder', 'mtable', 'mtr', 'mtd', 'mstyle', 'mpadded', 'mphantom', 'menclose', 'mroot', 'msubsup', 'munderover'],
-    ADD_ATTR: ['encoding', 'aria-hidden', 'xmlns', 'mathvariant', 'stretchy', 'fence', 'separator', 'lspace', 'rspace', 'columnalign', 'rowspacing', 'columnspacing', 'displaystyle', 'scriptlevel', 'accent', 'accentunder', 'minsize', 'maxsize', 'width', 'height', 'depth', 'voffset'],
-  };
-
-  function renderMarkdown(text, opts) {
-    const codes = [];
-    const maths = [];
-    let s = String(text || '');
-
-    s = s.replace(/```[\s\S]*?(?:```|$)/g, (m) => {
-      codes.push(m);
-      return 'CODETOKEN' + (codes.length - 1) + 'END';
-    });
-    s = s.replace(/`[^`\n]+`/g, (m) => {
-      codes.push(m);
-      return 'CODETOKEN' + (codes.length - 1) + 'END';
-    });
-
-    const addMath = (tex, display) => {
-      maths.push({ tex, display });
-      return 'MATHTOKEN' + (maths.length - 1) + 'END';
-    };
-    s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, t) => addMath(t, true));
-    s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, t) => addMath(t, true));
-    s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_, t) => addMath(t, false));
-    s = s.replace(/(?<!\\)\$(?=[^\s$])([^$\n]*?[^\s\\$])\$(?!\d)/g, (_, t) => addMath(t, false));
-
-    const restoreCode = (str) => str.replace(/CODETOKEN(\d+)END/g, (_, i) => codes[+i]);
-    s = restoreCode(s);
-
-    let html;
-    try {
-      html = marked.parse(s, { gfm: true, breaks: Boolean(opts && opts.breaks) });
-    } catch (e) {
-      html = '<p>' + escapeHtml(s) + '</p>';
-    }
-
-    html = html.replace(/MATHTOKEN(\d+)END/g, (_, i) => {
-      const m = maths[+i];
-      if (!m) return '';
-      const tex = restoreCode(m.tex);
-      try {
-        return katex.renderToString(tex, { displayMode: m.display, throwOnError: false });
-      } catch (e) {
-        return escapeHtml(m.display ? '$$' + tex + '$$' : '$' + tex + '$');
-      }
-    });
-
-    return DOMPurify.sanitize(html, PURIFY_CFG);
-  }
+  // Markdown with KaTeX math, sanitized (public/markdown.js, shared with the admin and share pages).
+  const renderMarkdown = (text, opts) => window.KelvinMarkdown.render(text, opts);
   window.renderMarkdown = renderMarkdown;
-
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
 
   function copyText(text, btn, labelHtml) {
     const done = () => {
@@ -1025,11 +972,63 @@
   const userMenu = $('userMenu');
   function renderUser() {
     const name = (state.me.profile && state.me.profile.display_name) || state.me.user.name || state.me.user.email || 'Student';
+    const viewer = state.me.viewer;
     $('userName').textContent = name;
     $('userAvatar').textContent = window.KelvinAccount.initials(name, state.me.user.email);
-    $('userMenuEmail').textContent = state.me.user.email || '';
-    $('adminLink').hidden = !(state.me.profile && state.me.profile.is_admin);
+    $('userMenuEmail').textContent = viewer ? `Viewing as ${state.me.user.email} · signed in as ${viewer.email}` : state.me.user.email || '';
+    $('adminLink').hidden = !state.me.admin;
+    userBtn.classList.toggle('viewing-as', Boolean(viewer));
+    $('viewAsBar').hidden = !viewer;
+    if (viewer) $('viewAsText').textContent = `Viewing as ${name}, a test student. Chats you start here are saved to that account.`;
+    $('switcher').hidden = !state.me.admin;
   }
+
+  // Admins switch between their own account and the test students here (lib/auth.js "View as").
+  // The server keeps the choice in a cookie; the page reloads so everything is that account's.
+  let switcherLoaded = false;
+  async function switchTo(userId) {
+    document.querySelectorAll('.switcher-item').forEach((b) => { b.disabled = true; });
+    const r = await window.KelvinAccount.call('/api/me/view-as', { method: 'POST', body: JSON.stringify({ userId }) });
+    if (!r.ok) {
+      document.querySelectorAll('.switcher-item').forEach((b) => { b.disabled = false; });
+      $('switcherList').prepend(Object.assign(document.createElement('div'), { className: 'switcher-error', textContent: (r.data && r.data.error) || 'Could not switch accounts.' }));
+      return;
+    }
+    location.assign('/');
+  }
+  async function loadSwitcher() {
+    if (switcherLoaded || !state.me.admin) return;
+    switcherLoaded = true;
+    const list = $('switcherList');
+    list.textContent = 'Loading…';
+    const r = await window.KelvinAccount.call('/api/me/accounts');
+    if (!r.ok) {
+      switcherLoaded = false;
+      list.textContent = 'Could not load accounts.';
+      return;
+    }
+    const { self, current, accounts } = r.data;
+    const item = (id, tag, label) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'switcher-item';
+      b.setAttribute('role', 'menuitemradio');
+      b.setAttribute('aria-checked', String(id === current));
+      const t = document.createElement('span');
+      t.className = 'switcher-tag';
+      t.textContent = tag;
+      const n = document.createElement('span');
+      n.className = 'switcher-name';
+      n.textContent = label;
+      b.append(t, n);
+      if (id === current) b.insertAdjacentHTML('beforeend', ICON_CHECK);
+      else b.addEventListener('click', () => switchTo(id === self.id ? null : id));
+      return b;
+    };
+    list.replaceChildren(item(self.id, 'Admin', self.name), ...accounts.map((a) => item(a.id, a.label, a.name)));
+    if (!accounts.length) list.append(Object.assign(document.createElement('div'), { className: 'switcher-empty', textContent: 'No test accounts yet.' }));
+  }
+  $('viewAsBack').addEventListener('click', () => switchTo(null));
   function closeUserMenu() {
     userMenu.hidden = true;
     userBtn.setAttribute('aria-expanded', 'false');
@@ -1037,6 +1036,7 @@
   userBtn.addEventListener('click', () => {
     userMenu.hidden = !userMenu.hidden;
     userBtn.setAttribute('aria-expanded', userMenu.hidden ? 'false' : 'true');
+    if (!userMenu.hidden) loadSwitcher();
   });
   document.addEventListener('mousedown', (e) => {
     if (!userMenu.hidden && !userMenu.parentElement.contains(e.target)) closeUserMenu();

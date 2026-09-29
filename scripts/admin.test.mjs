@@ -14,7 +14,8 @@ process.env.USAGE_LOG_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'kelvin-usage-
 
 const { query, closeDb, ensureSchema } = await import('../lib/db.js');
 await ensureSchema();
-const { isAdmin, getProfile } = await import('../lib/auth.js');
+const auth = await import('../lib/auth.js');
+const { isAdmin, getProfile } = auth;
 const admin = await import('../lib/admin.js');
 
 let failed = 0;
@@ -196,6 +197,110 @@ await test('committed eval results are anonymized and complete', () => {
   assert.deepEqual(runs.map((r) => r.id), [...runs.map((r) => r.id)].sort());
   assert.equal(admin.evalRun(runs[0].id).id, runs[0].id);
   assert.throws(() => admin.evalRun('../package'), /No such eval run/);
+});
+
+await test('search matches every word across title, messages and the student label', async () => {
+  await query("INSERT INTO messages (conversation_id, role, content) VALUES ($1, 'user', 'Is the throttling valve isenthalpic? 100% sure_not')", [convs['u-test']]);
+  const ids = async (q, group = 'all') => (await admin.conversations(group, { q })).conversations.map((c) => c.id);
+  assert.deepEqual(await ids('throttling'), [convs['u-test']]);
+  assert.deepEqual(await ids('THROTTLING valve'), [convs['u-test']], 'case-insensitive, every word');
+  assert.deepEqual(await ids('throttling rankine'), [convs['u-test']], 'words may be in the title and a message');
+  assert.deepEqual(await ids('throttling nozzle'), [], 'a missing word excludes the chat');
+  assert.deepEqual(await ids('"isenthalpic valve"'), [], 'a quoted phrase must appear as written');
+  assert.deepEqual(await ids('"throttling valve"'), [convs['u-test']]);
+  assert.deepEqual(await ids('100%'), [convs['u-test']], 'LIKE wildcards are literal');
+  assert.deepEqual(await ids('sure_not'), [convs['u-test']]);
+  assert.deepEqual(await ids('0%'), [convs['u-test']]);
+  assert.deepEqual(await ids('x_y%z'), []);
+  assert.deepEqual(await ids('throttling', 'real'), [], 'the group filter still applies');
+  const label = (await admin.population()).find((s) => s.userId === 'u-real').label;
+  assert.deepEqual(await ids(`"${label.toLowerCase()}"`), [convs['u-real']]);
+  const hit = (await admin.conversations('all', { q: 'valve' })).conversations[0].match;
+  assert.equal(hit.role, 'user');
+  assert.equal(hit.messages, 1);
+  assert.match(hit.snippet, /throttling valve/);
+  assert.equal(admin.snippetOf('a '.repeat(200) + 'needle ' + 'b '.repeat(200), ['needle']).length <= 162, true);
+  assert.deepEqual(admin.searchTerms(' "A  b" c c '), ['a b', 'c']);
+  assert.equal((await admin.conversations('all', { q: 'h2?' })).conversations.length, 4);
+});
+
+await test('stars are per admin and filter the list', async () => {
+  await admin.setStar('u-admin', convs['u-real'], true);
+  await admin.setStar('u-admin', convs['u-real'], true);
+  const mine = await admin.conversations('all', { filter: 'starred', adminId: 'u-admin' });
+  assert.deepEqual(mine.conversations.map((c) => c.id), [convs['u-real']]);
+  assert.equal(mine.conversations[0].starred, true);
+  assert.equal((await admin.conversations('all', { filter: 'starred', adminId: 'u-other' })).conversations.length, 0);
+  assert.equal((await admin.conversation(convs['u-real'], { adminId: 'u-admin' })).starred, true);
+  assert.equal((await admin.conversation(convs['u-real'], { adminId: 'u-other' })).starred, false);
+  await admin.setStar('u-admin', convs['u-real'], false);
+  assert.equal((await admin.conversations('all', { filter: 'starred', adminId: 'u-admin' })).conversations.length, 0);
+  await assert.rejects(() => admin.setStar('u-admin', convs['u-admin'], true), /No such conversation/);
+  await assert.rejects(() => admin.conversations('all', { filter: 'mine' }), /filter must be one of/);
+});
+
+const share = await import('../lib/share.js');
+await test('a share link shows only the anonymized conversation, until it is turned off', async () => {
+  await query('UPDATE user_profiles SET professor = $2 WHERE user_id = $1', ['u-test', 'Dr. Quill']);
+  await query('UPDATE conversations SET title = $2 WHERE id = $1', [convs['u-test'], 'Tess needs Rankine help']);
+  await query(
+    "INSERT INTO messages (conversation_id, role, content) VALUES ($1, 'user', 'I am Tess Test (test3@tutor.test, 814-555-0123). Prof. Quill said so.'), ($1, 'assistant', 'Good question, TESS. Tess''s valve: h1 = 2800.5 kJ/kg at 101.325 kPa, 1-800-555, 300 K.')",
+    [convs['u-test']]
+  );
+  const link = await admin.share('u-admin', convs['u-test']);
+  assert.match(link.token, share.TOKEN_RE);
+  assert.equal(link.url, `/share?t=${link.token}`);
+  assert.equal((await admin.share('u-admin', convs['u-test'])).token, link.token, 'sharing again returns the same link');
+  assert.equal((await admin.conversation(convs['u-test'])).share.token, link.token);
+  assert.equal((await admin.conversations('all', { filter: 'shared' })).conversations[0].id, convs['u-test']);
+  const view = await share.sharedConversation(link.token);
+  assert.deepEqual(Object.keys(view).sort(), ['messages', 'title']);
+  assert.ok(view.messages.every((m) => Object.keys(m).sort().join() === 'content,role'));
+  const text = JSON.stringify(view);
+  for (const bad of ['Tess', 'TESS', 'test3', 'tutor.test', '814-555-0123', 'Quill', 'u-test', convs['u-test']]) assert.ok(!text.includes(bad), `leaked ${bad}`);
+  assert.equal(view.title, '[student] needs Rankine help');
+  assert.match(text, /I am \[student\] \(\[email\], \[phone\]\)\. Prof\. \[instructor\] said so\./);
+  assert.match(text, /h1 = 2800\.5 kJ\/kg at 101\.325 kPa, 1-800-555, 300 K/, 'numbers are untouched');
+  assert.match(text, /Good question, \[student\]\. \[student\]'s valve/);
+  assert.equal(await share.isLiveShare(link.token), true);
+  await admin.unshare(convs['u-test']);
+  assert.equal(await share.sharedConversation(link.token), null);
+  assert.equal(await share.isLiveShare(link.token), false);
+  assert.equal((await admin.conversation(convs['u-test'])).share, null);
+  const again = await admin.share('u-admin', convs['u-test']);
+  assert.notEqual(again.token, link.token, 'a revoked link never comes back');
+  assert.equal(await share.sharedConversation('short'), null);
+  assert.equal(await share.sharedConversation("x' OR 1=1 --aaaaaaaaaaaaaaaa"), null);
+  await assert.rejects(() => admin.share('u-admin', convs['u-admin']), /No such conversation/);
+});
+
+await test('the redactor keeps the tutor name and ordinary words', () => {
+  const clean = share.redactor({ name: 'Kelvin Eval', email: 'kelvin-eval@thermo-tutor.test' });
+  assert.equal(clean('Kelvin says: eval the test. Kelvin Eval wrote.'), 'Kelvin says: eval the test. [student] wrote.');
+  const li = share.redactor({ name: 'Al Li' });
+  assert.equal(li('Al Li asked about li-ion. Li was right, al fine.'), '[student] asked about li-ion. [student] was right, al fine.');
+  assert.equal(share.redactor({})('mail me at a.b@c.edu or (814) 555-0123'), 'mail me at [email] or [phone]');
+});
+
+await test('admins can view as test accounts only; everyone else is themselves', async () => {
+  await query("INSERT INTO user_profiles (user_id, email, display_name) VALUES ('u-test10', 'test10@tutor.test', 'Tenth Test')");
+  const accounts = await auth.switchableAccounts();
+  assert.deepEqual(accounts.map((a) => [a.id, a.label]), [['u-test', 'Test 3'], ['u-test10', 'Test 10'], ['u-eval', 'Eval']]);
+  const req = (target, proto = 'http') => ({ headers: { cookie: `x=1; ${auth.VIEW_AS_COOKIE}=${encodeURIComponent(target)}; y=2`, 'x-forwarded-proto': proto } });
+  const admin_ = { id: 'u-admin', email: 'lead@example.edu', name: 'Ada Admin' };
+  const acting = await auth.actingUser(req('u-test'), admin_);
+  assert.equal(acting.id, 'u-test');
+  assert.equal(acting.email, 'test3@tutor.test');
+  assert.equal(acting.viewer, admin_);
+  assert.equal((await auth.actingUser(req('u-real'), admin_)).id, 'u-admin', 'never a real student');
+  assert.equal((await auth.actingUser(req('u-admin'), admin_)).id, 'u-admin');
+  assert.equal((await auth.actingUser({ headers: {} }, admin_)).id, 'u-admin');
+  const student = { id: 'u-real', email: 'student@psu.edu' };
+  assert.equal(await auth.actingUser(req('u-test'), student), student, 'the cookie does nothing for a non-admin');
+  await query('UPDATE user_profiles SET deactivated_at = now() WHERE user_id = $1', ['u-test10']);
+  assert.equal((await auth.actingUser(req('u-test10'), admin_)).id, 'u-admin', 'not a deactivated account');
+  assert.match(auth.viewAsCookie(req('x'), 'u-test'), /^kelvin_view_as=u-test; Max-Age=\d+; Path=\/; HttpOnly; SameSite=Lax$/);
+  assert.match(auth.viewAsCookie(req('x', 'https'), null), /^kelvin_view_as=; Max-Age=0; .*Secure$/);
 });
 
 await closeDb();

@@ -1,6 +1,7 @@
-// The read-only admin dashboard (/admin). Data comes from /api/admin/* (lib/admin.js), which answers
-// only for admins and never returns names or emails. Everything is fetched on page load and on each
-// tab change; nothing is live. Every chart has a table view under it.
+// The admin dashboard (/admin). Data comes from /api/admin/* (lib/admin.js), which answers only for
+// admins and never returns names or emails. Everything is fetched on page load and on each tab
+// change; nothing is live. Every chart has a table view under it. The only things an admin changes
+// here are their own stars and the share links of chats.
 (function () {
   const $ = (id) => document.getElementById(id);
   const view = $('view');
@@ -14,6 +15,7 @@
     evals: 'Evals',
   };
   const GROUP_KEY = 'kelvin-admin-group';
+  const CONV_KEY = 'kelvin-admin-conversations';
   let group = 'all';
   try { group = sessionStorage.getItem(GROUP_KEY) || 'all'; } catch (e) {}
   if (!['all', 'real', 'eval'].includes(group)) group = 'all';
@@ -51,7 +53,7 @@
   const asDate = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(`${d}T12:00:00`) : new Date(d));
   const day = (d) => (d ? asDate(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—');
   const when = (d) => (d ? new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—');
-  const md = (text) => window.DOMPurify.sanitize(window.marked.parse(String(text || '')));
+  const md = (text) => window.KelvinMarkdown.render(text);
   const shorten = (s, n) => (String(s).length > n ? String(s).slice(0, n - 1) + '…' : String(s));
   const pretty = (id) => String(id || '').replace(/^(misc|topic|eq):/, '').replace(/^m\d+-/, '').replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
 
@@ -66,7 +68,7 @@
 
   function table(head, rows, opts = {}) {
     const t = h('table', {},
-      h('thead', {}, h('tr', {}, head.map((c) => h('th', { class: c.num ? 'num' : null }, c.label || c)))),
+      h('thead', {}, h('tr', {}, head.map((c) => h('th', { class: c.num ? 'num' : null }, typeof c === 'string' ? c : c.label)))),
       h('tbody', {}, rows.map((r) => {
         const tr = h('tr', { class: opts.onRow ? 'clickable' : null, tabindex: opts.onRow ? '0' : null },
           r.cells.map((cell, i) => h('td', { class: [head[i].num ? 'num' : '', head[i].wrap ? 'wrap' : ''].join(' ').trim() || null }, cell)));
@@ -248,6 +250,131 @@
     return r.data;
   }
 
+  async function send(method, path) {
+    const r = await window.KelvinAccount.call(`/api/admin/${path}`, { method, body: '{}' });
+    if (!r.ok) throw new Error((r.data && r.data.error) || `Request failed (${r.status})`);
+    return r.data;
+  }
+
+  // Property diagrams, Mermaid and teaching boards in Kelvin's replies, drawn as in the chat.
+  const FIGURES = 'pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board';
+  let figuresScript = null;
+  async function figureApi(method, path, body) {
+    const r = await window.KelvinAccount.call(path, { method, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error((r.data && r.data.error) || `Request failed (${r.status})`);
+    return r.data;
+  }
+  function drawFigures(el) {
+    if (!el.querySelector(FIGURES)) return;
+    figuresScript ||= new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/figures.js';
+      s.onload = resolve;
+      s.onerror = () => { figuresScript = null; reject(new Error('figures.js')); };
+      document.head.appendChild(s);
+    });
+    figuresScript.then(() => { if (el.isConnected) window.KelvinFigures.render(el, { api: figureApi }); }, () => {});
+  }
+
+  // Wraps each search word found in `text` in <mark>.
+  function highlight(text, terms) {
+    const str = String(text || '');
+    if (!terms || !terms.length) return str;
+    const re = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    return str.split(re).map((part, i) => (i % 2 ? h('mark', {}, part) : part));
+  }
+
+  function starButton(c) {
+    const b = h('button', { type: 'button', class: 'star' });
+    const paint = (error) => {
+      b.textContent = c.starred ? '★' : '☆';
+      b.setAttribute('aria-pressed', String(Boolean(c.starred)));
+      b.title = error || (c.starred ? 'Starred. Click to unstar.' : 'Star this chat to find it again');
+      b.setAttribute('aria-label', c.starred ? 'Unstar chat' : 'Star chat');
+      b.classList.toggle('on', Boolean(c.starred));
+      b.classList.toggle('error', Boolean(error));
+    };
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      c.starred = !c.starred;
+      paint();
+      try {
+        await send(c.starred ? 'PUT' : 'DELETE', `conversations/${encodeURIComponent(c.id)}/star`);
+      } catch (err) {
+        c.starred = !c.starred;
+        paint(`Could not save: ${err.message}`);
+      }
+    });
+    b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); });
+    paint();
+    return b;
+  }
+
+  // Make, copy, open or turn off the chat's read-only share link (lib/share.js).
+  function sharePanel(c) {
+    const box = h('div', { class: 'card share-box' });
+    const error = (err) => box.append(h('p', { class: 'error note' }, err.message || String(err)));
+    const make = async (btn) => {
+      btn.disabled = true;
+      try {
+        c.share = await send('POST', `conversations/${encodeURIComponent(c.id)}/share`);
+        paint();
+        const copy = box.querySelector('[data-copy]');
+        if (copy) copy.click();
+      } catch (err) {
+        btn.disabled = false;
+        error(err);
+      }
+    };
+    const off = async (btn) => {
+      if (btn.dataset.armed !== '1') {
+        btn.dataset.armed = '1';
+        btn.textContent = 'Click again to turn off';
+        setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = 'Turn off link'; } }, 4000);
+        return;
+      }
+      btn.disabled = true;
+      try {
+        await send('DELETE', `conversations/${encodeURIComponent(c.id)}/share`);
+        c.share = null;
+        paint();
+      } catch (err) {
+        btn.disabled = false;
+        error(err);
+      }
+    };
+    function paint() {
+      if (!c.share) {
+        const btn = h('button', { type: 'button', class: 'btn', onclick: () => make(btn) }, 'Create share link');
+        box.replaceChildren(
+          h('div', { class: 'share-row' }, h('strong', {}, 'Share'), btn),
+          h('p', { class: 'note' }, 'Makes a link anyone can open without signing in. It shows only this chat’s messages, as “Student” and “Kelvin”, with the student’s name, email, professor and any email addresses or phone numbers replaced. No decisions, costs, files or dates.')
+        );
+        return;
+      }
+      const url = location.origin + c.share.url;
+      const field = h('input', { type: 'text', readonly: true, value: url, 'aria-label': 'Share link', onfocus: (e) => e.target.select() });
+      const copy = h('button', { type: 'button', class: 'btn', 'data-copy': '1' }, 'Copy link');
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch (e) {
+          field.select();
+          try { document.execCommand('copy'); } catch (err) {}
+        }
+        copy.textContent = 'Copied';
+        setTimeout(() => { copy.textContent = 'Copy link'; }, 1500);
+      });
+      const stop = h('button', { type: 'button', class: 'btn danger', onclick: () => off(stop) }, 'Turn off link');
+      box.replaceChildren(
+        h('div', { class: 'share-row' }, h('strong', {}, 'Shared'), field, copy, h('a', { class: 'btn', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'Open'), stop),
+        h('p', { class: 'note' }, `Link made ${when(c.share.createdAt)}. Anyone with it can read the anonymized messages. Turning it off breaks this link for good; a new one can be made after.`)
+      );
+    }
+    paint();
+    return box;
+  }
+
   // ── routing ──────────────────────────────────────────────────────────────────────────────────
   function route() {
     const [tab, id] = location.hash.replace(/^#/, '').split('/');
@@ -362,29 +489,76 @@
       );
     },
 
+    // Search runs on the server over every message (lib/admin.js conversations); the search box,
+    // the star/share filter and the deleted filter are kept for the tab, so coming back from a chat
+    // shows the same list.
     async conversations(id) {
       if (id) return conversationPage(id);
-      const { conversations } = await api('conversations');
-      if (!conversations.length) return h('p', { class: 'empty' }, 'No chats in this group yet.');
-      const search = h('input', { type: 'search', placeholder: 'Filter by title or student', 'aria-label': 'Filter chats' });
-      const deletedOnly = h('select', { 'aria-label': 'Deleted chats' }, h('option', { value: 'all' }, 'All chats'), h('option', { value: 'live' }, 'Visible to the student'), h('option', { value: 'deleted' }, 'Deleted by the student'));
+      let saved = {};
+      try { saved = JSON.parse(sessionStorage.getItem(CONV_KEY) || '{}') || {}; } catch (e) {}
+      const search = h('input', { type: 'search', placeholder: 'Search words in chats, or “Student 3”', 'aria-label': 'Search chats', value: saved.q || '' });
+      const show = h('select', { 'aria-label': 'Which chats' }, h('option', { value: 'all' }, 'All chats'), h('option', { value: 'starred' }, '★ Starred by me'), h('option', { value: 'shared' }, 'With a share link'));
+      const deletedOnly = h('select', { 'aria-label': 'Deleted chats' }, h('option', { value: 'all' }, 'Visible or deleted'), h('option', { value: 'live' }, 'Visible to the student'), h('option', { value: 'deleted' }, 'Deleted by the student'));
+      show.value = ['all', 'starred', 'shared'].includes(saved.show) ? saved.show : 'all';
+      deletedOnly.value = ['all', 'live', 'deleted'].includes(saved.deleted) ? saved.deleted : 'all';
       const holder = h('div', {});
+      let data = null;
+      let seq = 0;
+      const persist = () => { try { sessionStorage.setItem(CONV_KEY, JSON.stringify({ q: search.value, show: show.value, deleted: deletedOnly.value })); } catch (e) {} };
       const draw = () => {
-        const q = search.value.trim().toLowerCase();
-        const list = conversations.filter((c) => (!q || `${c.title} ${c.student}`.toLowerCase().includes(q)) && (deletedOnly.value === 'all' || (deletedOnly.value === 'deleted') === c.deleted));
+        const terms = data.query;
+        const list = data.conversations.filter((c) => deletedOnly.value === 'all' || (deletedOnly.value === 'deleted') === c.deleted);
+        const what = [terms.length ? `matching ${terms.map((t) => `“${t}”`).join(' + ')}` : '', show.value === 'starred' ? 'starred by you' : show.value === 'shared' ? 'with a share link' : ''].filter(Boolean).join(', ');
+        if (!list.length) {
+          holder.replaceChildren(h('p', { class: 'empty' }, what ? `No chats ${what}.` : 'No chats in this group yet.'));
+          return;
+        }
         holder.replaceChildren(
-          h('p', { class: 'note' }, `${fmt(list.length)} of ${fmt(conversations.length)} chats`),
+          h('p', { class: 'note' }, `${fmt(list.length)} chat${list.length === 1 ? '' : 's'}${what ? ' ' + what : ''}${list.length > 400 ? ' (showing the newest 400)' : ''}`),
           table(
-            [{ label: 'Title', wrap: true }, { label: 'Student' }, { label: 'Kind' }, { label: 'Style' }, { label: 'Messages', num: true }, { label: 'Started' }, { label: 'Last message' }, { label: '' }],
-            list.slice(0, 400).map((c) => ({ id: c.id, cells: [c.title || 'Untitled', c.student || '—', catChip(c.category), c.style || '—', fmt(c.messages), day(c.createdAt), when(c.updatedAt), c.deleted ? chip('Deleted', 'warn') : ''] })),
+            [{ label: '' }, { label: 'Title', wrap: true }, { label: 'Student' }, { label: 'Kind' }, { label: 'Style' }, { label: 'Messages', num: true }, { label: 'Started' }, { label: 'Last message' }, { label: '' }],
+            list.slice(0, 400).map((c) => ({
+              id: c.id,
+              cells: [
+                starButton(c),
+                h('div', {},
+                  h('div', {}, highlight(c.title || 'Untitled', terms)),
+                  c.match ? h('div', { class: 'match' }, h('span', { class: 'match-who' }, c.match.role === 'user' ? 'Student: ' : 'Kelvin: '), highlight(c.match.snippet, terms), c.match.messages > 1 ? h('span', { class: 'match-more' }, ` · ${fmt(c.match.messages)} matching messages`) : null) : null
+                ),
+                highlight(c.student || '—', terms), catChip(c.category), c.style || '—', fmt(c.messages), day(c.createdAt), when(c.updatedAt),
+                h('span', { class: 'chips' }, c.shared ? chip('Shared', 'ok') : null, c.deleted ? chip('Deleted', 'warn') : null),
+              ],
+            })),
             { onRow: (r) => { location.hash = `conversations/${r.id}`; } }
           )
         );
       };
-      search.addEventListener('input', draw);
-      deletedOnly.addEventListener('change', draw);
-      draw();
-      return h('div', {}, h('div', { class: 'toolbar' }, search, deletedOnly), holder);
+      const load = async () => {
+        const mine = ++seq;
+        persist();
+        const params = new URLSearchParams();
+        if (search.value.trim()) params.set('q', search.value.trim());
+        if (show.value !== 'all') params.set('filter', show.value);
+        holder.classList.add('refreshing');
+        try {
+          const got = await api(`conversations${params.toString() ? `?${params}` : ''}`);
+          if (mine !== seq) return;
+          data = got;
+          draw();
+        } catch (err) {
+          if (mine === seq) holder.replaceChildren(h('p', { class: 'empty error' }, err.message));
+        } finally {
+          if (mine === seq) holder.classList.remove('refreshing');
+        }
+      };
+      let timer = null;
+      search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 250); });
+      search.addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(timer); load(); } });
+      show.addEventListener('change', load);
+      deletedOnly.addEventListener('change', () => { persist(); if (data) draw(); });
+      await load();
+      pending.push(() => { if (search.value) search.focus(); });
+      return h('div', {}, h('div', { class: 'toolbar' }, search, show, deletedOnly), holder);
     },
 
     async misconceptions() {
@@ -529,12 +703,14 @@
     return h('div', {},
       h('a', { class: 'back', href: '#conversations' }, '← All chats'),
       h('div', { class: 'toolbar' },
+        starButton(c),
         h('strong', {}, c.title || 'Untitled'),
         h('a', { href: `#students/${c.studentKey}`, class: 'note' }, c.student),
         catChip(c.category),
         c.deleted ? chip('Deleted by the student', 'warn') : null,
         h('span', { class: 'note' }, `Model cost ${usd(total, 3)}`)
       ),
+      sharePanel(c),
       c.referenceSolutions.length
         ? h('details', { class: 'card', style: 'margin-bottom:16px' },
           h('summary', {}, `Reference solutions (${c.referenceSolutions.length}), solved out of sight before tutoring`),
@@ -545,7 +721,11 @@
         : null,
       h('div', { class: 'transcript' }, c.messages.map((m) => h('div', { class: `msg ${m.role}` },
         h('div', { class: 'who' }, `${m.role === 'user' ? c.student : 'Kelvin'} · ${when(m.at)}`),
-        h('div', { class: 'body', html: md(m.content) }),
+        (() => {
+          const body = h('div', { class: 'body', html: md(m.content) });
+          pending.push(() => drawFigures(body));
+          return body;
+        })(),
         m.decision ? h('div', { class: 'decision' },
           h('span', {}, `Read by ${m.decision.reader}`),
           h('span', {}, `intent: ${m.decision.intent || '—'}`),
@@ -747,7 +927,7 @@
       location.replace('/login?next=' + encodeURIComponent('/admin' + location.hash));
       return;
     }
-    if (!me.profile || !me.profile.is_admin) {
+    if (!me.admin) {
       $('groupFilter').hidden = true;
       $('title').textContent = 'Admins only';
       view.replaceChildren(h('p', { class: 'empty' }, 'This page is for the team’s admin accounts. ', h('a', { href: '/' }, 'Back to chat')));
