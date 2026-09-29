@@ -1,26 +1,25 @@
 # ME 300 course taxonomy — the committed spine of Kelvin AI's knowledge brain.
 #
-# SOURCE: Penn State Department of Mechanical Engineering, published SAMPLE syllabus,
-#         "ME 300 Engineering Thermodynamics, Fall 2025".
-#         https://www.me.psu.edu/assets/docs/sample-syllabus/ME-300.pdf
-#         Retrieved 2026-09-17. Structure transcribed by hand; no prose copied.
+# SOURCE: the ME 300 Canvas course Penn State gave this project access to ("AI integration:
+# ME 300", Canvas course 2492426), a copy of Dr. Jacqueline O'Connor's Summer 2023 online
+# section. Syllabus: agent/raw-course-files/syllabus/ME300_Su23_Syllabus.pdf. Pulled 2026-09-29.
+# This replaces the earlier spine, which was transcribed from Penn State's published *sample*
+# Fall 2025 syllabus.
 #
-# ⚠ THIS IS THE PUBLISHED *SAMPLE* SYLLABUS. The section Lance's team actually targets may
-#   differ — different instructor, different dates, different lecture ordering, possibly a
-#   different textbook edition. Every unit, topic, date and reading reference below is
-#   "from the published sample syllabus — confirm against your section" until someone checks
-#   it against the live Canvas site.
+# Units are the course's own eight lecture modules (M1–M8). Topics are its lecture videos, one
+# per annotated-slide deck in agent/raw-course-files/lectures/ (M1.1 … M8.15), plus the three
+# exams and four course-administration rows. `week`, `week_dates` and `reading` come from the
+# syllabus's Course Schedule, which gives textbook chapters per WEEK, not per video: `reading`
+# is that week's reading (`scope: week`), not a claim that this video maps to exactly those
+# sections. M2.9 appears in no week of the schedule; it is placed in week 2, between M2.8 and M3.1.
 #
-# ⚠ Nothing here was written by an LLM. It is a hand transcription of a public document's
-#   table of contents. What it is NOT is a claim that these are the right learning units —
-#   it is the course's own partition (its five exam blocks), which is the best available
-#   prior and not an invention of ours.
+# ⚠ Dates are Summer 2023. A student in another term has other dates. Kelvin must never quote a
+#   date or deadline from here as the student's own schedule.
 #
-# The pipeline (scripts/kb/*) treats `units` and `topics` as a CLOSED ENUM. A classifier
-# that cannot place a section into one of these ids must emit `topic: unassigned` and
-# propose a new topic in the PR body. It must never invent an id.
+# The pipeline (scripts/kb/*) treats `units` and `topics` as a CLOSED ENUM. A card that cannot
+# be placed on one of these ids must say `unassigned`; it must never invent an id.
 
-version: 1
+version: 2
 
 course:
   id: course:me300
@@ -28,10 +27,11 @@ course:
   title: Engineering Thermodynamics
   institution: Penn State
   department: Mechanical Engineering
-  term_of_sample: Fall 2025
+  term: Summer 2023 (online, asynchronous, 12 weeks)
+  instructor: Dr. Jacqueline O'Connor
   description: >-
-    Engineering Thermodynamics I. Basic thermodynamics concepts, properties of pure
-    substances, first and second law analysis of systems and control volumes.
+    Thermodynamics concepts, properties of pure substances, and the first and second law
+    analysis of systems and control volumes.
   prerequisites_text: CHEM 110 and MATH 141
   textbook:
     key: turns-pauley-2e
@@ -40,26 +40,18 @@ course:
     edition: 2nd
     publisher: Cambridge University Press
     year: 2020
-    # Correction worth carrying: the official sample syllabus uses Turns & Pauley, NOT
-    # Cengel. Most thermo material on the open internet assumes Cengel, so a bare
-    # "Chapter 3" reference is ambiguous and is forbidden in card frontmatter — always
-    # {textbook: turns-pauley-2e, section: "..."}.
-  grading_from_sample_syllabus:
-    homework_percent: 50
-    exams_percent: 50
-    note: >-
-      From the published sample syllabus. Do not quote as this section's policy without
-      confirming against the live Canvas site.
+  grading:
+    homework_percent: 25
+    explained_examples_percent: 15
+    quizzes_percent: 20
+    exams_percent: 40
+    note: Lowest homework and two lowest quizzes dropped (Summer 2023 syllabus).
   source:
-    url: https://www.me.psu.edu/assets/docs/sample-syllabus/ME-300.pdf
-    title: ME 300 Engineering Thermodynamics — Sample Syllabus (Fall 2025)
-    retrieved: '2026-09-17'
-    kind: published sample syllabus
+    path: syllabus/ME300_Su23_Syllabus.pdf
+    kind: course syllabus (Summer 2023)
 
 # ---------------------------------------------------------------------------------------
 # Closed enums. Every frontmatter field that names one of these must use a value from here.
-# CI rejects anything else, so a wrong answer is a wrong bucket (visible in a diff) rather
-# than a phantom bucket that silently becomes an identifier.
 # ---------------------------------------------------------------------------------------
 enums:
   # How much human checking a card has had. Surfaced to the model and badged in the UI.
@@ -133,622 +125,207 @@ enums:
     - negligible-potential-energy
 
 # ---------------------------------------------------------------------------------------
-# The mandated six-part solution schema. Transcribed verbatim-in-structure from the
-# syllabus section "Problem Format (homework, exams)". Every worked example card carries
-# these as structured fields so the socratic-coaching skill can mask them one at a time.
+# Solution format. The syllabus does not prescribe one. This is the structure the instructor's
+# posted homework and exam solutions use (agent/raw-course-files/assignments/**/*Solutions*),
+# recorded so worked-example cards can reveal it one step at a time.
 # ---------------------------------------------------------------------------------------
 problem_format:
-  source: published sample syllabus, "Homework, Lecture Videos, & Lecture Notes" and "Problem Format (homework, exams)"
+  source: observed in the instructor's posted homework and exam solutions (Summer 2021–2023)
   fields:
-    - id: known
-      label: KNOWN
-      prompt: List properties, variables, etc. given in the problem.
+    - id: given
+      label: GIVEN
+      prompt: The known values from the problem statement, with units.
     - id: find
       label: FIND
-      prompt: What is unknown that we are asked to find.
+      prompt: What the problem asks for.
+    - id: assume
+      label: ASSUME
+      prompt: >-
+        Each modelling assumption, stated (ideal gas, constant specific heats, steady flow,
+        ΔKE = ΔPE = 0, quasi-equilibrium, rigid, adiabatic …). Solutions award a point for each.
     - id: sketch
       label: SKETCH
-      prompt: Schematic diagram and relevant graphs (P-v, T-s diagrams, etc.).
-    - id: assumptions
-      label: ASSUMPTIONS
-      prompt: These need to be justified if they are atypical.
+      prompt: The system or control volume, and a process diagram (P-v, T-v, T-s) where useful.
     - id: analysis
       label: ANALYSIS
-      prompt: Solve the problem, step-by-step, and always include units. Box the final answer.
-    - id: sanity_check
-      label: SANITY CHECK
       prompt: >-
-        Miscalculations can lead to unrealistic results. Indicate if you feel that your
-        answer is not realistic.
+        State by state: fix each state from two independent properties and look up the rest;
+        then write the conservation equation for the system or control volume, cancel terms
+        using the assumptions, and solve with units.
+    - id: answer
+      label: ANSWER
+      prompt: Box the final answer, with units.
   note: >-
-    The syllabus states this format twice and adds that "the most important thing is that
-    the solution method is coherent and systematic". Kelvin should use these six headings
-    for any full worked solution.
+    Solutions award partial credit for each assumption and each state, so Kelvin should push a
+    student to write these steps rather than jump to a number.
 
 # ---------------------------------------------------------------------------------------
-# Course objectives (A–F) and outcomes (1–10), with the ABET program-outcome mapping the
-# syllabus prints in brackets. Transcribed from "Course Objectives and Outcomes".
+# Course outcomes, verbatim from the Summer 2023 syllabus, numbered as there.
 # ---------------------------------------------------------------------------------------
-course_objectives:
-  - id: A
-    text: Appreciate the role of thermodynamics in engineering and society.
-    program_outcomes: ['3c']
-  - id: B
-    text: Understand the importance of thermodynamic properties and know how to use them.
-    program_outcomes: ['2b']
-  - id: C
-    text: >-
-      Understand the First Law of Thermodynamics and know how to use it to solve
-      engineering problems.
-    program_outcomes: ['2b']
-  - id: D
-    text: >-
-      Understand the Second Law of Thermodynamics and know how to use it to solve
-      engineering problems.
-    program_outcomes: ['2b']
-  - id: E
-    text: >-
-      Apply the First and Second Laws to practical systems, including Rankine cycles,
-      refrigeration cycles and gas cycles.
-    program_outcomes: ['2e']
-  - id: F
-    text: Develop fundamental engineering problem solving skills.
-    program_outcomes: ['4d']
-
 course_outcomes:
-  - id: '1'
-    text: >-
-      Obtain thermodynamic data necessary to solve thermodynamic problems and when
-      necessary use appropriate approximations. These skills include the use of equations
-      of state and/or tabulated property tables.
-    objectives: [B]
-  - id: '2'
-    text: >-
-      Write the First Law of Thermodynamics in their appropriate forms for both closed
-      system and control volume problem.
-    objectives: [C]
-  - id: '3'
-    text: Solve problems requiring First Law analysis that produce a simple single answer.
-    objectives: [C]
-  - id: '4'
-    text: Make appropriate assumptions when applying the First Law to a "real-world" problem.
-    objectives: [C]
-  - id: '5'
-    text: >-
-      Write the Second Law of Thermodynamics in their appropriate forms for both closed
-      system and control volume problem.
-    objectives: [D]
-  - id: '6'
-    text: >-
-      Apply the Second Law to determine the performance limitations of a given
-      thermodynamic system.
-    objectives: [D]
-  - id: '7'
-    text: >-
-      Apply thermodynamic concepts to describe the performance of the individual components
-      of an engineering system, e.g. a power plant, a jet engine, etc., and then relate that
-      information to the overall performance of the entire system.
-    objectives: [E]
-  - id: '8'
-    text: Physically interpret and apply integrals and derivatives to solve thermodynamic problems.
-    objectives: [F]
-  - id: '9'
-    text: Translate complex word problems into an orderly and logical problem solving approach.
-    objectives: [F]
-  - id: '10'
-    text: Use software to solve thermodynamics problems.
-    objectives: [F]
+  - {id: '1', text: 'Obtain thermodynamic data necessary to solve thermodynamic problems and when necessary use appropriate approximations. These skills include the use of equations of state and/or tabulated property tables.'}
+  - {id: '2', text: 'Write the First Law of Thermodynamics in both appropriate forms for both closed system and control volume problem.'}
+  - {id: '3', text: 'Solve problems requiring First Law analysis that produce a simple single answer.'}
+  - {id: '4', text: 'Make appropriate assumptions when applying the First Law to a "real-world" problem.'}
+  - {id: '5', text: 'Write the Second Law of Thermodynamics in the appropriate forms for both closed system and control volume problem.'}
+  - {id: '6', text: 'Apply the Second Law to determine the performance limitations of a given thermodynamic system.'}
+  - {id: '7', text: 'Apply thermodynamic concepts to describe the performance of the individual components of an engineering system, e.g. a power plant, a jet engine, and then relate that information to the overall performance of the entire system.'}
+  - {id: '8', text: 'Physically interpret and apply integrals and derivatives to solve thermodynamic problems.'}
+  - {id: '9', text: 'Translate complex word problems into an orderly and logical problem-solving approach.'}
 
-program_outcomes:
-  - id: '2b'
-    text: Analysis of thermal/fluids components
-    assessed_for_program_assessment: true
-  - id: '2e'
-    text: Analysis of thermal/fluids systems
-    assessed_for_program_assessment: true
-  - id: '3c'
-    text: Contemporary issues
-    assessed_for_program_assessment: true
-  - id: '4d'
-    text: >-
-      Develop models and choose appropriate tools to implement, solve, and present those
-      models
-    assessed_for_program_assessment: false
+# Exams (Summer 2023): open book, open note, 1.5 h synchronous on Zoom, then 15 min to upload.
+exams:
+  - {id: exam-1, title: Exam 1, date: '2023-06-22', covers: 'M1.1–M5.8'}
+  - {id: exam-2, title: Exam 2, date: '2023-07-20', covers: 'M6.1–M7.15'}
+  - {id: final, title: Final exam (Exam 3), date: '2023-08-11', covers: 'M8.1–M8.15', note: Not cumulative, per the syllabus.}
 
 # ---------------------------------------------------------------------------------------
-# UNITS = the five exam blocks, plus one non-syllabus unit for course administration.
-# The five are the course's OWN partition of the material, read straight off the lecture
-# schedule (an exam closes each block). We did not invent them.
-# `lectures: [first, last]` is inclusive and includes the exam lecture itself.
-#
-# unit:u0-course-admin is ours, and it is deliberately NOT one of the exam blocks. Without
-# it there is no id a syllabus section can classify to: exam dates, the late policy, grade
-# weights and office hours all land on `unassigned` and produce no card at all. Those are
-# exactly the questions where a wrong answer is unambiguously a lie to a student, so they
-# need a card path. The unit is an EMPTY SHELF: no date, deadline, weight or policy is
-# known here until a real syllabus is uploaded into agent/raw-course-files/.
+# UNITS = the eight lecture modules, plus one non-module unit for course administration.
 # ---------------------------------------------------------------------------------------
 units:
   - id: unit:u0-course-admin
     title: Course administration
     exam: null
-    exam_lecture: null
-    lectures: null
-    reading_span: null
-    topic_count: 4
     note: >-
-      Not a syllabus unit. Added so that administrative sections of an uploaded syllabus
-      have somewhere to classify to. Nothing about this section's dates, deadlines,
-      grading or policy is known until the team uploads the real syllabus.
-
-  - id: unit:u1-concepts-and-ideal-gas-properties
-    title: Concepts, units, and ideal-gas properties
-    exam: 1
-    exam_lecture: 9
-    lectures: [1, 9]
-    reading_span: 1.1–2.5
+      Not a lecture module. Holds the syllabus, schedule, grading, assignment types and
+      logistics of the Summer 2023 section.
+  - id: unit:m1-introduction-and-conservation
+    title: 'Module 1 — Introduction, systems and control volumes, conservation principles'
+    module: 1
+    exam: exam-1
+    topic_count: 5
+  - id: unit:m2-properties-states-and-processes
+    title: 'Module 2 — Properties, states, processes, cycles, equilibrium and assumptions'
+    module: 2
+    exam: exam-1
     topic_count: 9
-  - id: unit:u2-nonideal-gases-and-phase-data
-    title: Non-ideal gases and multi-phase property data
-    exam: 2
-    exam_lecture: 17
-    lectures: [10, 17]
-    reading_span: 2.6–2.9
+  - id: unit:m3-ideal-and-nonideal-gases
+    title: 'Module 3 — Ideal-gas P-v-T and calorific equations of state; non-ideal gases'
+    module: 3
+    exam: exam-1
     topic_count: 8
-  - id: unit:u3-mass-and-first-law-closed-systems
-    title: Conservation of mass and first-law analysis of closed systems
-    exam: 3
-    exam_lecture: 26
-    lectures: [18, 26]
-    reading_span: 3.2–5.3
+  - id: unit:m4-phase-change-and-property-tables
+    title: 'Module 4 — Phase change, the vapor dome, determining phase, liquids and solids'
+    module: 4
+    exam: exam-1
+    topic_count: 6
+  - id: unit:m5-energy-heat-work-closed-systems
+    title: 'Module 5 — Energy, heat and work; energy conservation for closed systems'
+    module: 5
+    exam: exam-1
     topic_count: 9
-  - id: unit:u4-control-volumes-and-second-law
-    title: Control volumes, steady-flow devices, and the second law
-    exam: 4
-    exam_lecture: 35
-    lectures: [27, 35]
-    reading_span: 5.3, 8.1–8.6, 6.1–6.3a
-    topic_count: 9
-  - id: unit:u5-entropy-and-isentropic-processes
-    title: Entropy, isentropic processes, and device efficiencies
-    exam: 5
-    exam_lecture: 44
-    lectures: [36, 44]
-    reading_span: 6.3b–7.5b
-    topic_count: 9
+  - id: unit:m6-control-volumes-and-devices
+    title: 'Module 6 — Mass and steady-flow energy conservation; nozzles, throttles, heat exchangers, compressors, turbines'
+    module: 6
+    exam: exam-2
+    topic_count: 10
+  - id: unit:m7-second-law-and-entropy
+    title: 'Module 7 — Second law, heat engines, Carnot, entropy, isentropic relations and efficiencies'
+    module: 7
+    exam: exam-2
+    topic_count: 16
+  - id: unit:m8-power-and-refrigeration-cycles
+    title: 'Module 8 — Heat-engine cycles; Rankine, vapor-compression, Brayton, gas-turbine, Otto and Diesel'
+    module: 8
+    exam: final
+    topic_count: 16
 
 # ---------------------------------------------------------------------------------------
-# TOPICS = the 44 lecture rows of "Anticipated Class Lecture Schedule", one per row.
-#
-# `title` is transcribed from the schedule's Topic column (punctuation lightly normalised,
-# wording unchanged). `reading.section` is the schedule's Reading Material column verbatim;
-# `reading.sections` is the same thing parsed into a list. A null `reading` means the
-# schedule's Reading Material cell was empty for that row — NOT that no reading exists.
-#
-# `date` is the sample syllabus's Fall 2025 date. It is here so the pipeline can align
-# uploaded lecture files by date. Kelvin must NEVER quote these dates to a student as this
-# section's schedule — see agent/knowledge-brain/course/me300.md.
-#
-# `kind: examples` rows are the schedule's "Examples" days; `kind: exam` rows are the five
-# in-class exams. They are kept as topics because uploaded files (worked-example sheets,
-# review sheets) attach to them.
+# TOPICS = one per lecture video (annotated slide deck), plus the three exams and the four admin
+# rows. `kind: examples` is a worked-example video; `kind: review` a course-review video.
 # ---------------------------------------------------------------------------------------
 topics:
-  # --- unit:u0-course-admin -------------------------------------------------------------
-  # These four rows are NOT lecture rows and carry no `lecture` and no `date` on purpose.
-  # They are classification targets for the administrative sections of a syllabus, and they
-  # are empty until one is uploaded. Kelvin must never answer a date, deadline, weight or
-  # policy question from these ids alone — an id existing is not the same as knowing it.
-  - id: topic:t00a-syllabus-and-grading
-    title: Syllabus, grading weights and course policies
-    unit: unit:u0-course-admin
-    kind: admin
-    reading: null
+  - {id: topic:t00a-syllabus-and-grading, title: 'Syllabus, grading weights and course policies', unit: unit:u0-course-admin, kind: admin, reading: null}
+  - {id: topic:t00b-schedule-and-exam-dates, title: 'Schedule, exam dates and due dates (Summer 2023)', unit: unit:u0-course-admin, kind: admin, reading: null}
+  - {id: topic:t00c-homework-policy, title: 'Assignment types — homework, quizzes, explained examples, exams; late work and regrades', unit: unit:u0-course-admin, kind: admin, reading: null}
+  - {id: topic:t00d-logistics-and-office-hours, title: 'Course logistics — instructor, office hours, communication', unit: unit:u0-course-admin, kind: admin, reading: null}
+  - {id: topic:m1-01-course-introduction, title: 'Course Introduction', unit: unit:m1-introduction-and-conservation, lecture: 'M1.1', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module1_1_CourseIntro.pdf}
+  - {id: topic:m1-02-thermodynamics-applications, title: 'Thermodynamics Applications', unit: unit:m1-introduction-and-conservation, lecture: 'M1.2', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module1_2_ThermodynamicsApplications_annotated.pdf}
+  - {id: topic:m1-03-thermodynamics-definitions, title: 'Thermodynamics Definitions', unit: unit:m1-introduction-and-conservation, lecture: 'M1.3', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module1_3_ThermodynamicsDefinitions_annotated.pdf}
+  - {id: topic:m1-04-systems-and-control-volumes, title: 'Systems and Control Volumes', unit: unit:m1-introduction-and-conservation, lecture: 'M1.4', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module1_4_SystemsCVs_annotated.pdf}
+  - {id: topic:m1-05-conservation-principles, title: 'Conservation Principles', unit: unit:m1-introduction-and-conservation, lecture: 'M1.5', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module1_5_ConservationPrinciples_annotated.pdf}
+  - {id: topic:m2-01-properties-states, title: 'Properties States', unit: unit:m2-properties-states-and-processes, lecture: 'M2.1', kind: lecture, week: 1, week_dates: 'May 15–19', reading: {textbook: turns-pauley-2e, section: '1.1–1.6, 3.1', scope: week}, slides: lectures/Module2_1_PropertiesStates_annotated.pdf}
+  - {id: topic:m2-02-dimensions, title: 'Dimensions', unit: unit:m2-properties-states-and-processes, lecture: 'M2.2', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_2_Dimensions_annotated.pdf}
+  - {id: topic:m2-03-processes-cycles, title: 'Processes Cycles', unit: unit:m2-properties-states-and-processes, lecture: 'M2.3', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_3_ProcessesCycles_annotated.pdf}
+  - {id: topic:m2-04-example-processes-cycles, title: 'Example Processes Cycles', unit: unit:m2-properties-states-and-processes, lecture: 'M2.4', kind: examples, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_4_Example_ProcessesCycles_annotated.pdf}
+  - {id: topic:m2-05-equilibrium, title: 'Equilibrium', unit: unit:m2-properties-states-and-processes, lecture: 'M2.5', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_5_Equilibrium_annotated.pdf}
+  - {id: topic:m2-06-example-equilibrium, title: 'Example Equilibrium', unit: unit:m2-properties-states-and-processes, lecture: 'M2.6', kind: examples, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_6_Example_Equilibrium_annotated.pdf}
+  - {id: topic:m2-07-assumptions, title: 'Assumptions', unit: unit:m2-properties-states-and-processes, lecture: 'M2.7', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_7_Assumptions_annotated.pdf}
+  - {id: topic:m2-08-pressure-temperature-density, title: 'Pressure Temperature Density', unit: unit:m2-properties-states-and-processes, lecture: 'M2.8', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_8_PressureTemperatureDensity_annotated.pdf}
+  - {id: topic:m2-09-energy-properties, title: 'Energy Properties', unit: unit:m2-properties-states-and-processes, lecture: 'M2.9', kind: lecture, week: 2, week_dates: 'May 22–26', reading: {textbook: turns-pauley-2e, section: '1.5, 2.1–2.3', scope: week}, slides: lectures/Module2_9_EnergyProperties_annotated.pdf}
+  - {id: topic:m3-01-ideal-gas-p-v-t, title: 'Ideal Gas P-v-T', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.1', kind: lecture, week: 3, week_dates: 'May 29–June 2', reading: {textbook: turns-pauley-2e, section: '2.4–2.5', scope: week}, slides: lectures/Module3_1_IdealGasPvT_annotated.pdf}
+  - {id: topic:m3-02-example-1-ideal-gas-p-v-t, title: 'Example 1 Ideal Gas P-v-T', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.2', kind: examples, week: 3, week_dates: 'May 29–June 2', reading: {textbook: turns-pauley-2e, section: '2.4–2.5', scope: week}, slides: lectures/Module3_2_Example1_IdealGasPvT_annotated.pdf}
+  - {id: topic:m3-03-example-2-ideal-gas-p-v-t, title: 'Example 2 Ideal Gas P-v-T', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.3', kind: examples, week: 3, week_dates: 'May 29–June 2', reading: {textbook: turns-pauley-2e, section: '2.4–2.5', scope: week}, slides: lectures/Module3_3_Example2_IdealGasPvT_annotated.pdf}
+  - {id: topic:m3-04-ideal-gas-calorific, title: 'Ideal Gas Calorific', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.4', kind: lecture, week: 3, week_dates: 'May 29–June 2', reading: {textbook: turns-pauley-2e, section: '2.4–2.5', scope: week}, slides: lectures/Module3_4_IdealGasCalorific_annotated.pdf}
+  - {id: topic:m3-05-example-ideal-gas-calorific, title: 'Example Ideal Gas Calorific', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.5', kind: examples, week: 3, week_dates: 'May 29–June 2', reading: {textbook: turns-pauley-2e, section: '2.4–2.5', scope: week}, slides: lectures/Module3_5_Example_IdealGasCalorific_annotated.pdf}
+  - {id: topic:m3-06-non-ideal-gases, title: 'Non Ideal Gases', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.6', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module3_6_NonIdealGases_annotated.pdf}
+  - {id: topic:m3-07-generalized-compressibility, title: 'Generalized Compressibility', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.7', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module3_7_GeneralizedCompressibility_annotated.pdf}
+  - {id: topic:m3-08-nist-webbook, title: 'NIST Webbook', unit: unit:m3-ideal-and-nonideal-gases, lecture: 'M3.8', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module3_8_NISTWebbook_annotated.pdf}
+  - {id: topic:m4-01-phase-change, title: 'Phase Change', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.1', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_1_PhaseChange_annotated.pdf}
+  - {id: topic:m4-02-vapor-dome, title: 'Vapor Dome', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.2', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_2_VaporDome_annotated.pdf}
+  - {id: topic:m4-03-phase-decision-tree, title: 'Phase Decision Tree', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.3', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_3_PhaseDecisionTree_annotated.pdf}
+  - {id: topic:m4-04-example-phase-decision-tree, title: 'Example Phase Decision Tree', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.4', kind: examples, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_4_Example_PhaseDecisionTree_annotated.pdf}
+  - {id: topic:m4-05-liquid-solid, title: 'Liquid Solid', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.5', kind: lecture, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_5_LiquidSolid_annotated.pdf}
+  - {id: topic:m4-06-course-review, title: 'Course Review', unit: unit:m4-phase-change-and-property-tables, lecture: 'M4.6', kind: review, week: 4, week_dates: 'June 5–9', reading: {textbook: turns-pauley-2e, section: '2.6–2.9', scope: week}, slides: lectures/Module4_6_CourseReview_annotated.pdf}
+  - {id: topic:m5-01-energy, title: 'Energy', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.1', kind: lecture, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_1_Energy_annotated.pdf}
+  - {id: topic:m5-02-heat-work, title: 'Heat Work', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.2', kind: lecture, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_2_HeatWork_annotated.pdf}
+  - {id: topic:m5-03-example-work, title: 'Example Work', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.3', kind: examples, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_3_Example_Work_annotated.pdf}
+  - {id: topic:m5-04-energy-conservation, title: 'Energy Conservation', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.4', kind: lecture, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_4_EnergyConservation_annotated.pdf}
+  - {id: topic:m5-05-example-1-energy-conservation, title: 'Example 1 Energy Conservation', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.5', kind: examples, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_5_Example1_EnergyConservation_annotated.pdf}
+  - {id: topic:m5-06-example-2-energy-conservation, title: 'Example 2 Energy Conservation', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.6', kind: examples, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_6_Example2_EnergyConservation_annotated.pptx}
+  - {id: topic:m5-07-example-3-energy-conservation, title: 'Example 3 Energy Conservation', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.7', kind: examples, week: 5, week_dates: 'June 12–16', reading: {textbook: turns-pauley-2e, section: '4.1–4.3, 5.1', scope: week}, slides: lectures/Module5_7_Example3_EnergyConservation_annotated.pptx}
+  - {id: topic:m5-08-course-review-2, title: 'Course Review 2', unit: unit:m5-energy-heat-work-closed-systems, lecture: 'M5.8', kind: review, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module5_8_CourseReview2_annotated.pptx}
+  - {id: topic:exam-1, title: 'Exam 1 (covers M1.1–M5.8)', unit: unit:m5-energy-heat-work-closed-systems, kind: exam, date: '2023-06-22', reading: null}
+  - {id: topic:m6-01-mass-conservation, title: 'Mass Conservation', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.1', kind: lecture, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module6_1_MassConservation_annotated.pdf}
+  - {id: topic:m6-02-steady-flow-energy-conservation, title: 'Steady Flow Energy Conservation', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.2', kind: lecture, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module6_2_SteadyFlowEnergyConservation_annotated.pdf}
+  - {id: topic:m6-03-example-steady-flow-energy-conservation, title: 'Example Steady Flow Energy Conservation', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.3', kind: examples, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module6_3_Example_SteadyFlowEnergyConservation_annotated.pdf}
+  - {id: topic:m6-04-nozzle-diffuser, title: 'Nozzle Diffuser', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.4', kind: lecture, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module6_4_NozzleDiffuser_annotated.pdf}
+  - {id: topic:m6-05-throttles, title: 'Throttles', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.5', kind: lecture, week: 6, week_dates: 'June 19–23', reading: {textbook: turns-pauley-2e, section: '3.2–3.4, 5.2–5.3, 8.2–8.3', scope: week}, slides: lectures/Module6_5_Throttles_annotated.pdf}
+  - {id: topic:m6-06-heat-exchangers, title: 'Heat Exchangers', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.6', kind: lecture, week: 7, week_dates: 'June 26–30', reading: {textbook: turns-pauley-2e, section: '8.4–8.6', scope: week}, slides: lectures/Module6_6_HeatExchangers_annotated.pdf}
+  - {id: topic:m6-07-example-heat-exchangers, title: 'Example Heat Exchangers', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.7', kind: examples, week: 7, week_dates: 'June 26–30', reading: {textbook: turns-pauley-2e, section: '8.4–8.6', scope: week}, slides: lectures/Module6_7_Example_HeatExchangers_annotated.pdf}
+  - {id: topic:m6-08-compressors-turbines, title: 'Compressors Turbines', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.8', kind: lecture, week: 7, week_dates: 'June 26–30', reading: {textbook: turns-pauley-2e, section: '8.4–8.6', scope: week}, slides: lectures/Module6_8_CompressorsTurbines_annotated.pdf}
+  - {id: topic:m6-09-example-compressors-turbines, title: 'Example Compressors Turbines', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.9', kind: examples, week: 7, week_dates: 'June 26–30', reading: {textbook: turns-pauley-2e, section: '8.4–8.6', scope: week}, slides: lectures/Module6_9_Example_CompressorsTurbines_annotated.pdf}
+  - {id: topic:m6-10-review-devices, title: 'Review Devices', unit: unit:m6-control-volumes-and-devices, lecture: 'M6.10', kind: review, week: 7, week_dates: 'June 26–30', reading: {textbook: turns-pauley-2e, section: '8.4–8.6', scope: week}, slides: lectures/Module6_10_ReviewDevices_annotated.pdf}
+  - {id: topic:m7-01-second-law, title: 'Second Law', unit: unit:m7-second-law-and-entropy, lecture: 'M7.1', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_1_SecondLaw_annotated.pdf}
+  - {id: topic:m7-02-first-statement-second-law, title: 'First Statement Second Law', unit: unit:m7-second-law-and-entropy, lecture: 'M7.2', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_2_FirstStatementSecondLaw_annotated.pdf}
+  - {id: topic:m7-03-heat-engines-thermal-efficiency, title: 'Heat Engines Thermal Efficiency', unit: unit:m7-second-law-and-entropy, lecture: 'M7.3', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_3_HeatEnginesThermalEfficiency_annotated.pdf}
+  - {id: topic:m7-04-kelvin-planck, title: 'Kelvin Planck', unit: unit:m7-second-law-and-entropy, lecture: 'M7.4', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_4_KelvinPlanck_annotated.pdf}
+  - {id: topic:m7-05-carnot-efficiency, title: 'Carnot Efficiency', unit: unit:m7-second-law-and-entropy, lecture: 'M7.5', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_5_CarnotEffiency_annotated.pdf}
+  - {id: topic:m7-06-statements-2-4, title: 'Statements 2–4', unit: unit:m7-second-law-and-entropy, lecture: 'M7.6', kind: lecture, week: 8, week_dates: 'July 3–7', reading: {textbook: turns-pauley-2e, section: '6.1–6.4', scope: week}, slides: lectures/Module7_6_Statements2-4_annotated.pdf}
+  - {id: topic:m7-07-entropy, title: 'Entropy', unit: unit:m7-second-law-and-entropy, lecture: 'M7.7', kind: lecture, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_7_Entropy_annotated.pdf}
+  - {id: topic:m7-08-example-entropy, title: 'Example Entropy', unit: unit:m7-second-law-and-entropy, lecture: 'M7.8', kind: examples, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_8_Example_Entropy_annotated.pdf}
+  - {id: topic:m7-09-reversibility, title: 'Reversibility', unit: unit:m7-second-law-and-entropy, lecture: 'M7.9', kind: lecture, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_9_Reversibility_annotated.pdf}
+  - {id: topic:m7-10-gibbs-equations, title: 'Gibbs Equations', unit: unit:m7-second-law-and-entropy, lecture: 'M7.10', kind: lecture, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_10_GibbsEOS_annotated.pdf}
+  - {id: topic:m7-11-example-gibbs-equations, title: 'Example Gibbs Equations', unit: unit:m7-second-law-and-entropy, lecture: 'M7.11', kind: examples, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_11_Example_GibbsEOS_annotated.pdf}
+  - {id: topic:m7-12-isentropic-relations, title: 'Isentropic Relations', unit: unit:m7-second-law-and-entropy, lecture: 'M7.12', kind: lecture, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_12_IsentropicRelations_annotated.pdf}
+  - {id: topic:m7-13-example-isentropic-turbine, title: 'Example Isentropic Turbine', unit: unit:m7-second-law-and-entropy, lecture: 'M7.13', kind: examples, week: 9, week_dates: 'July 10–14', reading: {textbook: turns-pauley-2e, section: '6.2d, 7.1–7.5', scope: week}, slides: lectures/Module7_13_Example_IsentropicTurbine_annotated.pdf}
+  - {id: topic:m7-14-isentropic-efficiency, title: 'Isentropic Efficiency', unit: unit:m7-second-law-and-entropy, lecture: 'M7.14', kind: lecture, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module7_14_IsentropicEfficiency_annotated.pdf}
+  - {id: topic:m7-15-example-isentropic-efficiency, title: 'Example Isentropic Efficiency', unit: unit:m7-second-law-and-entropy, lecture: 'M7.15', kind: examples, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module7_15_Example_IsentropicEfficiency_annotated.pdf}
+  - {id: topic:exam-2, title: 'Exam 2 (covers M6.1–M7.15)', unit: unit:m7-second-law-and-entropy, kind: exam, date: '2023-07-20', reading: null}
+  - {id: topic:m8-01-heat-engine-cycle-analysis, title: 'Heat Engine Cycle Analysis', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.1', kind: lecture, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module8_1_HeatEngineCycleAnalysis_annotated.pdf}
+  - {id: topic:m8-02-example-stirling-engine, title: 'Example Stirling Engine', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.2', kind: examples, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module8_2_Example_StirlingEngine_annotated.pdf}
+  - {id: topic:m8-03-heat-pump-refrigerator, title: 'Heat Pump Refrigerator', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.3', kind: lecture, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module8_3_HeatPumpRefrigerator_annotated.pdf}
+  - {id: topic:m8-04-example-heat-pump-refrigerator, title: 'Example Heat Pump Refrigerator', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.4', kind: examples, week: 10, week_dates: 'July 17–21', reading: {textbook: turns-pauley-2e, section: '6.2, 7.5', scope: week}, slides: lectures/Module8_4_Example_HeatPumpRefrigerator_annotated.pdf}
+  - {id: topic:m8-05-rankine-cycle, title: 'Rankine Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.5', kind: lecture, week: 11, week_dates: 'July 24–28', reading: {textbook: turns-pauley-2e, section: '9.1, 9.6', scope: week}, slides: lectures/Module8_5_RankineCycle_annotated.pdf}
+  - {id: topic:m8-06-example-rankine-cycle, title: 'Example Rankine Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.6', kind: examples, week: 11, week_dates: 'July 24–28', reading: {textbook: turns-pauley-2e, section: '9.1, 9.6', scope: week}, slides: lectures/Module8_6_Example_RankineCycle_annotated.pdf}
+  - {id: topic:m8-07-vapor-compression, title: 'Vapor Compression', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.7', kind: lecture, week: 11, week_dates: 'July 24–28', reading: {textbook: turns-pauley-2e, section: '9.1, 9.6', scope: week}, slides: lectures/Module8_7_VaporCompression_annotated.pdf}
+  - {id: topic:m8-08-example-vapor-compression, title: 'Example Vapor Compression', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.8', kind: examples, week: 11, week_dates: 'July 24–28', reading: {textbook: turns-pauley-2e, section: '9.1, 9.6', scope: week}, slides: lectures/Module8_8_Example_VaporCompression_annotated.pdf}
+  - {id: topic:m8-09-brayton-cycle, title: 'Brayton Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.9', kind: lecture, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_9_BraytonCycle_annotated.pdf}
+  - {id: topic:m8-10-example-brayton-cycle, title: 'Example Brayton Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.10', kind: examples, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_10_Example_BraytonCycle_annotated.pdf}
+  - {id: topic:m8-11-gas-turbine-engines, title: 'Gas Turbine Engines', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.11', kind: lecture, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_11_GasTurbineEngines_annotated.pdf}
+  - {id: topic:m8-12-example-gas-turbine-engines, title: 'Example Gas Turbine Engines', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.12', kind: examples, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_12_Example_GasTurbineEngines_annotated.pdf}
+  - {id: topic:m8-13-otto-cycle, title: 'Otto Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.13', kind: lecture, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_13_OttoCycle_annotated.pdf}
+  - {id: topic:m8-14-diesel-cycle, title: 'Diesel Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.14', kind: lecture, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_14_DieselCycle_annotated.pdf}
+  - {id: topic:m8-15-example-diesel-cycle, title: 'Example Diesel Cycle', unit: unit:m8-power-and-refrigeration-cycles, lecture: 'M8.15', kind: examples, week: 12, week_dates: 'July 31–Aug 4', reading: {textbook: turns-pauley-2e, section: '9.2–9.5', scope: week}, slides: lectures/Module8_15_Example_DieselCycle_annotated.pdf}
+  - {id: topic:exam-final, title: 'Final exam (covers M8.1–M8.15)', unit: unit:m8-power-and-refrigeration-cycles, kind: exam, date: '2023-08-11', reading: null}
 
-  - id: topic:t00b-schedule-and-exam-dates
-    title: Class schedule, exam dates and submission deadlines
-    unit: unit:u0-course-admin
-    kind: admin
-    reading: null
-
-  - id: topic:t00c-homework-policy
-    title: Homework policy — format, submission, late work and regrades
-    unit: unit:u0-course-admin
-    kind: admin
-    reading: null
-
-  - id: topic:t00d-logistics-and-office-hours
-    title: Course logistics — meeting times, staff, office hours and where things live
-    unit: unit:u0-course-admin
-    kind: admin
-    reading: null
-
-  # --- unit:u1-concepts-and-ideal-gas-properties ----------------------------------------
-  - id: topic:t01-introduction-to-course
-    title: Introduction to course
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 1
-    date: 'Aug. 25'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '1.1, 1.2', sections: ['1.1', '1.2']}
-
-  - id: topic:t02-frameworks-and-key-definitions
-    title: Physical frameworks & introduction to thermodynamics; key concepts and definitions
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 2
-    date: 'Aug. 27'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '1.3, 1.4, 1.5', sections: ['1.3', '1.4', '1.5']}
-
-  - id: topic:t03-dimensions-units-and-problem-solving
-    title: Dimensions and units / problem solving methodology / mathematical skills
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 3
-    date: 'Aug. 29'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '1.6-1.8', sections: ['1.6-1.8']}
-
-  - id: topic:t04-motivation-and-common-properties
-    title: Motivation for study of properties; common thermodynamic properties
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 4
-    date: 'Sep. 3'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.1, 2.2', sections: ['2.1', '2.2']}
-
-  - id: topic:t05-properties-and-state-relationships
-    title: Properties, state relationships
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 5
-    date: 'Sep. 5'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.3, 2.4', sections: ['2.3', '2.4']}
-
-  - id: topic:t06-ideal-gas-law
-    title: Ideal gas law
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 6
-    date: 'Sep. 8'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.5', sections: ['2.5']}
-
-  - id: topic:t07-calorific-equation-of-state
-    title: Calorific equation of state; P-v, T-v, u-T, h-T plots for ideal gases
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 7
-    date: 'Sep. 10'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.5', sections: ['2.5']}
-
-  - id: topic:t08-examples-and-hw1
-    title: Examples; HW 1 submission
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 8
-    date: 'Sep. 12'
-    kind: examples
-    reading: null
-    note: 'Schedule says "date subjected to change".'
-
-  - id: topic:t09-exam-1
-    title: Exam 1
-    unit: unit:u1-concepts-and-ideal-gas-properties
-    lecture: 9
-    date: 'Sep. 15'
-    kind: exam
-    reading: null
-    note: >-
-      Schedule says "date subjected to change". Note the syllabus text says exams are held
-      on Fridays, but this row's date is a Monday — transcribed as printed, not corrected.
-
-  - id: topic:t10-nonideal-gases-van-der-waals
-    title: 'Nonideal gases: Van der Waals equation of state, generalized compressibility'
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 10
-    date: 'Sep. 17'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.6', sections: ['2.6']}
-
-  - id: topic:t11-examples-nonideal-gases
-    title: Examples
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 11
-    date: 'Sep. 19'
-    kind: examples
-    reading: null
-
-  - id: topic:t12-nonideal-gases-compressibility
-    title: 'Nonideal gases: Van der Waals equation of state, generalized compressibility'
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 12
-    date: 'Sep. 22'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.6', sections: ['2.6']}
-    note: >-
-      The schedule prints the same topic and reading for lectures 10 and 12 (a two-day
-      treatment). Transcribed as printed; the two topic cards will differ once real lecture
-      files are attached.
-
-  - id: topic:t13-multiphase-quality-and-tv-diagrams
-    title: 'Multi-phase substances: phase boundaries, quality, T-v diagrams, interpolation'
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 13
-    date: 'Sep. 24'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.7a', sections: ['2.7a']}
-
-  - id: topic:t14-examples-multiphase
-    title: Examples
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 14
-    date: 'Sep. 26'
-    kind: examples
-    reading: null
-
-  - id: topic:t15-multiphase-continued-and-hw2
-    title: 'Multi-phase substances: phase boundaries, quality, T-v diagrams, interpolation; HW 2 submission'
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 15
-    date: 'Sep. 29'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.7a', sections: ['2.7a']}
-
-  - id: topic:t16-compressed-liquids-and-solids
-    title: Compressed liquids and solids
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 16
-    date: 'Oct. 1'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '2.8, 2.9', sections: ['2.8', '2.9']}
-
-  - id: topic:t17-exam-2
-    title: Exam 2
-    unit: unit:u2-nonideal-gases-and-phase-data
-    lecture: 17
-    date: 'Oct. 3'
-    kind: exam
-    reading: null
-
-  - id: topic:t18-conservation-of-mass-and-control-volumes
-    title: 'Conservation of mass: system, flow rates & control volumes'
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 18
-    date: 'Oct. 6'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '3.2, 3.3, 3.4a-b', sections: ['3.2', '3.3', '3.4a-b']}
-
-  - id: topic:t19-energy-storage-heat-and-work
-    title: Energy storage, heat & work interactions at boundaries
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 19
-    date: 'Oct. 8'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '4.1, 4.2', sections: ['4.1', '4.2']}
-
-  - id: topic:t20-examples-energy-heat-and-work
-    title: Examples
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 20
-    date: 'Oct. 10'
-    kind: examples
-    reading: null
-
-  - id: topic:t21-identifying-heat-and-work-interactions
-    title: Identifying heat & work interactions
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 21
-    date: 'Oct. 13'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '4.3', sections: ['4.3']}
-
-  - id: topic:t22-energy-conservation-closed-system
-    title: Energy conservation for a closed system
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 22
-    date: 'Oct. 15'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '5.1', sections: ['5.1']}
-
-  - id: topic:t23-examples-closed-system
-    title: Examples
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 23
-    date: 'Oct. 17'
-    kind: examples
-    reading: null
-
-  - id: topic:t24-energy-conservation-open-system-steady-flow
-    title: Energy conservation for an open system with steady flow; HW 3 submission
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 24
-    date: 'Oct. 20'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '5.2a', sections: ['5.2a']}
-
-  - id: topic:t25-energy-conservation-examples
-    title: 'Energy conservation for a system: examples'
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 25
-    date: 'Oct. 22'
-    kind: examples
-    reading: {textbook: turns-pauley-2e, section: '5.3', sections: ['5.3']}
-
-  - id: topic:t26-exam-3
-    title: Exam 3
-    unit: unit:u3-mass-and-first-law-closed-systems
-    lecture: 26
-    date: 'Oct. 24'
-    kind: exam
-    reading: null
-
-  - id: topic:t27-energy-conservation-control-volume
-    title: Energy conservation for a control volume / examples
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 27
-    date: 'Oct. 27'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '5.3', sections: ['5.3']}
-
-  - id: topic:t28-steady-flow-processes-and-devices
-    title: Steady flow processes and devices
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 28
-    date: 'Oct. 29'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '5.3, 8.1-8.3', sections: ['5.3', '8.1-8.3']}
-
-  - id: topic:t29-examples-steady-flow
-    title: Examples
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 29
-    date: 'Oct. 31'
-    kind: examples
-    reading: null
-
-  - id: topic:t30-nozzles-diffusers-and-throttles
-    title: 'Steady-flow devices: nozzles, diffusers & throttles'
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 30
-    date: 'Nov. 3'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '8.2-8.3', sections: ['8.2-8.3']}
-
-  - id: topic:t31-pumps-compressors-fans-and-turbines
-    title: 'Steady-flow devices: pumps, compressors, fans & turbines'
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 31
-    date: 'Nov. 5'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '8.4-8.5', sections: ['8.4-8.5']}
-
-  - id: topic:t32-examples-steady-flow-devices
-    title: Examples
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 32
-    date: 'Nov. 7'
-    kind: examples
-    reading: null
-    note: 'Schedule also marks this row "Late Drop Deadline".'
-
-  - id: topic:t33-heat-exchangers-and-hw4
-    title: 'Steady-flow devices: heat exchangers; HW 4 submission'
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 33
-    date: 'Nov. 10'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '8.6', sections: ['8.6']}
-
-  - id: topic:t34-second-law-overview-and-kelvin-planck
-    title: '2nd law of thermodynamics: overview, Kelvin-Planck statement, consequences'
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 34
-    date: 'Nov. 12'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '6.1-6.3a', sections: ['6.1-6.3a']}
-
-  - id: topic:t35-exam-4
-    title: Exam 4
-    unit: unit:u4-control-volumes-and-second-law
-    lecture: 35
-    date: 'Nov. 14'
-    kind: exam
-    reading: null
-
-  - id: topic:t36-carnot-cycle-and-definition-of-entropy
-    title: Carnot cycle & Carnot efficiency; definition of entropy
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 36
-    date: 'Nov. 17'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '6.3b-7.1', sections: ['6.3b-7.1']}
-
-  - id: topic:t37-entropy-statement-and-entropy-balances
-    title: Entropy-based statement of 2nd law, entropy balances, other 2nd-law statements
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 37
-    date: 'Nov. 19'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '7.2', sections: ['7.2']}
-
-  - id: topic:t38-examples-entropy
-    title: Examples
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 38
-    date: 'Nov. 21'
-    kind: examples
-    reading: null
-
-  - id: topic:t39-second-law-property-relationships
-    title: 2nd law property relationships
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 39
-    date: 'Dec. 1'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '7.2b, 7.2c', sections: ['7.2b', '7.2c']}
-
-  - id: topic:t40-ts-relationships-and-isentropic-relations
-    title: T-s relationships for ideal gases, isentropic relationships
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 40
-    date: 'Dec. 3'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '7.2c', sections: ['7.2c']}
-
-  - id: topic:t41-examples-isentropic
-    title: Examples
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 41
-    date: 'Dec. 5'
-    kind: examples
-    reading: null
-
-  - id: topic:t42-isentropic-and-polytropic-processes
-    title: Isentropic & polytropic processes, T-s & P-v diagrams; HW 5 submission
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 42
-    date: 'Dec. 8'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '7.4a-e', sections: ['7.4a-e']}
-
-  - id: topic:t43-isentropic-efficiencies
-    title: Isentropic efficiencies of turbines/pumps
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 43
-    date: 'Dec. 10'
-    kind: lecture
-    reading: {textbook: turns-pauley-2e, section: '7.5a-b', sections: ['7.5a-b']}
-
-  - id: topic:t44-exam-5
-    title: Exam 5
-    unit: unit:u5-entropy-and-isentropic-processes
-    lecture: 44
-    date: 'Dec. 12'
-    kind: exam
-    reading: null
-
-# Non-lecture rows in the schedule, kept so the pipeline does not mistake them for topics.
-no_class_days:
-  - {date: 'Sep. 1', reason: Labor Day Holiday}
-  - {date: 'Nov. 24', reason: Thanksgiving Holiday}
-  - {date: 'Nov. 26', reason: Thanksgiving Holiday}
-  - {date: 'Nov. 28', reason: Thanksgiving Holiday}
-
-# ---------------------------------------------------------------------------------------
-# Things in the syllabus we deliberately did NOT transcribe into cards, and why.
-# ---------------------------------------------------------------------------------------
+# Things in the course deliberately NOT put in cards, and why.
 not_transcribed:
-  - what: Instructor and TA names, e-mail addresses, office numbers and office hours
-    why: >-
-      Personal contact details of people who have not agreed to be in a public repo, and
-      near-certain to differ from the live section. Kelvin should tell a student to check
-      Canvas.
-  - what: Grading scale cutoffs, late-drop rules, make-up-exam and grade-appeal policy
-    why: >-
-      Policy text from a SAMPLE syllabus. Repeating it as this section's policy is exactly
-      the "never invent course policy" failure. Only the 50/50 homework/exam split is kept,
-      and it is labelled as sample-syllabus-derived.
-  - what: Academic-integrity, classroom-rules and disability-accommodation statements
-    why: >-
-      University boilerplate, not course knowledge, and long. Kelvin should point at the
-      published PSU pages rather than paraphrase them.
-  - what: Class time and location
-    why: Section-specific and certain to be wrong for another section.
+  - what: The exam Zoom link and its passcode (syllabus page 3)
+    why: A meeting credential; useless to a student in another term and not course knowledge.
+  - what: The instructor's phone number and office location
+    why: Personal contact details. A student should use their own section's Canvas page.
+  - what: Counseling, bias-reporting, disability-accommodation and academic-integrity statements
+    why: University boilerplate, not course knowledge. Kelvin should point at the PSU pages.
+  - what: Quiz questions
+    why: Canvas does not expose them to the account used for ingestion; only quiz titles and coverage are known.

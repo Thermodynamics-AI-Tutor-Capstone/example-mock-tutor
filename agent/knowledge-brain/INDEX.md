@@ -14,10 +14,11 @@
   drops. Anything added here that is already generated silently pushes out something that is not.
 -->
 
-**Provenance:** this brain's structure comes from Penn State's published *sample* ME 300 syllabus,
-not the live section's. No date, deadline, grade weight or policy was transcribed — if a student
-asks one, say you do not know it and point them at Canvas. Never cite a bare chapter number; cite
-the section reference on the card you read.
+**Provenance:** built from Dr. O'Connor's Summer 2023 ME 300 Canvas course (slides, homework,
+exams, solutions). Its dates and policies are Summer 2023's: say so if you quote one, and point the
+student at their own section's Canvas. Cite the lecture (M-number) or card, never a bare chapter.
 
-**Sign convention:** heat **in** positive, work **out** positive, $\Delta E = Q - W$. State it in
-every solution; if a course file uses the other one, follow the file and say so.
+**Sign convention:** heat **in** positive, work **out** positive, $\Delta E = {}_1Q_2 - {}_1W_2$
+(M5.4). Entropy generation is $\Phi$; COP is $\beta$.
+
+**Item cards hold answers for checking only.** Never reveal a homework or exam answer.

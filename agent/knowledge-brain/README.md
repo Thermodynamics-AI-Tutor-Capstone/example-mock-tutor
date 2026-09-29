@@ -41,9 +41,11 @@ says what kind it is, and the folder matches.
 | assessment item | `item:` | `items/` | A homework or exam question and which objectives it tests. |
 | source | `src:` | `sources/` | One per ingested course file: what it is, what is in it, which topics it feeds. |
 
-Folders that do not exist yet appear when the first card of that kind is written. Right now only
-`course/`, `units/` and `misconceptions/` are populated, because **no course files have been
-uploaded**, so there is nothing to draft topics or equations from.
+Every folder is populated from Dr. O'Connor's Summer 2023 ME 300 Canvas course, ingested
+2026-09-29: the course card, 9 units, 83 topics (one per lecture video plus exams and admin), about
+120 equations, 35 worked examples, 154 homework and exam items, and one source card per course file.
+The topic, equation, example and item cards were drafted by DeepSeek from transcripts of the course
+files and checked by Claude; see "How the Summer 2023 course was ingested" below.
 
 Three files are not cards:
 
@@ -58,9 +60,9 @@ Three files are not cards:
   when the budget is exceeded. Repeating something here that the compiler already generates
   therefore pushes out something it does not. Keep it to about 200 tokens. Topic titles
   deliberately do **not** live in the map at all; that is the whole point of the design.
-- **`taxonomy.yml`** — the course spine, hand-transcribed from Penn State's published sample ME
-  300 syllabus: 5 units, 44 lecture rows with their Turns & Pauley section references, the
-  objectives and outcomes, the six-part problem format, and the closed lists of allowed values
+- **`taxonomy.yml`** — the course spine, from the Summer 2023 syllabus and lecture decks: 8
+  modules, 76 lecture videos with their week and that week's Turns & Pauley reading, 3 exams, the
+  course outcomes, the solution format the instructor's solutions use, and the closed lists of allowed values
   for `status`, `valid_when` and friends. **The AI pipeline may never invent an id that is not in
   here** — if it cannot place something, it must say `unassigned` and propose the new topic in
   its pull request.
@@ -217,8 +219,8 @@ Two things about that diagram are deliberate:
 
 ## A complete card, annotated
 
-This is an equation card — the kind where the fields matter most. Nothing in `equations/` yet
-looks like this, because no course files have been uploaded; it is here as the shape to copy.
+This is an equation card — the kind where the fields matter most. It is an illustration of the
+shape (its ids are made up); the real ones are in `equations/`.
 
 ````markdown
 ---
@@ -307,3 +309,31 @@ syllabus](https://www.me.psu.edu/assets/docs/sample-syllabus/ME-300.pdf), retrie
 Only its structure was transcribed — no prose was copied and the PDF is not in this repository.
 **It is a sample.** The live section may differ in dates, instructor, ordering and possibly
 textbook edition, and every card derived from it says so.
+
+---
+
+## How the Summer 2023 course was ingested (2026-09-29)
+
+Done by hand in a Claude Code session, not by `.github/workflows/kb.yml`:
+
+1. **Pulled from Canvas** (course 2492426) with the project's login: 140 files (syllabus, 76 annotated
+   lecture decks, 10 homeworks and solutions, 11 explained examples, 2021–2023 exams and solutions,
+   review decks, property tables), plus the Canvas pages, assignment descriptions and discussion prompts
+   as markdown in `agent/raw-course-files/other/canvas/`. No student data: no submissions, grades,
+   rosters or discussion replies. Quiz questions were not accessible. `canvas-manifest.json` maps every
+   file to its Canvas id.
+2. **Transcribed** page by page from images, because almost every PDF is handwriting or a scan with no
+   text layer: 55 documents by Claude, 75 by DeepSeek (`deepseek-flash` vision). Transcripts are in
+   `agent/raw-course-files/_transcripts/`. Spot checks found the numbers right and occasional symbol
+   misreads (entropy generation $\Phi$ read as $\Sigma$ or $S_{gen}$); cards use the course's $\Phi$.
+3. **Drafted** card content from the transcripts with DeepSeek (`deepseek-v4-pro`): one call per
+   lecture, per example, per assignment/exam, then one merge of equations per module and one
+   course-wide de-duplication (172 → 120 equation cards).
+4. **Rendered and checked** by Claude: the JSON drafts were turned into cards by a deterministic script,
+   validated (`scripts/kb/validate.mjs`, all gates), and spot-checked against the page images. The
+   taxonomy, course, unit and admin cards were written by Claude from the syllabus.
+
+Cards carry no `kb:auto` markers, so the automated pipeline treats them as human-owned and will not
+overwrite them. Item cards are `audience: model`: they hold the instructor's final answers so Kelvin can
+check a student's result, and are hidden from students.
+

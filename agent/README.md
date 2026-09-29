@@ -36,7 +36,7 @@ agent/
 └── knowledge-brain/        ← the knowledge brain: reviewable cards about the course
     ├── README.md           ← how the brain works, and how to correct a card
     ├── INDEX.md            ← the map the tutor sees in every message (2,000-token cap)
-    ├── taxonomy.yml        ← the course spine: 5 units, 44 lecture rows, allowed values
+    ├── taxonomy.yml        ← the course spine: 8 modules, 76 lecture videos, 3 exams, allowed values
     ├── symbols.md          ← the authoritative ME 300 nomenclature table
     ├── course/             ← the course card
     ├── units/              ← one card per exam block
@@ -84,10 +84,10 @@ The cards are compiled into `build/knowledge-index.json` at deploy time by a scr
 AI calls at all, so a redeploy is deterministic and needs no API key. Raw files are left out of that
 index unless the offline `--with-files` flag is passed.
 
-> **Nothing here has been exercised on real ME 300 material.** `agent/raw-course-files/` currently holds
-> only README files, so there are no topic, equation or worked-example cards and no search
-> results to judge. The cards that do exist were hand-written; see
-> [`kb/README.md`](knowledge-brain/README.md) for what their `status` values claim and do not claim.
+> **The brain now holds real ME 300 material** (Dr. O'Connor's Summer 2023 Canvas course, ingested
+> 2026-09-29): 140 course files in `agent/raw-course-files/`, transcribed in `_transcripts/`, and about
+> 540 cards drafted from them. Nearly all are `status: auto` — drafted by AI, not checked by an
+> instructor. See [`kb/README.md`](knowledge-brain/README.md) for what each `status` claims.
 
 ## Testing a change to how Kelvin teaches
 
@@ -148,5 +148,5 @@ out of the score.
 - **Live site:** `GET /api/knowledge` (sign-in required) returns the same list.
   `GET /api/health` shows counts of skills, indexed files, and skipped files.
 - **Cards:** `GET /api/kb` (sign-in required) returns the always-in-prompt map and every
-  student-visible card; `GET /api/kb/card?id=unit:u4-control-volumes-and-second-law` returns one
+  student-visible card; `GET /api/kb/card?id=unit:m7-second-law-and-entropy` returns one
   card with its links and sources.
