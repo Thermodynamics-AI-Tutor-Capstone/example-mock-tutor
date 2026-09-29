@@ -8,7 +8,7 @@ description: >-
 tier: secondary
 secondary_to: misc:m01-heat-energy-temperature-conflated
 parent: course:me300
-unit: unit:u1-concepts-and-ideal-gas-properties
+unit: unit:m3-ideal-and-nonideal-gases
 status: draft
 audience: both
 priority: 0.8

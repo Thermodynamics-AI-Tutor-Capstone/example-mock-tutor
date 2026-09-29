@@ -8,7 +8,7 @@ description: >-
 tier: secondary
 secondary_to: misc:m09-friction-is-the-only-efficiency-limit
 parent: course:me300
-unit: unit:u4-control-volumes-and-second-law
+unit: unit:m8-power-and-refrigeration-cycles
 status: draft
 audience: both
 priority: 0.8

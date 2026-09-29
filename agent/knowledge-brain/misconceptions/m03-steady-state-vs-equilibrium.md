@@ -8,7 +8,7 @@ description: >-
 tier: primary
 secondary_to: null
 parent: course:me300
-unit: unit:u4-control-volumes-and-second-law
+unit: unit:m6-control-volumes-and-devices
 status: draft
 audience: both
 priority: 0.9

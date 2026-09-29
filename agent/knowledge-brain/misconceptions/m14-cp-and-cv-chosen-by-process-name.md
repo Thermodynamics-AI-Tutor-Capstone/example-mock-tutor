@@ -8,7 +8,7 @@ description: >-
 tier: secondary
 secondary_to: misc:m03-steady-state-vs-equilibrium
 parent: course:me300
-unit: unit:u1-concepts-and-ideal-gas-properties
+unit: unit:m3-ideal-and-nonideal-gases
 status: draft
 audience: both
 priority: 0.85
