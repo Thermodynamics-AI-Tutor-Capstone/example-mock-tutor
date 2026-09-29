@@ -111,6 +111,28 @@ a.sb-row { color: inherit; text-decoration: none; }
 .user-menu-head { font-size: 12.5px; color: var(--text2); padding: 8px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-menu-item { display: block; width: 100%; text-align: left; padding: 9px 10px; border-radius: 8px; background: none; border: 0; font: inherit; font-size: 14px; color: inherit; text-decoration: none; cursor: pointer; }
 .user-menu-item:hover, .user-menu-item:focus-visible { background: var(--hover); outline: none; }
+.user-menu-label { font-size: 12px; font-weight: 600; color: var(--text2); padding: 8px 10px 4px; }
+.user-menu-sep { height: 1px; background: var(--border); margin: 6px 4px; }
+.switcher-list { max-height: min(46vh, 360px); overflow-y: auto; font-size: 13px; color: var(--text2); }
+.switcher-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; background: none; border: 0; font: inherit; font-size: 13.5px; color: var(--text); cursor: pointer; }
+.switcher-item:hover:not([aria-checked="true"]), .switcher-item:focus-visible { background: var(--hover); outline: none; }
+.switcher-item[aria-checked="true"] { cursor: default; font-weight: 600; }
+.switcher-item:disabled { opacity: .6; cursor: progress; }
+.switcher-item svg { margin-left: auto; flex: 0 0 auto; }
+.switcher-tag { flex: 0 0 52px; font-size: 11.5px; color: var(--text2); font-weight: 500; }
+.switcher-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.switcher-empty, .switcher-error { padding: 6px 10px; }
+.switcher-error { color: var(--error-text); }
+.sb-user.viewing-as .avatar { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #e0a100; }
+.view-as-bar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 6px 16px; font-size: 13px; background: #fff4d6; color: #5c4300; border-bottom: 1px solid #f0d58a; }
+.view-as-bar[hidden] { display: none; }
+.view-as-back { font: inherit; font-size: 12.5px; font-weight: 600; color: inherit; background: #ffffff99; border: 1px solid #e3c46c; border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+.view-as-back:hover { background: #fff; }
+@media (prefers-color-scheme: dark) {
+  .view-as-bar { background: #3a2f10; color: #f3d98a; border-bottom-color: #5c4a17; }
+  .view-as-back { background: #ffffff14; border-color: #7a6320; }
+  .view-as-back:hover { background: #ffffff24; }
+}
 .avatar {
   width: 28px; height: 28px; border-radius: 50%;
   background: #10a37f; color: #fff; font-size: 11px; font-weight: 600;
