@@ -23,8 +23,9 @@
       </div>
       <form class="modal-body acct-form" data-panel="profile" novalidate>
         <div class="acct-section">Account</div>
-        <div class="acct-field"><label for="set_email">Email</label><input id="set_email" readonly></div>
-        <div class="acct-field"><label for="set_display_name">Name</label><input id="set_display_name" maxlength="120" required></div>
+        <div class="acct-field set-email-field"><label for="set_email">Email</label><input id="set_email" readonly></div>
+        <div class="acct-field"><label for="set_display_name">Name</label><input id="set_display_name" maxlength="120" required>
+          <p class="acct-toggle-desc set-name-note" hidden>Your Kelvin name can't be changed.</p></div>
         <div class="acct-section">Course <span class="opt">(optional)</span></div>
         <div class="acct-row">
           <div class="acct-field"><label for="set_course_number">Course number</label><input id="set_course_number" placeholder="ME 300" maxlength="120"></div>
@@ -185,6 +186,14 @@
     $('set_email').value = me.user.email || '';
     const p = me.profile || {};
     for (const f of FIELDS) $('set_' + f).value = p[f] || '';
+    // A student's made-up name was fixed at sign-up: shown, but read-only and never re-sent.
+    const username = p.username || '';
+    $('set_display_name').value = username || $('set_display_name').value;
+    $('set_display_name').readOnly = Boolean(username);
+    $('set_display_name').required = !username;
+    root.querySelector('.set-name-note').hidden = !username;
+    // Their account email is made up from the name, so it means nothing to them.
+    root.querySelector('.set-email-field').hidden = Boolean(username);
     if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = 'auto';
     for (const [f, fallback] of Object.entries(SWITCHES)) $('set_' + f).checked = typeof p[f] === 'boolean' ? p[f] : fallback;
     $('set_style_router').value = p.style_router === 'skills' ? 'skills' : 'jev';
@@ -197,9 +206,10 @@
     message(null, '');
     const body = {};
     for (const f of FIELDS) body[f] = $('set_' + f).value.trim();
+    if ($('set_display_name').readOnly) delete body.display_name;
     for (const f of Object.keys(SWITCHES)) body[f] = $('set_' + f).checked;
     body.style_router = $('set_style_router').value;
-    if (!body.display_name) {
+    if (!$('set_display_name').readOnly && !body.display_name) {
       message('error', 'Please enter your name.');
       return;
     }
