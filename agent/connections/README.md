@@ -16,7 +16,8 @@ one use `"default_connection"`.
 | Connection | Model | Used by |
 |---|---|---|
 | `deepseek-pro` (default) | `deepseek-v4-pro` | every current style |
-| `deepseek-flash` | `deepseek-flash` (cheaper, faster) | no style yet; the persona eval uses it to play the simulated students |
+| `deepseek-flash` | `deepseek-flash` (cheaper, faster) | `routing.intent_connections` (`fact`, `practice`, `teach_back`) and `routing.budget_connection`; the persona eval also uses it to play the simulated students |
+| `deepseek-flash-light` | `deepseek-flash` with `reasoning_effort: "low"` | `routing.intent_connections` (`off_topic`, `course_admin`) |
 
 Each connection has:
 
@@ -26,6 +27,8 @@ Each connection has:
 | `baseUrl` | Any OpenAI-compatible chat-completions endpoint. For the default connection, the `DEEPSEEK_BASE_URL` env var overrides it. |
 | `model` | For the default connection, the `DEEPSEEK_MODEL` env var overrides it. |
 | `temperature` | `null` means "don't send one". A number such as `0.3` is sent as-is. |
+| `thinking` | `"enabled"` or `"disabled"` — sent as DeepSeek's `thinking: {type}`. Unset means "don't send one" (the API's own default). Thinking mode ignores `temperature`. |
+| `reasoning_effort` | `"low"`, `"high"` or `"max"` — how hard the model thinks before answering. Unset means "don't send one" (the API's own default). |
 | `apiKeyEnvVar` | The *name* of the env var holding the key, never the key. Must end in `_API_KEY`. |
 
 `max_tool_rounds` at the top level is the default number of tool-call rounds per reply; a style can
@@ -33,6 +36,45 @@ override it.
 
 **Where the key lives:** the Vercel environment variable `DEEPSEEK_API_KEY` on the live site; a
 `DEEPSEEK_API_KEY=...` line in `.env` when running locally. Never in this repo.
+
+### Routing
+
+The top-level `"routing"` block decides which connection answers each message (see
+`lib/routing.js`):
+
+| Key | Notes |
+|---|---|
+| `enabled` | `false` turns routing off; every message then uses its style's connection. |
+| `intent_connections` | Intent label (from the decider, `lib/decide.js`) → connection name. Easy questions can ride the cheap model while hard ones keep the style's model. Connection names that don't exist are dropped with a warning. |
+| `budget_connection` | The connection to use once a student (or the app) is past 80% of a usage limit. |
+
+The choice is made per turn and recorded in the usage row's meta (`connection` and `route`), so the
+admin dashboard can show what each model actually cost.
+
+### Prompt caching
+
+DeepSeek bills by cache-hit on an **exact prefix** of the request. The stable part of the system
+prompt (base prompt, teaching style, figure guide, skills, course map) is the same on every turn of
+a conversation and stays as `messages[0]`; the per-turn part (policy ceiling, decider read, student
+model, reference solution, attachments, style index) changes every turn, so it travels as a
+separate trailing system message placed right before the latest student message. Everything before
+that message is byte-identical between consecutive turns, which is what the prefix cache matches on
+— without the split, one changing paragraph near the top of the prompt would re-bill the whole chat
+history as a cache miss on every turn.
+
+What it buys depends on the model (measured 2026-10-02 with direct API calls, real system prompt
+and tools): on `deepseek-flash`, the next turn reuses about 98% of its input from the cache. On
+`deepseek-v4-pro`, a new turn only ever reuses the first ~5,400 tokens (the system prompt), whatever
+the message order — four layouts were tried, including keeping every turn's notes in the history so
+each request extends the last, with gaps of 5 s and 90 s. Pro does reuse an identical request and the
+later tool rounds of the same reply. So on Pro the tool definitions and the chat history are paid at
+the cache-miss rate every turn, which is one more reason cheap turns go to Flash (`routing`).
+
+`reply` turns (the student answering Kelvin's question, about 40% of real turns) stay on Pro: in the
+persona eval of 2026-10-02 (3 runs per arm, 108 turns each), sending them to Flash halved the tutor
+cost but flagged 11 replies for giving away a key step or the answer, against 6 with Pro, and the
+deadline-demander and what-next-looper personas failed "no key-step leak" in 5 of 6 chats against 1
+of 6. To try it again: `npm run eval:personas -- --intent-connection reply=deepseek-flash`.
 
 ## 1b. The decider — Jev
 

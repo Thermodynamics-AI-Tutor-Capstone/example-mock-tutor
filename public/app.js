@@ -872,6 +872,7 @@
       state.controller = null;
       updateSendBtn();
       refreshList();
+      refreshUsage();
       if (row.isConnected) input.focus();
     }
   }
@@ -881,6 +882,19 @@
     const m = msg.match(/^(\S+)(.*)$/);
     const out = m && PAST_TENSE[m[1]] ? PAST_TENSE[m[1]] + m[2] : msg;
     return out.replace(/(?:\u2026|\.\.\.)$/, '');
+  }
+
+  // How much of the trial allowance this student has used (lib/limits.js). A percentage only; admins
+  // and test accounts are exempt and see nothing.
+  async function refreshUsage() {
+    const meter = $('usageMeter');
+    let u = null;
+    try { u = await api('GET', '/api/me/usage'); } catch (e) { return; }
+    if (!u || u.exempt) { meter.hidden = true; return; }
+    meter.hidden = false;
+    meter.classList.toggle('blocked', u.state === 'blocked');
+    $('usageFill').style.width = u.percent + '%';
+    $('usageLabel').textContent = u.state === 'blocked' && u.message ? u.message : u.percent + '% of your Kelvin use';
   }
 
   function openMobileSidebar() { app.classList.add('mobile-open'); }
@@ -1088,6 +1102,7 @@
     history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
     openSettings(tab);
   }
+  refreshUsage();
   const hashAtLoad = parseHash();
   refreshList().then((ok) => {
     if (!ok && !gate.hidden) return;

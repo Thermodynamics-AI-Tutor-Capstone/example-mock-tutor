@@ -7,16 +7,19 @@
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/account.css">
 <script src="/account.js"></script>
+<style>
+  /* The "signed in as" line, used only on this page. */
+  .name-field-head { font-size: 14px; }
+</style>
 </head>
 <body class="account-page">
 <main class="acct-card">
   <div class="acct-brand">Kelvin AI</div>
   <h1 class="acct-title">Tell Kelvin about you</h1>
-  <p class="acct-sub">Only your name is required. The course details are optional; they help Kelvin use the right course's examples and notation.</p>
+  <p class="acct-sub">The course details are optional; they help Kelvin use the right course's examples and notation.</p>
   <form id="form" class="acct-form" novalidate>
     <div class="acct-field">
-      <label for="display_name">Your name</label>
-      <input id="display_name" autocomplete="name" maxlength="120" required>
+      <span class="name-field-head">You're signed in as <strong id="asName">…</strong></span>
     </div>
     <div class="acct-section">Your course <span class="opt">(optional)</span></div>
     <div class="acct-row">
@@ -38,22 +41,22 @@
 <script>
 (function () {
   const A = window.KelvinAccount;
-  const FIELDS = ['display_name', 'course_number', 'section', 'professor', 'semester', 'year', 'major'];
+  const FIELDS = ['course_number', 'section', 'professor', 'semester', 'year', 'major'];
   const $ = (id) => document.getElementById(id);
   A.requireSession({ needProfile: false }).then((me) => {
     if (!me) return;
     if (me.profile && me.profile.onboarded) { location.replace('/'); return; }
     const p = me.profile || {};
     for (const f of FIELDS) if (p[f]) $(f).value = p[f];
-    if (!$('display_name').value && me.user.name) $('display_name').value = me.user.name;
+    // The student's made-up name is their identity; the server sets the display name, never the form.
+    $('asName').textContent = p.username || me.user.name || 'you';
     $('submit').disabled = false;
-    $('display_name').focus();
+    $('course_number').focus();
   });
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = { onboard: true };
     for (const f of FIELDS) body[f] = $(f).value.trim();
-    if (!body.display_name) { $('error').textContent = 'Please enter your name.'; $('display_name').focus(); return; }
     $('submit').disabled = true;
     try {
       await A.saveProfile(body);

@@ -16,13 +16,19 @@
 //
 // Safety: it never touches a real database. DATABASE_URL / POSTGRES_URL are removed from the
 // environment and a fresh embedded PGlite database is created under data/eval-runs/<timestamp>/.
+// USAGE_LOG_DIR is pointed at the same folder, so every usage row the run records (DeepSeek and
+// Jev alike) lands in its own JSONL — the --max-usd spend guard and the per-connection cost split
+// read only this run's rows, never the shared data/usage log.
 //
-// Costs money: every turn is one tutoring reply (the style's DeepSeek model), one simulated student
-// message (deepseek-flash) and one or two Jev calls. The summary prints the Jev cost; check the
-// DeepSeek balance before and after for the rest. The simulated students are random (temperature
-// 0.7), so one run per arm is an anecdote; use --repeat for anything you would show a sponsor.
+// Costs money: every turn is one tutoring reply (routed to a DeepSeek model by lib/routing.js —
+// cheap intents ride deepseek-flash), one simulated student message (deepseek-flash) and one or
+// two Jev calls. The summary prints the Jev cost and the tutor cost split by connection; pass
+// --max-usd <n> to stop starting new turns once the run has spent that much. The simulated
+// students are random (temperature 0.7), so one run per arm is an anecdote; use --repeat for
+// anything you would show a sponsor.
 //
-// Usage: npm run eval:personas -- [--jev on|off|both] [--persona id[,id]] [--repeat n] [--turns n] [--concurrency n]
+// Usage: npm run eval:personas -- [--jev on|off|both] [--persona id[,id]] [--repeat n] [--turns n]
+//        [--concurrency n] [--route on|off] [--intent-connection intent=name[,intent=name]] [--max-usd n]
 //        npm run eval:compare -- [same options]        (shorthand for --jev both)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -44,10 +50,16 @@ delete process.env.POSTGRES_URL;
 delete process.env.VERCEL;
 fs.mkdirSync(OUT_DIR, { recursive: true });
 process.env.PGLITE_DIR = path.join(OUT_DIR, 'pglite');
+// The run's own usage log: recordUsage() appends here (see the note at the top), so the spend
+// guard and the per-connection cost split see exactly what this run spent.
+const USAGE_DIR = path.join(OUT_DIR, 'usage');
+fs.mkdirSync(USAGE_DIR, { recursive: true });
+process.env.USAGE_LOG_DIR = USAGE_DIR;
 
 const { query, ensureSchema, dbKind, closeDb } = await import('../../lib/db.js');
 const { prepareTurn, finishTurn, listDecisions } = await import('../../lib/turn.js');
 const { runAgentTurn, connectionConfig, styleProblem } = await import('../../lib/agent.js');
+const { chooseConnection } = await import('../../lib/routing.js');
 const { loadStudentModel } = await import('../../lib/student-model.js');
 const { deciderProblem } = await import('../../lib/jev.js');
 const { recordUsage, deepseekUsageRow } = await import('../../lib/usage.js');
@@ -68,6 +80,34 @@ const jevArg = (arg('jev') || 'on').toLowerCase();
 if (!['on', 'off', 'both'].includes(jevArg)) throw new Error('--jev must be on, off or both');
 const ARMS = jevArg === 'both' ? ['on', 'off'] : [jevArg];
 const ARM_LABEL = { on: 'Jev on', off: 'Jev off' };
+const routeArg = (arg('route') || 'on').toLowerCase();
+if (!['on', 'off'].includes(routeArg)) throw new Error('--route must be on or off');
+const ROUTE_ON = routeArg === 'on';
+// --intent-connection intent=name[,intent=name] overrides routing.intent_connections for the run,
+// so a sweep can compare models per intent without editing connections.json.
+const intentOverrides = {};
+for (const pair of (arg('intent-connection') || '').split(',')) {
+  const [intent, name] = pair.split('=').map((s) => s?.trim());
+  if (intent && name) intentOverrides[intent] = name;
+}
+const maxUsd = arg('max-usd') !== null ? Number(arg('max-usd')) : null;
+if (maxUsd !== null && (!Number.isFinite(maxUsd) || maxUsd <= 0)) throw new Error('--max-usd must be a positive number');
+
+// The run's DeepSeek + Jev spend so far, from the usage JSONL this run writes: sum cost_usd of
+// every row in USAGE_DIR (which only this run writes to). Read fresh before each turn starts.
+function usageCost() {
+  let total = 0;
+  for (const f of fs.readdirSync(USAGE_DIR).filter((f) => f.endsWith('.jsonl'))) {
+    for (const line of fs.readFileSync(path.join(USAGE_DIR, f), 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        total += Number(JSON.parse(line).cost_usd) || 0;
+      } catch {}
+    }
+  }
+  return total;
+}
+let budgetStop = false;
 
 const jevProblem = deciderProblem();
 if (ARMS.includes('on') && jevProblem) throw new Error(`the "Jev on" arm needs Jev: ${jevProblem}`);
@@ -116,13 +156,23 @@ async function runPersona(persona, arm, rep) {
   const n = turnsOverride || persona.turns || 4;
   const tag = `${persona.id} [${ARM_LABEL[arm]}${repeat > 1 ? ` #${rep}` : ''}]`;
   for (let i = 0; i < n; i++) {
+    if (maxUsd !== null && usageCost() >= maxUsd) {
+      budgetStop = true;
+      console.warn(`  ${tag} stopped before turn ${i + 1}/${n}: the run's spend reached --max-usd ${maxUsd}`);
+      break;
+    }
     const said = i === 0 ? persona.opening : await studentSays(persona, history);
     history.push({ role: 'user', content: said });
     await query("INSERT INTO messages (conversation_id, role, content) VALUES ($1, 'user', $2)", [conversationId, said]);
 
     const started = Date.now();
     const prepared = await prepareTurn({ conversationId, userId, pinnedStyleId: persona.style || 'auto', history, usable, useJev: arm === 'on' });
-    const conn = connectionConfig(prepared.style?.connection);
+    // --route off: the style's connection, exactly as before. Otherwise lib/routing.js picks the
+    // connection from the decider's intent (with --intent-connection overrides on top).
+    const choice = ROUTE_ON
+      ? chooseConnection({ read: prepared.read, style: prepared.style, overrides: intentOverrides })
+      : { connection: prepared.style?.connection ?? null, reason: 'style' };
+    const conn = connectionConfig(choice.connection);
     const statuses = [];
     const agent = await runAgentTurn({
       history,
@@ -140,6 +190,8 @@ async function runPersona(persona, arm, rep) {
       turn: prepared.turn,
       read: prepared.read,
       extraSections: prepared.extraSections,
+      connection: ROUTE_ON ? choice.connection : undefined,
+      route: ROUTE_ON ? choice.reason : undefined,
     });
     const reply = agent.text || '';
     const { rows } = await query("INSERT INTO messages (conversation_id, role, content) VALUES ($1, 'assistant', $2) RETURNING id", [conversationId, reply || '(no reply)']);
@@ -154,6 +206,8 @@ async function runPersona(persona, arm, rep) {
       seconds: Math.round((Date.now() - started) / 100) / 10,
       style: prepared.style?.id,
       route: prepared.route.reason,
+      connection: conn.name,
+      routeReason: choice.reason,
       read: {
         provider: prepared.read.provider,
         intent: prepared.read.intent?.label,
@@ -182,7 +236,7 @@ async function runPersona(persona, arm, rep) {
   const { rows: stateRows } = await query('SELECT state FROM tutoring_state WHERE conversation_id = $1', [conversationId]);
   const finalState = stateRows[0]?.state ? (typeof stateRows[0].state === 'string' ? JSON.parse(stateRows[0].state) : stateRows[0].state) : {};
   const studentModel = await loadStudentModel(userId);
-  return { persona, arm, rep, conversationId, turns, finalState, studentModel, decisions: await listDecisions(conversationId) };
+  return { userId, persona, arm, rep, conversationId, turns, finalState, studentModel, decisions: await listDecisions(conversationId) };
 }
 
 // ── expectations ────────────────────────────────────────────────────────────────────────────────
@@ -253,6 +307,11 @@ const queue = [...jobs];
 await Promise.all(
   Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
     while (queue.length) {
+      if (maxUsd !== null && usageCost() >= maxUsd) {
+        budgetStop = true;
+        console.warn('  stopped early: the run\'s spend reached --max-usd; remaining jobs not started');
+        break;
+      }
       const { p, arm, rep } = queue.shift();
       try {
         const r = await runPersona(p, arm, rep);
@@ -281,6 +340,32 @@ const lines = [
 let jevCost = 0;
 for (const r of results) for (const t of r.turns) jevCost += (t.read.costUsd || 0) + (t.audit?.costUsd || 0);
 
+// The tutor's DeepSeek spend, split by connection per arm. Every tutor_reply row this run wrote
+// (in USAGE_DIR, which only this run touches) carries meta.connection; match rows to their result
+// by the eval user id they were billed to.
+const tutorCost = {};
+{
+  const resultByUser = new Map(results.filter((r) => r.userId).map((r) => [r.userId, r]));
+  for (const f of fs.readdirSync(USAGE_DIR).filter((f) => f.endsWith('.jsonl'))) {
+    for (const line of fs.readFileSync(path.join(USAGE_DIR, f), 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      let row;
+      try {
+        row = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (row.purpose !== 'tutor_reply') continue;
+      const r = resultByUser.get(row.user_id);
+      if (!r) continue;
+      const conn = row.meta?.connection || row.model || 'unknown';
+      const byConn = (tutorCost[r.arm] ??= {});
+      byConn[conn] = (byConn[conn] || 0) + (Number(row.cost_usd) || 0);
+    }
+  }
+}
+const costText = (byConn) => Object.entries(byConn || {}).map(([c, v]) => `${c} $${v.toFixed(4)}`).join(' · ') || '$0';
+
 const totals = {};
 for (const arm of ARMS) {
   const rs = results.filter((r) => r.arm === arm);
@@ -298,6 +383,7 @@ if (ARMS.length === 2) {
   row('Replies that wrote out the corrected step before a complete attempt', (x) => `${x.correctedStepEarly} of ${x.turns}`);
   row('Replies that did not hand the work back', (x) => `${x.noHandback} of ${x.turns}`);
   row('Replies that corrected a wrong belief (neither good nor bad on its own: read the transcripts)', (x) => `${x.corrected} of ${x.turns}`);
+  row('Tutor cost by connection', (x) => costText(tutorCost[x]));
   lines.push('');
   lines.push('| Persona | Jev on | Jev off |', '|---|---|---|');
   for (const p of personas) {
@@ -324,7 +410,10 @@ if (ARMS.length === 2) {
 }
 const allScored = results.flatMap((r) => r.checks).filter((c) => c.pass !== null);
 const passed = allScored.filter((c) => c.pass).length;
-lines.push(`**${passed}/${allScored.length} checks passed** across all arms. Jev cost: $${jevCost.toFixed(5)}.`, '');
+lines.push(`**${passed}/${allScored.length} checks passed** across all arms. Jev cost: $${jevCost.toFixed(5)}. Tutor cost by connection: ${costText(ARMS.reduce((acc, arm) => Object.assign(acc, tutorCost[arm]), {}))}.`, '');
+if (budgetStop) {
+  lines.push(`Stopped early: the run's DeepSeek + Jev spend reached $${usageCost().toFixed(5)} of the --max-usd ${maxUsd} limit; further turns were not started.`, '');
+}
 
 for (const r of results) {
   lines.push(`## ${r.persona.id} — ${ARM_LABEL[r.arm]}${repeat > 1 ? ` #${r.rep}` : ''}`, '');
@@ -332,18 +421,19 @@ for (const r of results) {
   if (r.error) lines.push(`- run failed: ${r.error}`);
   lines.push('');
   for (const t of r.turns) {
-    lines.push(`**Turn ${t.turn}** · ${t.style} (${t.route}) · ceiling ${t.policy.ceiling}${t.policy.completeAttempt ? ' · complete attempt' : ''}${t.policy.stalled ? ' · stalled' : ''} · read: ${t.read.provider} ${t.read.intent || ''} work=${t.read.showsWork} · misconception: ${t.policy.misconception}${t.policy.misconceptionIds.length ? ` ${t.policy.misconceptionIds.join(', ')}` : ''}${t.audit?.flags?.length ? ` · ⚠ ${t.audit.flags.join(', ')}` : ''}${t.tools.length ? ` · tools: ${t.tools.join(', ')}` : ''}`);
+    lines.push(`**Turn ${t.turn}** · ${t.style} (${t.route}) · model: ${t.connection} (${t.routeReason}) · ceiling ${t.policy.ceiling}${t.policy.completeAttempt ? ' · complete attempt' : ''}${t.policy.stalled ? ' · stalled' : ''} · read: ${t.read.provider} ${t.read.intent || ''} work=${t.read.showsWork} · misconception: ${t.policy.misconception}${t.policy.misconceptionIds.length ? ` ${t.policy.misconceptionIds.join(', ')}` : ''}${t.audit?.flags?.length ? ` · ⚠ ${t.audit.flags.join(', ')}` : ''}${t.tools.length ? ` · tools: ${t.tools.join(', ')}` : ''}`);
     lines.push('', `> **Student:** ${t.student.replace(/\n/g, '\n> ')}`, '>', `> **Kelvin:** ${(t.tutor || `(no reply${t.error ? `: ${t.error}` : ''})`).replace(/\n/g, '\n> ')}`, '');
   }
 }
 fs.writeFileSync(path.join(OUT_DIR, 'report.md'), lines.join('\n'));
-fs.writeFileSync(path.join(OUT_DIR, 'results.json'), JSON.stringify({ arms: ARMS, repeat, totals, results }, null, 2));
+fs.writeFileSync(path.join(OUT_DIR, 'results.json'), JSON.stringify({ arms: ARMS, repeat, totals, tutorCost, results }, null, 2));
 if (ARMS.length === 2) {
   for (const arm of ARMS) {
     const x = totals[arm];
-    console.log(`${ARM_LABEL[arm].padEnd(8)} ${x.passed}/${x.scored} checks · answer leaks ${x.answerLeaks} · key-step leaks ${x.keyStepLeaks} · beliefs corrected ${x.corrected} (of ${x.turns} replies)`);
+    console.log(`${ARM_LABEL[arm].padEnd(8)} ${x.passed}/${x.scored} checks · answer leaks ${x.answerLeaks} · key-step leaks ${x.keyStepLeaks} · beliefs corrected ${x.corrected} (of ${x.turns} replies) · tutor ${costText(tutorCost[arm])}`);
   }
 }
 console.log(`\n${passed}/${allScored.length} checks passed. Report: ${path.relative(APP_DIR, path.join(OUT_DIR, 'report.md'))}`);
+if (budgetStop) console.log(`Stopped early: the run's DeepSeek + Jev spend reached $${usageCost().toFixed(5)} of the --max-usd ${maxUsd} limit.`);
 await closeDb();
 process.exit(0);
