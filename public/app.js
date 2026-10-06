@@ -344,6 +344,8 @@
   }
 
   function goEmpty(pushUrl) {
+    window.KelvinVoice?.cancel();
+    window.KelvinTips?.hide();
     requestWhiteboard = false;
     whiteboardBtn.setAttribute('aria-pressed', 'false');
     input.placeholder = 'Ask anything';
@@ -410,6 +412,8 @@
   }
 
   async function openConversation(id) {
+    window.KelvinVoice?.cancel();
+    window.KelvinTips?.hide();
     const token = ++state.loadToken;
     state.currentId = id;
     renderSidebar();
@@ -692,6 +696,7 @@
   }
 
   function updateSendBtn() {
+    window.KelvinVoice?.update();
     whiteboardBtn.disabled = state.streaming;
     if (state.streaming) {
       sendBtn.classList.add('stop');
@@ -700,7 +705,7 @@
     } else {
       sendBtn.classList.remove('stop');
       const files = window.KelvinAttachments;
-      sendBtn.disabled = (input.value.trim() === '' && !files.hasPending()) || files.busy();
+      sendBtn.disabled = (input.value.trim() === '' && !files.hasPending()) || files.busy() || Boolean(window.KelvinVoice?.active());
       sendBtn.setAttribute('aria-label', 'Send');
     }
   }
@@ -722,13 +727,16 @@
   async function send(text) {
     const files = window.KelvinAttachments;
     const typed = (text != null ? text : input.value).trim();
-    if (state.streaming || files.busy()) return;
+    if (state.streaming || files.busy() || window.KelvinVoice?.active()) return;
     const sentFiles = text != null ? [] : files.pendingList();
     const baseContent = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
     const content = baseContent && requestWhiteboard
       ? baseContent + '\n\nPlease explain this on the narrated whiteboard, with spoken explanation and drawing together.'
       : baseContent;
     if (!content) return;
+
+    window.KelvinTips?.hide();
+    window.KelvinVoice?.cancel();
 
     window.KelvinNarration?.pauseAll();
     requestWhiteboard = false;
@@ -1042,11 +1050,13 @@
     if (!userMenu.hidden && !userMenu.parentElement.contains(e.target)) closeUserMenu();
   });
   userMenu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeUserMenu(); userBtn.focus(); } });
-  $('signOutBtn').addEventListener('click', () => window.KelvinAccount.signOut());
+  $('signOutBtn').addEventListener('click', () => { window.KelvinVoice?.cancel(); window.KelvinTips?.hide(); window.KelvinAccount.signOut(); });
 
   // Settings open as a modal over the chat (public/settings.js). Saving takes effect at once: the
   // profile is swapped in, and turning "Show Kelvin's decisions" on or off redraws the open chat.
   function openSettings(tab) {
+    window.KelvinVoice?.cancel();
+    window.KelvinTips?.hide();
     closeUserMenu();
     window.KelvinSettings.open({
       tab: typeof tab === 'string' ? tab : 'profile',
@@ -1077,6 +1087,10 @@
   if (!me) return;
   state.me = me;
   renderUser();
+  window.KelvinVoice.init({ api, apiFetch, onChange: updateSendBtn,
+    blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden });
+  window.KelvinTips.init({ userId: me.user.id,
+    blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden });
   await loadStyles();
   // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings;
   // /?settings=learning opens it on "What Kelvin knows".

@@ -42,6 +42,13 @@ Use **Explain on whiteboard** beside Attach, or ask Kelvin for a narrated whiteb
 DeepSeek writes the explanation; the browser speaks it alongside multicolor marker drawings.
 No OpenAI key or paid speech API is needed. See [setup and controls](docs/narrated-whiteboard.md).
 
+### Voice input and feature tips
+
+Use the microphone beside Send to explain your reasoning aloud, then review the transcript in
+the draft before sending it to Kelvin. Voice input uses `gpt-4o-mini-transcribe` and requires
+`OPENAI_API_KEY` on the server. Contextual, dismissible tips introduce voice input, attachments,
+and the narrated whiteboard. See [setup, limits, and verification](docs/voice-input.md).
+
 ## Run locally
 
 ```sh
@@ -83,6 +90,7 @@ win over `.env`.
 | Variable | Default | Purpose |
 |---|---|---|
 | `DEEPSEEK_API_KEY` | none | DeepSeek API key. Never logged or returned by the API. |
+| `OPENAI_API_KEY` | none | Enables microphone transcription with `gpt-4o-mini-transcribe`. Server only; independent of DeepSeek and browser whiteboard narration. |
 | `DATABASE_URL` | none | Postgres connection string. `POSTGRES_URL` is used if this is unset. With neither, PGlite in `data/pglite/`. |
 | `NEON_AUTH_BASE_URL` | none | Neon Auth endpoint for this database (set automatically by the Neon integration once Auth is enabled in the Neon console). Without it nobody can sign in, and every `/api/*` route except `/api/health` returns `401 {"error":"auth_required"}`. Locally, add it to `.env`. |
 | `DEEPSEEK_MODEL` | `deepseek-v4-pro` | Model name sent to DeepSeek. |
