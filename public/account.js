@@ -14,8 +14,9 @@
   function authMessage(r) {
     const d = r.data || {};
     const code = String(d.code || '');
-    if (code === 'INVALID_EMAIL_OR_PASSWORD') return 'Incorrect email or password.';
-    if (/ALREADY_EXISTS/.test(code)) return 'An account with that email already exists. Sign in instead.';
+    if (code === 'INVALID_EMAIL_OR_PASSWORD') return 'Incorrect name or password.';
+    if (code === 'NAME_TAKEN' || code === 'NAME_REQUIRED') return d.error || d.message || 'Pick a name and try again.';
+    if (/ALREADY_EXISTS/.test(code)) return 'That name is already taken. Pick another.';
     if (/PASSWORD_TOO_SHORT/.test(code)) return 'Password must be at least 8 characters.';
     if (/PASSWORD_TOO_LONG/.test(code)) return 'That password is too long.';
     if (/EMAIL_NOT_VERIFIED/.test(code)) return 'Check your email to verify your account first.';
@@ -41,8 +42,10 @@
       }
       return r.ok ? r.data : null;
     },
-    async signIn(email, password) {
-      const r = await call('/api/auth/sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
+    // An email signs into an existing account; anything else is treated as the made-up Kelvin name.
+    async signIn(identifier, password) {
+      const body = identifier.includes('@') ? { email: identifier, password } : { username: identifier, password };
+      const r = await call('/api/auth/sign-in/email', { method: 'POST', body: JSON.stringify(body) });
       if (!r.ok) throw new Error(authMessage(r));
       const check = await call('/api/me');
       if (check.status === 403 && check.data && check.data.error === 'account_inactive') {
@@ -58,9 +61,20 @@
       await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => {});
       location.href = '/login?deleted=1';
     },
-    async signUp(name, email, password) {
-      const r = await call('/api/auth/sign-up/email', { method: 'POST', body: JSON.stringify({ name, email, password }) });
-      if (!r.ok) throw new Error(authMessage(r));
+    // Sign-up posts only the picked name parts: the account's email is derived from them server-side.
+    async signUp(first, last, password) {
+      const r = await call('/api/auth/sign-up/email', { method: 'POST', body: JSON.stringify({ first, last, password }) });
+      if (!r.ok) {
+        const err = new Error(authMessage(r));
+        if (r.data && r.data.code) err.code = r.data.code;
+        throw err;
+      }
+      return r.data;
+    },
+    // The choices the sign-up page offers: lists of first and last names plus which combos are taken.
+    async nameOptions() {
+      const r = await call('/api/auth/name-options');
+      if (!r.ok) throw new Error((r.data && r.data.error) || 'Could not load names (' + r.status + ')');
       return r.data;
     },
     async signOut() {

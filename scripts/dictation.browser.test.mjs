@@ -252,4 +252,3 @@ try {
   server.closeAllConnections();
   await new Promise(resolve => server.close(resolve));
 }
-

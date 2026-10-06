@@ -16,7 +16,26 @@
       "model": "deepseek-flash",
       "temperature": null,
       "apiKeyEnvVar": "DEEPSEEK_API_KEY"
+    },
+    "deepseek-flash-light": {
+      "provider": "DeepSeek",
+      "baseUrl": "https://api.deepseek.com",
+      "model": "deepseek-flash",
+      "temperature": null,
+      "reasoning_effort": "low",
+      "apiKeyEnvVar": "DEEPSEEK_API_KEY"
     }
+  },
+  "routing": {
+    "enabled": true,
+    "intent_connections": {
+      "off_topic": "deepseek-flash-light",
+      "course_admin": "deepseek-flash-light",
+      "fact": "deepseek-flash",
+      "practice": "deepseek-flash",
+      "teach_back": "deepseek-flash"
+    },
+    "budget_connection": "deepseek-flash"
   },
   "decider": {
     "provider": "Jev (TypeSafe) via OpenRouter",
@@ -45,7 +64,7 @@
   "courseMaterials": {
     "folder": "agent/raw-course-files",
     "cards": "agent/knowledge-brain",
-    "tools": ["list_course_files", "search_course_files", "read_course_file", "open_card", "list_cards"]
+    "tools": ["search_cards", "open_card", "list_cards"]
   },
   "skills": {
     "folder": "agent/skills",

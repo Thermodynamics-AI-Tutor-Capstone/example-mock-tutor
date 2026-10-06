@@ -7,6 +7,25 @@
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/account.css">
 <script src="/account.js"></script>
+<style>
+  /* The name picker, used only on this page. */
+  .name-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+  .name-field-head { font-size: 13.5px; font-weight: 500; }
+  .name-choice {
+    font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  }
+  .name-choice[aria-pressed="true"] { background: var(--send-bg); color: var(--send-fg); border-color: var(--send-bg); }
+  .name-choice:disabled { opacity: .45; cursor: default; text-decoration: line-through; }
+  .name-choice:focus-visible { outline: 2px solid var(--text2); outline-offset: 2px; }
+  .name-preview { border: 1px dashed var(--border); border-radius: 12px; padding: 10px 14px; }
+  .name-preview-line { margin: 0; font-size: 14.5px; }
+  .name-preview-warn { margin: 3px 0 0; color: var(--text2); font-size: 12.5px; line-height: 1.4; }
+  .login-hint { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.4; }
+  .acct-check { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--text2); line-height: 1.4; cursor: pointer; }
+  .acct-check input { margin-top: 2px; flex: none; }
+  .hidden-username { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
+</style>
 </head>
 <body class="account-page">
 <main class="acct-card">
@@ -14,99 +33,195 @@
   <h1 id="title" class="acct-title">Welcome back</h1>
   <p id="sub" class="acct-sub">Sign in to your thermodynamics tutor.</p>
   <form id="form" class="acct-form" novalidate>
-    <div id="nameField" class="acct-field" hidden>
-      <label for="name">Your name</label>
-      <input id="name" name="name" autocomplete="name" maxlength="120">
+    <div id="signinFields">
+      <div class="acct-field">
+        <label for="username">Your Kelvin name</label>
+        <input id="username" name="username" autocomplete="username" placeholder="e.g. Maya Fernhollow" required>
+        <p class="login-hint">Existing team accounts can sign in with their email.</p>
+      </div>
+      <div class="acct-field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+      </div>
     </div>
-    <div class="acct-field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="email" required>
-    </div>
-    <div class="acct-field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+    <div id="signupFields" hidden>
+      <div class="acct-field">
+        <span class="name-field-head">First name</span>
+        <div id="firstChoices" class="name-choices" role="group" aria-label="First name choices"></div>
+      </div>
+      <div class="acct-field">
+        <span class="name-field-head">Last name</span>
+        <div id="lastChoices" class="name-choices" role="group" aria-label="Last name choices"></div>
+      </div>
+      <button id="newNames" type="button" class="acct-btn secondary">Show different names</button>
+      <div class="name-preview">
+        <p class="name-preview-line">You'll be: <strong id="previewName">—</strong></p>
+        <p class="name-preview-warn">This is your username. Write it down — it can't be changed.</p>
+      </div>
+      <input id="hiddenUsername" type="text" autocomplete="username" class="hidden-username" tabindex="-1" aria-hidden="true">
+      <div class="acct-field">
+        <label for="newPassword">Password</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="8">
+        <p class="login-hint">At least 8 characters.</p>
+      </div>
+      <div class="acct-field">
+        <label for="newPassword2">Type it again</label>
+        <input id="newPassword2" type="password" autocomplete="new-password" minlength="8">
+        <p id="matchNote" class="login-hint"></p>
+      </div>
+      <label class="acct-check" for="savedAck">
+        <input id="savedAck" type="checkbox">
+        <span>I've saved my Kelvin name and password somewhere safe. If I lose them, my account can't be recovered.</span>
+      </label>
     </div>
     <div id="error" class="acct-error" role="alert"></div>
     <button id="submit" class="acct-btn" type="submit">Sign in</button>
   </form>
   <p class="acct-switch"><span id="switchText">New here?</span> <button id="switchBtn" type="button">Create an account</button></p>
 </main>
-<!-- Capstone testing only: one-click sign-in to the ten simulated-student accounts (eval/students.yml),
-     whose shared password is known to the whole team. Remove before real students use the site. -->
-<aside class="test-accounts" aria-labelledby="testTitle">
-  <h2 id="testTitle" class="test-accounts-title">Test accounts</h2>
-  <p class="test-accounts-sub">Sign in as a simulated student to see their chats.</p>
-  <div id="testButtons" class="test-accounts-list"></div>
-</aside>
 <script>
 (function () {
   const A = window.KelvinAccount;
   let mode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin';
   const $ = (id) => document.getElementById(id);
+  let options = { first: [], last: [], taken: [] };
+  let chosenFirst = null;
+  let chosenLast = null;
+  let loadingNames = false;
+
+  const takenSet = () => new Set((options.taken || []).map((t) => t.toLowerCase()));
+
+  function buildChoices(boxId, names, picked, comboOf) {
+    const box = $(boxId);
+    box.textContent = '';
+    const taken = takenSet();
+    for (const name of names) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'name-choice';
+      btn.textContent = name;
+      btn.disabled = Boolean(comboOf && taken.has(comboOf(name).toLowerCase()));
+      btn.setAttribute('aria-pressed', name === picked ? 'true' : 'false');
+      btn.addEventListener('click', () => {
+        if (boxId === 'firstChoices') chosenFirst = name;
+        else chosenLast = name;
+        renderChoices();
+      });
+      box.appendChild(btn);
+    }
+  }
+
+  function renderChoices() {
+    buildChoices('firstChoices', options.first, chosenFirst, chosenLast ? (n) => `${n} ${chosenLast}` : null);
+    buildChoices('lastChoices', options.last, chosenLast, chosenFirst ? (n) => `${chosenFirst} ${n}` : null);
+    const name = chosenFirst && chosenLast ? chosenFirst + ' ' + chosenLast : '';
+    $('previewName').textContent = name || '—';
+    $('hiddenUsername').value = name;
+    $('matchNote').textContent = '';
+    updateSubmit();
+  }
+
+  async function loadNames() {
+    if (loadingNames) return;
+    loadingNames = true;
+    $('newNames').disabled = true;
+    try {
+      options = await A.nameOptions();
+      if (!options.first.includes(chosenFirst)) chosenFirst = null;
+      if (!options.last.includes(chosenLast)) chosenLast = null;
+      renderChoices();
+    } catch (err) {
+      $('error').textContent = err.message;
+    }
+    loadingNames = false;
+    $('newNames').disabled = false;
+  }
+
+  function updateSubmit() {
+    if (mode !== 'signup') return;
+    const pw = $('newPassword').value;
+    const match = pw.length >= 8 && pw === $('newPassword2').value;
+    $('submit').disabled = !(chosenFirst && chosenLast && match && $('savedAck').checked);
+  }
+
   function render() {
     const up = mode === 'signup';
     $('title').textContent = up ? 'Create your account' : 'Welcome back';
-    $('sub').textContent = up ? 'A few quick questions come next so Kelvin can tailor examples to your course.' : 'Sign in to your thermodynamics tutor.';
-    $('nameField').hidden = !up;
-    $('password').autocomplete = up ? 'new-password' : 'current-password';
+    $('sub').textContent = up
+      ? 'Kelvin never asks for your real name or email — you pick a made-up name instead, and that name is how you sign in from now on.'
+      : 'Sign in to your thermodynamics tutor.';
+    $('signinFields').hidden = up;
+    $('signupFields').hidden = !up;
     $('submit').textContent = up ? 'Create account' : 'Sign in';
     $('switchText').textContent = up ? 'Already have an account?' : 'New here?';
     $('switchBtn').textContent = up ? 'Sign in' : 'Create an account';
     $('error').textContent = '';
+    updateSubmit();
   }
-  $('switchBtn').addEventListener('click', () => { mode = mode === 'signup' ? 'signin' : 'signup'; render(); (mode === 'signup' ? $('name') : $('email')).focus(); });
+
+  $('switchBtn').addEventListener('click', () => {
+    mode = mode === 'signup' ? 'signin' : 'signup';
+    render();
+    if (mode === 'signup' && !options.first.length) loadNames();
+    (mode === 'signup' ? $('newPassword') : $('username')).focus();
+  });
+  $('newNames').addEventListener('click', loadNames);
+  for (const id of ['newPassword', 'newPassword2', 'savedAck']) {
+    $(id).addEventListener('input', () => {
+      const pw = $('newPassword').value;
+      const pw2 = $('newPassword2').value;
+      if (pw2 && pw !== pw2) $('matchNote').textContent = 'Those passwords don\'t match.';
+      else $('matchNote').textContent = '';
+      updateSubmit();
+    });
+  }
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = $('email').value.trim();
+    if (mode === 'signup') {
+      const pw = $('newPassword').value;
+      if (!chosenFirst || !chosenLast) { $('error').textContent = 'Pick a first and last name.'; return; }
+      if (pw.length < 8) { $('error').textContent = 'Password must be at least 8 characters.'; $('newPassword').focus(); return; }
+      if (pw !== $('newPassword2').value) { $('error').textContent = 'Those passwords don\'t match.'; $('newPassword2').focus(); return; }
+      if (!$('savedAck').checked) { $('error').textContent = 'Tick the box to confirm you saved your name and password.'; $('savedAck').focus(); return; }
+      $('submit').disabled = true;
+      $('error').textContent = '';
+      try {
+        await A.signUp(chosenFirst, chosenLast, pw);
+        location.replace('/onboarding');
+      } catch (err) {
+        $('error').textContent = err.message;
+        if (err.code === 'NAME_TAKEN') {
+          chosenFirst = null;
+          chosenLast = null;
+          await loadNames();
+        }
+        updateSubmit();
+      }
+      return;
+    }
+    const username = $('username').value.trim();
     const password = $('password').value;
-    const name = $('name').value.trim();
-    if (mode === 'signup' && !name) { $('error').textContent = 'Please enter your name.'; $('name').focus(); return; }
-    if (!email || !password) { $('error').textContent = 'Enter your email and password.'; return; }
+    if (!username) { $('error').textContent = 'Enter your Kelvin name.'; $('username').focus(); return; }
+    if (!password) { $('error').textContent = 'Enter your password.'; return; }
     if (password.length < 8) { $('error').textContent = 'Password must be at least 8 characters.'; return; }
     $('submit').disabled = true;
     $('error').textContent = '';
     try {
-      if (mode === 'signup') {
-        await A.signUp(name, email, password);
-        location.replace('/onboarding');
-      } else {
-        await A.signIn(email, password);
-        const me = await A.me();
-        location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
-      }
+      await A.signIn(username, password);
+      const me = await A.me();
+      location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
     } catch (err) {
       $('error').textContent = err.message;
       $('submit').disabled = false;
     }
   });
   A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
-  const TEST_ACCOUNTS = ['Jake Morrison', 'Priya Raman', 'Marcus Bell', 'Mei Chen', 'Tyler Brooks', 'Sofia Alvarez', 'Devon Carter', 'Hannah Kim', "Ryan O'Neill", 'Aisha Johnson'];
-  TEST_ACCOUNTS.forEach((name, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'acct-btn secondary test-account-btn';
-    b.innerHTML = '<span class="test-account-n"></span><span class="test-account-name"></span>';
-    b.querySelector('.test-account-n').textContent = 'Test ' + (i + 1);
-    b.querySelector('.test-account-name').textContent = name;
-    b.addEventListener('click', async () => {
-      $('error').textContent = '';
-      document.querySelectorAll('.test-account-btn').forEach((x) => (x.disabled = true));
-      try {
-        await A.signIn('test' + (i + 1) + '@tutor.test', 'password');
-        const me = await A.me();
-        location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
-      } catch (err) {
-        $('error').textContent = err.message;
-        document.querySelectorAll('.test-account-btn').forEach((x) => (x.disabled = false));
-      }
-    });
-    $('testButtons').appendChild(b);
-  });
   render();
+  if (mode === 'signup') loadNames();
   const q = new URLSearchParams(location.search);
   if (q.has('deleted')) $('error').textContent = 'Your account has been deleted.';
   else if (q.has('inactive')) $('error').textContent = 'This account has been deleted.';
-  (mode === 'signup' ? $('name') : $('email')).focus();
+  (mode === 'signup' ? $('newPassword') : $('username')).focus();
 })();
 </script>
 </body>

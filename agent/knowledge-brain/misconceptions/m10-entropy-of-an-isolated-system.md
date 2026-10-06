@@ -8,7 +8,7 @@ description: >-
 tier: secondary
 secondary_to: misc:m02-entropy-and-the-second-law
 parent: course:me300
-unit: unit:u5-entropy-and-isentropic-processes
+unit: unit:m7-second-law-and-entropy
 status: draft
 audience: both
 priority: 0.9

@@ -1,13 +1,14 @@
 # Course materials — drop files here
 
-Everything in this folder becomes searchable by Kelvin AI. The tutor can list, search, and read
-these files, and names the file it used in its answer.
+**Kelvin AI never sees this folder.** These are the raw inputs to ingestion: the concepts, equations,
+examples and problems in them are pulled out into cards in
+[`../knowledge-brain/`](../knowledge-brain/README.md), and the tutor reads only those cards. The
+index the tutor loads is built from the cards alone (`scripts/build-knowledge.mjs`), and Vercel
+leaves this folder out of the deployed function (`vercel.json` → `excludeFiles`).
 
 > [!WARNING]
 > **This repository is PUBLIC. Anything uploaded here is visible to the whole internet.**
-> Do **not** upload copyrighted course materials, exams, solutions, or anything containing student
-> information unless the repository has first been made private. Check with the instructor before
-> uploading any of their materials.
+> Never upload anything containing student information.
 
 ## How to add course materials
 
@@ -17,7 +18,8 @@ these files, and names the file it used in its answer.
 4. Scroll down, write a short message such as "Add week 3 lecture notes", and click
    **Commit changes**.
 
-That's it. The site rebuilds its search index on the next deploy (see
+Then run ingestion so the new material reaches the knowledge brain. Uploading alone changes nothing
+the tutor can see. The site rebuilds its index from the cards on the next deploy (see
 [agent/README.md](../README.md#how-changes-reach-the-live-site)).
 
 To remove or replace a file: open it, click the **⋯** menu (or the trash icon) → **Delete file**,

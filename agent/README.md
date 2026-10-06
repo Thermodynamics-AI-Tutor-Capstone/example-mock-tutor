@@ -12,7 +12,7 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 | Student uploads | [`attachments/`](attachments/README.md) | change how students' photos and files are turned into Markdown: the transcription prompt, which model reads images, size limits |
 | Skills | [`skills/`](skills/README.md) | add or change focused instruction modules the tutor loads when needed |
 | Connections | [`connections/`](connections/README.md) | change the AI model and its settings, including the Jev decider (`decider`); see what services the tutor uses |
-| Course materials | [`raw-course-files/`](raw-course-files/README.md) | give the tutor course files to read — drag and drop them here |
+| Course materials | [`raw-course-files/`](raw-course-files/README.md) | raw inputs to ingestion. The tutor never reads them; it reads the cards made from them |
 | Knowledge brain | [`knowledge-brain/`](knowledge-brain/README.md) | correct what the tutor believes about the course — units, topics, equations, misconceptions, notation |
 
 ```
@@ -36,7 +36,7 @@ agent/
 └── knowledge-brain/        ← the knowledge brain: reviewable cards about the course
     ├── README.md           ← how the brain works, and how to correct a card
     ├── INDEX.md            ← the map the tutor sees in every message (2,000-token cap)
-    ├── taxonomy.yml        ← the course spine: 5 units, 44 lecture rows, allowed values
+    ├── taxonomy.yml        ← the course spine: 8 modules, 76 lecture videos, 3 exams, allowed values
     ├── symbols.md          ← the authoritative ME 300 nomenclature table
     ├── course/             ← the course card
     ├── units/              ← one card per exam block
@@ -61,7 +61,7 @@ the app sends the model:
    misconception to repair or confirm), and the conversation's tutoring state,
 4. "## What Kelvin has inferred about this student": drafts from earlier sessions, built from an
    evidence log that is deleted along with the conversation it came from, and
-5. tools that let it search course files and cards, open a card, read a course file, load a skill,
+5. tools that let it search and open knowledge cards, load a skill,
    record tutoring state, and record what it has learned about the student.
 
 You never need to list skills, files or cards in the system prompt by hand.
@@ -72,20 +72,22 @@ You never need to list skills, files or cards in the system prompt by hand.
 
 - **[`raw-course-files/`](raw-course-files/README.md) is the raw material.** Whatever the instructor gives
   you — slides, handouts, the syllabus — goes in as-is. Humans upload here; nothing writes to it
-  automatically.
+  automatically. **The tutor never reads it.**
 - **[`knowledge-brain/`](knowledge-brain/README.md) is what the tutor understands.** Short markdown cards, one idea each,
-  with a citation back to the file and page they came from. Cards are drafted from the raw files
-  by an AI pipeline that opens a pull request, and corrected by humans editing them directly.
+  with a citation back to the file and page they came from. This is the only course content the
+  tutor sees. Cards are drafted from the raw files during ingestion and land by pull request, and
+  are corrected by humans editing them directly.
   **A human edit is never overwritten** — see the no-clobber rule in
   [`kb/README.md`](knowledge-brain/README.md).
 
-Both are compiled into one `build/knowledge-index.json` at deploy time by a script that makes no
-AI calls at all, so a redeploy is deterministic and needs no API key.
+The cards are compiled into `build/knowledge-index.json` at deploy time by a script that makes no
+AI calls at all, so a redeploy is deterministic and needs no API key. Raw files are left out of that
+index unless the offline `--with-files` flag is passed.
 
-> **Nothing here has been exercised on real ME 300 material.** `agent/raw-course-files/` currently holds
-> only README files, so there are no topic, equation or worked-example cards and no search
-> results to judge. The cards that do exist were hand-written; see
-> [`kb/README.md`](knowledge-brain/README.md) for what their `status` values claim and do not claim.
+> **The brain now holds real ME 300 material** (Dr. O'Connor's Summer 2023 Canvas course, ingested
+> 2026-09-29): 140 course files in `agent/raw-course-files/`, transcribed in `_transcripts/`, and about
+> 540 cards drafted from them. Nearly all are `status: auto` — drafted by AI, not checked by an
+> instructor. See [`kb/README.md`](knowledge-brain/README.md) for what each `status` claims.
 
 ## Testing a change to how Kelvin teaches
 
@@ -146,5 +148,5 @@ out of the score.
 - **Live site:** `GET /api/knowledge` (sign-in required) returns the same list.
   `GET /api/health` shows counts of skills, indexed files, and skipped files.
 - **Cards:** `GET /api/kb` (sign-in required) returns the always-in-prompt map and every
-  student-visible card; `GET /api/kb/card?id=unit:u4-control-volumes-and-second-law` returns one
+  student-visible card; `GET /api/kb/card?id=unit:m7-second-law-and-entropy` returns one
   card with its links and sources.

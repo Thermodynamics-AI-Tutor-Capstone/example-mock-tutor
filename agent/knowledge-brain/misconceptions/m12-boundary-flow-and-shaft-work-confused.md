@@ -8,7 +8,7 @@ description: >-
 tier: secondary
 secondary_to: misc:m03-steady-state-vs-equilibrium
 parent: course:me300
-unit: unit:u3-mass-and-first-law-closed-systems
+unit: unit:m6-control-volumes-and-devices
 status: draft
 audience: both
 priority: 0.85

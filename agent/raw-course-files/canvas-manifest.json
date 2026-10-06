@@ -1,0 +1,982 @@
+[
+ {
+  "path": "me300/lectures/Module5_5_Example1_EnergyConservation_annotated.pdf",
+  "canvas_file_id": "192510339",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 701426,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework2.pdf",
+  "canvas_file_id": "192510391",
+  "canvas_folder": "course files/Homework",
+  "bytes": 106992,
+  "updated_at": "2026-05-28T16:35:28Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE11.pdf",
+  "canvas_file_id": "192510321",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 1005543,
+  "updated_at": "2026-05-28T16:35:20Z"
+ },
+ {
+  "path": "me300/lectures/Module7_3_HeatEnginesThermalEfficiency_annotated.pdf",
+  "canvas_file_id": "192510357",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1076718,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module2_4_Example_ProcessesCycles_annotated.pdf",
+  "canvas_file_id": "192510267",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1225911,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1-practice/ME300-Summer-2023-Week-6-Office-Hours.pptx",
+  "canvas_file_id": "192510462",
+  "canvas_folder": "course files/Exams/Exam 1 Practice",
+  "bytes": 743445,
+  "updated_at": "2026-05-28T16:35:34Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework8_Solutions.xlsx",
+  "canvas_file_id": "192510426",
+  "canvas_folder": "course files/Homework",
+  "bytes": 20702,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module6_8_CompressorsTurbines_annotated.pdf",
+  "canvas_file_id": "192510354",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1440075,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/lectures/Module8_1_HeatEngineCycleAnalysis_annotated.pdf",
+  "canvas_file_id": "192510368",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1661751,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module4_1_PhaseChange_annotated.pdf",
+  "canvas_file_id": "192510276",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1234649,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1-practice/OConnor_ME300_Exam1_Summer2021_Solutions.pdf",
+  "canvas_file_id": "192510348",
+  "canvas_folder": "course files/Exams/Exam 1 Practice",
+  "bytes": 4569671,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework9.pdf",
+  "canvas_file_id": "192510432",
+  "canvas_folder": "course files/Homework",
+  "bytes": 110307,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/lectures/Module8_2_Example_StirlingEngine_annotated.pdf",
+  "canvas_file_id": "192510454",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 958567,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/reference/SuperheatedVaporTables.pdf",
+  "canvas_file_id": "192510263",
+  "canvas_folder": "course files/Tables",
+  "bytes": 1838824,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module7_4_KelvinPlanck_annotated.pdf",
+  "canvas_file_id": "192510358",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1221022,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module8_10_Example_BraytonCycle_annotated.pdf",
+  "canvas_file_id": "192510292",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 985619,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/lectures/Module2_8_PressureTemperatureDensity_annotated.pdf",
+  "canvas_file_id": "192510256",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1334931,
+  "updated_at": "2026-05-28T16:35:14Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1-practice/ME300_Exam1_ReviewSessionNotes.pptx",
+  "canvas_file_id": "192510349",
+  "canvas_folder": "course files/Exams/Exam 1 Practice",
+  "bytes": 3207796,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE7.pdf",
+  "canvas_file_id": "192510345",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 731671,
+  "updated_at": "2026-05-28T16:35:23Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2/OConnor_ME300_Exam2_Summer2023.pdf",
+  "canvas_file_id": "192510437",
+  "canvas_folder": "course files/Exams/Exam 2",
+  "bytes": 201925,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework4_CampusEnergyData.xlsx",
+  "canvas_file_id": "192510453",
+  "canvas_folder": "course files/Homework",
+  "bytes": 15534,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/reference/R-134a-Tables.pdf",
+  "canvas_file_id": "192510382",
+  "canvas_folder": "course files/Exams/Final Exam Practice",
+  "bytes": 1031002,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework9_CampusEnergyData.xlsx",
+  "canvas_file_id": "192510433",
+  "canvas_folder": "course files/Homework",
+  "bytes": 17428,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/other/LearningBySolvingSolvedProblems.pdf",
+  "canvas_file_id": "192510254",
+  "canvas_folder": "course files",
+  "bytes": 271670,
+  "updated_at": "2026-05-28T16:35:14Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework4.pdf",
+  "canvas_file_id": "192510460",
+  "canvas_folder": "course files/Homework",
+  "bytes": 125772,
+  "updated_at": "2026-05-28T16:35:34Z"
+ },
+ {
+  "path": "me300/lectures/Module7_13_Example_IsentropicTurbine_annotated.pdf",
+  "canvas_file_id": "192510362",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1199260,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE8.pdf",
+  "canvas_file_id": "192510372",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 713665,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module4_2_VaporDome_annotated.pdf",
+  "canvas_file_id": "192510332",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1116403,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/exams/final-practice/OConnor_ME300_FinalExam_Summer2022_Solutions.pdf",
+  "canvas_file_id": "192510441",
+  "canvas_folder": "course files/Exams/Final Exam Practice",
+  "bytes": 3756939,
+  "updated_at": "2026-05-28T16:35:32Z"
+ },
+ {
+  "path": "me300/lectures/Module6_5_Throttles_annotated.pdf",
+  "canvas_file_id": "192510343",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 567942,
+  "updated_at": "2026-05-28T16:35:23Z"
+ },
+ {
+  "path": "me300/lectures/Module8_15_Example_DieselCycle_annotated.pdf",
+  "canvas_file_id": "192510380",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1678559,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/lectures/Module7_12_IsentropicRelations_annotated.pdf",
+  "canvas_file_id": "192510280",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1018084,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework6_CampusEnergyData_Solutions.xlsx",
+  "canvas_file_id": "192510424",
+  "canvas_folder": "course files/Homework",
+  "bytes": 30041,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module3_5_Example_IdealGasCalorific_annotated.pdf",
+  "canvas_file_id": "192510266",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1605057,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/assignments/exams/final/OConnor_ME300_FinalExam_Summer2023_Solutions.pdf",
+  "canvas_file_id": "192510450",
+  "canvas_folder": "course files/Exams/Final Exam",
+  "bytes": 4363409,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework6_CampusEnergyData.xlsx",
+  "canvas_file_id": "192510419",
+  "canvas_folder": "course files/Homework",
+  "bytes": 17028,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE10.pdf",
+  "canvas_file_id": "192510322",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 808955,
+  "updated_at": "2026-05-28T16:35:21Z"
+ },
+ {
+  "path": "me300/lectures/Module5_2_HeatWork_annotated.pdf",
+  "canvas_file_id": "192510336",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1512397,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/exams/final-practice/OConnor_ME300_FinalExam_Summer2021.pdf",
+  "canvas_file_id": "192510381",
+  "canvas_folder": "course files/Exams/Final Exam Practice",
+  "bytes": 259680,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework5.pdf",
+  "canvas_file_id": "192510407",
+  "canvas_folder": "course files/Homework",
+  "bytes": 134545,
+  "updated_at": "2026-06-02T05:11:29Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE6.pdf",
+  "canvas_file_id": "192510361",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 743274,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module4_5_LiquidSolid_annotated.pdf",
+  "canvas_file_id": "192510335",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 802715,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/lectures/Module6_1_MassConservation_annotated.pdf",
+  "canvas_file_id": "192510279",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 814412,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/reference/SubcooledLiquidTables.pdf",
+  "canvas_file_id": "192510264",
+  "canvas_folder": "course files/Tables",
+  "bytes": 438063,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2-practice/OConnor_ME300_Exam2_Summer2021_SOLUTIONS.pdf",
+  "canvas_file_id": "192510366",
+  "canvas_folder": "course files/Exams/Exam 2 Practice",
+  "bytes": 3875400,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE5.pdf",
+  "canvas_file_id": "192510329",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 576519,
+  "updated_at": "2026-05-28T16:35:21Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework3_Solutions.pdf",
+  "canvas_file_id": "192510461",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1606991,
+  "updated_at": "2026-05-28T16:35:34Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1/OConnor_ME300_Exam1_Summer2023.pdf",
+  "canvas_file_id": "192510415",
+  "canvas_folder": "course files/Exams/Exam 1",
+  "bytes": 204639,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module8_11_GasTurbineEngines_annotated.pdf",
+  "canvas_file_id": "192510384",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1084674,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/lectures/Module5_3_Example_Work_annotated.pdf",
+  "canvas_file_id": "192510284",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1182503,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/reference/SaturationTables.pdf",
+  "canvas_file_id": "192510258",
+  "canvas_folder": "course files/Tables",
+  "bytes": 665540,
+  "updated_at": "2026-05-28T16:35:14Z"
+ },
+ {
+  "path": "me300/lectures/Module5_1_Energy_annotated.pdf",
+  "canvas_file_id": "192510337",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 477344,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE9.pdf",
+  "canvas_file_id": "192510304",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 601523,
+  "updated_at": "2026-05-28T16:35:19Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework4_CampusEnergyData_Solutions.xlsx",
+  "canvas_file_id": "192510404",
+  "canvas_folder": "course files/Homework",
+  "bytes": 43583,
+  "updated_at": "2026-05-28T16:35:29Z"
+ },
+ {
+  "path": "me300/lectures/Module3_7_GeneralizedCompressibility_annotated.pdf",
+  "canvas_file_id": "192510330",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 600387,
+  "updated_at": "2026-05-28T16:35:21Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework6.pdf",
+  "canvas_file_id": "192510418",
+  "canvas_folder": "course files/Homework",
+  "bytes": 104643,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module2_2_Dimensions_annotated.pdf",
+  "canvas_file_id": "192510270",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 825354,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module6_3_Example_SteadyFlowEnergyConservation_annotated.pdf",
+  "canvas_file_id": "192510342",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1049088,
+  "updated_at": "2026-05-28T16:35:23Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework5_Solutions.pdf",
+  "canvas_file_id": "192510405",
+  "canvas_folder": "course files/Homework",
+  "bytes": 2550918,
+  "updated_at": "2026-05-28T16:35:29Z"
+ },
+ {
+  "path": "me300/assignments/exams/final/OConnor_ME300_FinalExam_Summer2023.pdf",
+  "canvas_file_id": "192510465",
+  "canvas_folder": "course files/Exams/Final Exam",
+  "bytes": 192291,
+  "updated_at": "2026-05-28T16:35:35Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1-practice/ME300_Su23_Exam1ReviewSession.pptx",
+  "canvas_file_id": "192510411",
+  "canvas_folder": "course files/Exams/Exam 1 Practice",
+  "bytes": 871887,
+  "updated_at": "2026-05-28T16:35:29Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2/ME300_Su23_Exam2Review.pptx",
+  "canvas_file_id": "192510435",
+  "canvas_folder": "course files/Exams/Exam 2",
+  "bytes": 3073656,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/lectures/Module8_9_BraytonCycle_annotated.pdf",
+  "canvas_file_id": "192510377",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 2070563,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module7_7_Entropy_annotated.pdf",
+  "canvas_file_id": "192510363",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1617910,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module1_1_CourseIntro.pdf",
+  "canvas_file_id": "192510394",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 518204,
+  "updated_at": "2026-05-28T16:35:28Z"
+ },
+ {
+  "path": "me300/syllabus/ME300_Su23_Syllabus.pdf",
+  "canvas_file_id": "192510388",
+  "canvas_folder": "course files",
+  "bytes": 240119,
+  "updated_at": "2026-09-24T07:17:58Z"
+ },
+ {
+  "path": "me300/lectures/Module5_4_EnergyConservation_annotated.pdf",
+  "canvas_file_id": "192510338",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 786121,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2-practice/OConnor_ME300_Exam2_Summer2022.pdf",
+  "canvas_file_id": "192510431",
+  "canvas_folder": "course files/Exams/Exam 2 Practice",
+  "bytes": 208027,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/lectures/Module8_6_Example_RankineCycle_annotated.pdf",
+  "canvas_file_id": "192510289",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 2142502,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1/OConnor_ME300_Exam1_Summer2023_Solutions.pdf",
+  "canvas_file_id": "192510429",
+  "canvas_folder": "course files/Exams/Exam 1",
+  "bytes": 2141648,
+  "updated_at": "2026-09-17T19:44:40Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-1-practice/OConnor_ME300_Exam1_Summer2022_Solutions.pdf",
+  "canvas_file_id": "192510409",
+  "canvas_folder": "course files/Exams/Exam 1 Practice",
+  "bytes": 7507311,
+  "updated_at": "2026-05-28T16:35:29Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework3.pdf",
+  "canvas_file_id": "192510397",
+  "canvas_folder": "course files/Homework",
+  "bytes": 139079,
+  "updated_at": "2026-06-02T03:23:37Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework9_Solutions.pdf",
+  "canvas_file_id": "192510444",
+  "canvas_folder": "course files/Homework",
+  "bytes": 2752691,
+  "updated_at": "2026-05-28T16:35:32Z"
+ },
+ {
+  "path": "me300/lectures/Module2_7_Assumptions_annotated.pdf",
+  "canvas_file_id": "192510269",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 927658,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module3_4_IdealGasCalorific_annotated.pdf",
+  "canvas_file_id": "192510255",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 820696,
+  "updated_at": "2026-05-28T16:35:14Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework1.pdf",
+  "canvas_file_id": "192510389",
+  "canvas_folder": "course files/Homework",
+  "bytes": 149068,
+  "updated_at": "2026-06-02T03:22:56Z"
+ },
+ {
+  "path": "me300/lectures/Module7_6_Statements2-4_annotated.pdf",
+  "canvas_file_id": "192510360",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1258924,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module3_8_NISTWebbook_annotated.pdf",
+  "canvas_file_id": "192510331",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 187694,
+  "updated_at": "2026-05-28T16:35:21Z"
+ },
+ {
+  "path": "me300/lectures/Module7_5_CarnotEffiency_annotated.pdf",
+  "canvas_file_id": "192510359",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 646369,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/assignments/exams/final-practice/OConnor_ME300_FinalExam_Summer2022.pdf",
+  "canvas_file_id": "192510442",
+  "canvas_folder": "course files/Exams/Final Exam Practice",
+  "bytes": 212289,
+  "updated_at": "2026-05-28T16:35:32Z"
+ },
+ {
+  "path": "me300/lectures/Module1_4_SystemsCVs_annotated.pdf",
+  "canvas_file_id": "192510273",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1105233,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/assignments/exams/final-practice/OConnor_ME300_FinalExam_Summer2021_Solutions.pdf",
+  "canvas_file_id": "192510383",
+  "canvas_folder": "course files/Exams/Final Exam Practice",
+  "bytes": 4225779,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/lectures/Module4_6_CourseReview_annotated.pdf",
+  "canvas_file_id": "192510334",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 852395,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework6_Solutions.pdf",
+  "canvas_file_id": "192510423",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1657267,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module7_2_FirstStatementSecondLaw_annotated.pdf",
+  "canvas_file_id": "192510356",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1436206,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/lectures/Module1_3_ThermodynamicsDefinitions_annotated.pdf",
+  "canvas_file_id": "192510445",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 714803,
+  "updated_at": "2026-09-17T19:27:08Z"
+ },
+ {
+  "path": "me300/lectures/Module8_13_OttoCycle_annotated.pdf",
+  "canvas_file_id": "192510290",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 842982,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework8_Solutions.pdf",
+  "canvas_file_id": "192510425",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1872776,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module1_2_ThermodynamicsApplications_annotated.pdf",
+  "canvas_file_id": "192510281",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 2830689,
+  "updated_at": "2026-09-17T19:26:41Z"
+ },
+ {
+  "path": "me300/lectures/Module3_6_NonIdealGases_annotated.pdf",
+  "canvas_file_id": "192510333",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 835747,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/lectures/Module8_5_RankineCycle_annotated.pdf",
+  "canvas_file_id": "192510374",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1384967,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module7_11_Example_GibbsEOS_annotated.pdf",
+  "canvas_file_id": "192510364",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 591446,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework10.pdf",
+  "canvas_file_id": "192510440",
+  "canvas_folder": "course files/Homework",
+  "bytes": 90977,
+  "updated_at": "2026-05-28T16:35:32Z"
+ },
+ {
+  "path": "me300/assignments/exams/final/ME300-Summer-2023-Final-Exam-Review.pptx",
+  "canvas_file_id": "192510446",
+  "canvas_folder": "course files/Exams/Final Exam",
+  "bytes": 1396603,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/lectures/Module2_6_Example_Equilibrium_annotated.pdf",
+  "canvas_file_id": "192510271",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 632863,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module8_7_VaporCompression_annotated.pdf",
+  "canvas_file_id": "192510375",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 876365,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module5_8_CourseReview2_annotated.pptx",
+  "canvas_file_id": "192510275",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 359031,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/lectures/Module1_5_ConservationPrinciples_annotated.pdf",
+  "canvas_file_id": "192510294",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1805436,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/lectures/Module4_4_Example_PhaseDecisionTree_annotated.pdf",
+  "canvas_file_id": "192510278",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1246256,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/lectures/Module3_3_Example2_IdealGasPvT_annotated.pdf",
+  "canvas_file_id": "192510265",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 752762,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2/OConnor_ME300_Exam2_Summer2023_Solutions.pdf",
+  "canvas_file_id": "192510438",
+  "canvas_folder": "course files/Exams/Exam 2",
+  "bytes": 4656257,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework1_Solutions.pdf",
+  "canvas_file_id": "192510400",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1329137,
+  "updated_at": "2026-09-22T15:22:20Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE4.pdf",
+  "canvas_file_id": "192510313",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 1032154,
+  "updated_at": "2026-05-28T16:35:20Z"
+ },
+ {
+  "path": "me300/lectures/Module2_5_Equilibrium_annotated.pdf",
+  "canvas_file_id": "192510268",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1316413,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module3_2_Example1_IdealGasPvT_annotated.pdf",
+  "canvas_file_id": "192510257",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1393238,
+  "updated_at": "2026-05-28T16:35:14Z"
+ },
+ {
+  "path": "me300/lectures/Module6_2_SteadyFlowEnergyConservation_annotated.pdf",
+  "canvas_file_id": "192510341",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1715304,
+  "updated_at": "2026-05-28T16:35:23Z"
+ },
+ {
+  "path": "me300/lectures/Module2_1_PropertiesStates_annotated.pdf",
+  "canvas_file_id": "192510295",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 970635,
+  "updated_at": "2026-05-28T16:35:18Z"
+ },
+ {
+  "path": "me300/lectures/Module6_6_HeatExchangers_annotated.pdf",
+  "canvas_file_id": "192510297",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 425206,
+  "updated_at": "2026-05-28T16:35:18Z"
+ },
+ {
+  "path": "me300/lectures/Module6_4_NozzleDiffuser_annotated.pdf",
+  "canvas_file_id": "192510296",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 650773,
+  "updated_at": "2026-05-28T16:35:18Z"
+ },
+ {
+  "path": "me300/lectures/Module6_9_Example_CompressorsTurbines_annotated.pdf",
+  "canvas_file_id": "192510291",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 764589,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/lectures/Module4_3_PhaseDecisionTree_annotated.pdf",
+  "canvas_file_id": "192510277",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 400675,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework2_Solutions.pdf",
+  "canvas_file_id": "192510401",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1222094,
+  "updated_at": "2026-05-28T16:35:28Z"
+ },
+ {
+  "path": "me300/lectures/Module7_14_IsentropicEfficiency_annotated.pdf",
+  "canvas_file_id": "192510367",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1334498,
+  "updated_at": "2026-05-28T16:35:25Z"
+ },
+ {
+  "path": "me300/lectures/Module6_7_Example_HeatExchangers_annotated.pdf",
+  "canvas_file_id": "192510350",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1089949,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/lectures/Module8_8_Example_VaporCompression_annotated.pdf",
+  "canvas_file_id": "192510376",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1356011,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module5_7_Example3_EnergyConservation_annotated.pptx",
+  "canvas_file_id": "192510340",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 993318,
+  "updated_at": "2026-05-28T16:35:22Z"
+ },
+ {
+  "path": "me300/lectures/Module2_3_ProcessesCycles_annotated.pdf",
+  "canvas_file_id": "192510272",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1317135,
+  "updated_at": "2026-05-28T16:35:15Z"
+ },
+ {
+  "path": "me300/lectures/Module6_10_ReviewDevices_annotated.pdf",
+  "canvas_file_id": "192510351",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 404858,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE1.pdf",
+  "canvas_file_id": "192510352",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 655852,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/lectures/Module7_8_Example_Entropy_annotated.pdf",
+  "canvas_file_id": "192510286",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 974311,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE3.pdf",
+  "canvas_file_id": "192510353",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 697014,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/lectures/Module8_4_Example_HeatPumpRefrigerator_annotated.pdf",
+  "canvas_file_id": "192510370",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 790868,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/lectures/Module7_10_GibbsEOS_annotated.pdf",
+  "canvas_file_id": "192510282",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1318105,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/lectures/Module8_14_DieselCycle_annotated.pdf",
+  "canvas_file_id": "192510379",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1259838,
+  "updated_at": "2026-05-28T16:35:27Z"
+ },
+ {
+  "path": "me300/lectures/Module8_12_Example_GasTurbineEngines_annotated.pdf",
+  "canvas_file_id": "192510378",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 3621566,
+  "updated_at": "2026-05-28T16:35:26Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework8.pdf",
+  "canvas_file_id": "192510427",
+  "canvas_folder": "course files/Homework",
+  "bytes": 77144,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/lectures/Module7_9_Reversibility_annotated.pdf",
+  "canvas_file_id": "192510287",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 661521,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/lectures/Module3_1_IdealGasPvT_annotated.pdf",
+  "canvas_file_id": "192510298",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1597668,
+  "updated_at": "2026-05-28T16:35:18Z"
+ },
+ {
+  "path": "me300/lectures/Module2_9_EnergyProperties_annotated.pdf",
+  "canvas_file_id": "192510299",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 871453,
+  "updated_at": "2026-05-28T16:35:18Z"
+ },
+ {
+  "path": "me300/assignments/exams/final/ME300-Office-Hours-Finals-Week.pptx",
+  "canvas_file_id": "192510449",
+  "canvas_folder": "course files/Exams/Final Exam",
+  "bytes": 1780116,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework10_Solutions.pdf",
+  "canvas_file_id": "192510443",
+  "canvas_folder": "course files/Homework",
+  "bytes": 3390197,
+  "updated_at": "2026-05-28T16:35:32Z"
+ },
+ {
+  "path": "me300/assignments/exams/exam-2-practice/OConnor_ME300_Exam2_Summer2022_Solutions.pdf",
+  "canvas_file_id": "192510430",
+  "canvas_folder": "course files/Exams/Exam 2 Practice",
+  "bytes": 4269542,
+  "updated_at": "2026-05-28T16:35:31Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework7.pdf",
+  "canvas_file_id": "192510422",
+  "canvas_folder": "course files/Homework",
+  "bytes": 191294,
+  "updated_at": "2026-05-28T16:35:30Z"
+ },
+ {
+  "path": "me300/lectures/Module7_1_SecondLaw_annotated.pdf",
+  "canvas_file_id": "192510355",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 984084,
+  "updated_at": "2026-05-28T16:35:24Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework4_Solutions.pdf",
+  "canvas_file_id": "192510408",
+  "canvas_folder": "course files/Homework",
+  "bytes": 3005036,
+  "updated_at": "2026-05-28T16:35:29Z"
+ },
+ {
+  "path": "me300/lectures/Module5_6_Example2_EnergyConservation_annotated.pptx",
+  "canvas_file_id": "192510274",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1005684,
+  "updated_at": "2026-05-28T16:35:16Z"
+ },
+ {
+  "path": "me300/assignments/explained-examples/ME300_Su22_EE2_scan.pdf",
+  "canvas_file_id": "192510456",
+  "canvas_folder": "course files/Explained Examples",
+  "bytes": 960492,
+  "updated_at": "2026-05-28T16:35:34Z"
+ },
+ {
+  "path": "me300/lectures/Module7_15_Example_IsentropicEfficiency_annotated.pdf",
+  "canvas_file_id": "192510288",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1271610,
+  "updated_at": "2026-05-28T16:35:17Z"
+ },
+ {
+  "path": "me300/assignments/homework/ME300_Su23_Homework7_Solutions.pdf",
+  "canvas_file_id": "192510455",
+  "canvas_folder": "course files/Homework",
+  "bytes": 1768583,
+  "updated_at": "2026-05-28T16:35:33Z"
+ },
+ {
+  "path": "me300/lectures/Module8_3_HeatPumpRefrigerator_annotated.pdf",
+  "canvas_file_id": "192510369",
+  "canvas_folder": "course files/Annotated Slides",
+  "bytes": 1284527,
+  "updated_at": "2026-05-28T16:35:26Z"
+ }
+]

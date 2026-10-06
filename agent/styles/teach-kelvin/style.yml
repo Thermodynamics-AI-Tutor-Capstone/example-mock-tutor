@@ -8,7 +8,7 @@ icon: "🧑‍🎓"
 order: 5
 connection: deepseek-pro
 tools:
-  - search_course_files
+  - search_cards
   - open_card
   - list_cards
   - update_tutoring_state

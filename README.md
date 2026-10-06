@@ -15,11 +15,13 @@
 
 A throwaway example of a ChatGPT-style thermodynamics tutor, built for the Penn State ME 300
 capstone team to poke at. **This is not the product.** It has no evaluation and no user accounts,
-and it only knows course content that the team adds to `agent/raw-course-files/`.
+and it only knows course content that has been ingested into its knowledge brain
+(`agent/knowledge-brain/`) from the raw files in `agent/raw-course-files/`.
 
 [`agent/knowledge-brain/`](agent/knowledge-brain/README.md) is the first piece with any research behind it: a committed set
-of markdown cards — the course, its five exam blocks, a hand-authored ME 300 symbol table, and
-fourteen misconception cards drawn from a 2025 ASEE systematic review of 32 studies. It is a
+of markdown cards — Dr. O'Connor's Summer 2023 ME 300 course ingested from Canvas (8 modules, 76
+lectures, equations, worked examples, homework and exam items), a hand-authored symbol table, and
+misconception cards drawn from a 2025 ASEE systematic review of 32 studies. It is a
 knowledge structure, not a teaching result: **nothing in it has been checked by an ME 300
 instructor, and there is still no evidence that any of it makes the tutor teach better.** The
 system prompt and the starter skills remain unreviewed drafts.

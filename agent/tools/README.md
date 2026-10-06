@@ -19,11 +19,10 @@ say what the tool is for, when to use it, and when *not* to.
 
 | Tool | What it does | Offered when |
 |---|---|---|
-| `search_course_files` | Keyword search over knowledge cards and course-file passages together. | there are cards or files |
+| `search_cards` | Keyword search over the knowledge cards. Raw course files are never searchable. | there are cards |
 | `open_card` | Opens one knowledge card by id (unit, topic, equation, misconception…). | there are cards |
 | `list_cards` | Lists cards of a kind or under a parent, without opening them. | there are cards |
-| `read_course_file` | Reads the text of an uploaded course file from a given chunk. | files have been uploaded |
-| `list_course_files` | Lists every uploaded course file, and the ones that couldn't be read. | files have been uploaded |
+| `read_course_file`, `list_course_files` | Disabled. Kept only for `--with-files` offline experiments; the tutor's index has no files, so they are never offered. | never |
 | `load_skill` | Loads the full instructions of one of the style's skills. | the style has skills |
 | `update_tutoring_state` | Records the problem's name, the rung used, confirmed and repaired misconceptions, the assumption ledger, and whether the problem is finished or parked. It **cannot** raise the help ceiling, add attempts or reset the ladder: the server does those from Jev's read (`../policy.yml`). | always, for styles that list it |
 | `note_student_assumption` | Records a durable hypothesis about what this student knows ("shaky on h vs u"), shown as a draft in their later conversations. A later note on the same thing replaces the earlier one. | the student is signed in |

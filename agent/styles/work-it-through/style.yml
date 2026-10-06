@@ -8,11 +8,9 @@ icon: "🪜"
 order: 11
 connection: deepseek-pro
 tools:
-  - search_course_files
+  - search_cards
   - open_card
   - list_cards
-  - read_course_file
-  - list_course_files
   - load_skill
   - update_tutoring_state
   - read_attachment

@@ -1,0 +1,21 @@
+# What the model sees for this tool. Edit the wording freely; the code is lib/tools/search_cards.js.
+name: search_cards
+description: >-
+  Keyword search over the knowledge brain: the course, unit, topic, equation, misconception,
+  worked-example, assessment-item and source cards. Each hit comes back with a card id to pass
+  straight to open_card. Use specific terms (e.g. "isentropic efficiency turbine", "exam 2 dates",
+  "homework 5 problem 2").
+status: Searching for “{query}”
+status_default: Searching the knowledge brain
+parameters:
+  type: object
+  properties:
+    query:
+      type: string
+      description: Keywords to look for.
+    max_results:
+      type: integer
+      minimum: 1
+      maximum: 8
+      description: How many results to return (1-8, default 5).
+  required: [query]

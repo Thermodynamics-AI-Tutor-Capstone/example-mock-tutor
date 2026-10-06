@@ -11,12 +11,9 @@ name: Kelvin AI — ingest course materials
 # Required secret:   DEEPSEEK_API_KEY  (missing → the run explains itself and exits 0)
 # Automatic token:   GITHUB_TOKEN      (needs contents: write + pull-requests: write, below)
 
+# Manual only since 2026-09-29: ingestion is currently done by hand, so uploads to
+# agent/raw-course-files/ must not start a paid DeepSeek run on their own.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'agent/raw-course-files/**'
   workflow_dispatch:
     inputs:
       full_rebuild:

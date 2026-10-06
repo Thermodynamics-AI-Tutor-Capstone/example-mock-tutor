@@ -15,6 +15,9 @@ import { buildState, buildQuestions, misconceptionKey, normaliseRead, heuristicR
 import { evidenceFromRead, decisionSummary, finishTurn } from '../lib/turn.js';
 import runUpdateState from '../lib/tools/update_tutoring_state.js';
 import runPracticeResult from '../lib/tools/record_practice_result.js';
+import { buildKnowledgeIndex } from './build-knowledge.mjs';
+import { knowledgeFromIndex } from '../lib/knowledge.js';
+import { loadTools } from '../lib/tools/index.js';
 
 let n = 0;
 const t = async (name, fn) => {
@@ -511,6 +514,34 @@ await t('one result per target per message, and none on a message with no attemp
     { userId: 'u', read: { provider: 'jev', showsWork: 0.1 }, turn: { attemptCounted: false } }
   );
   assert.match(none.error, /doesn't contain an attempt/);
+});
+
+console.log('knowledge brain only');
+
+await t('raw course files never reach the index the tutor loads', async () => {
+  const raw = fsx.mkdtempSync(pathx.join(os.tmpdir(), 'kelvin-raw-'));
+  fsx.writeFileSync(pathx.join(raw, 'hw1-solutions.txt'), 'Problem 1 answer: W = 42.7 kJ. zqxjsecretmarker');
+  const kb = pathx.resolve('agent/knowledge-brain');
+  const index = await buildKnowledgeIndex({ dir: raw, kb, out: null });
+  assert.equal(index.files.length, 0);
+  assert.doesNotMatch(JSON.stringify(index), /zqxjsecretmarker/);
+  const kbase = knowledgeFromIndex(index);
+  assert.equal(kbase.fileCount, 0);
+  assert.ok(kbase.cardCount > 0);
+  assert.deepEqual(kbase.search({ query: 'zqxjsecretmarker', kind: 'any' }), []);
+  const withFiles = await buildKnowledgeIndex({ dir: raw, kb, out: null, includeFiles: true });
+  assert.equal(withFiles.files.length, 1);
+});
+
+await t('no tool a style can offer reads raw course files', async () => {
+  const { tools } = loadTools();
+  assert.ok(tools.has('search_cards'));
+  for (const name of ['list_course_files', 'read_course_file']) assert.equal(tools.get(name)?.enabled ?? false, false);
+  for (const dir of fsx.readdirSync('agent/styles')) {
+    if (!fsx.existsSync(pathx.join('agent/styles', dir, 'style.yml'))) continue;
+    const y = fsx.readFileSync(pathx.join('agent/styles', dir, 'style.yml'), 'utf8');
+    assert.doesNotMatch(y, /list_course_files|read_course_file|search_course_files/, dir);
+  }
 });
 
 console.log(`\n${n} passed`);
