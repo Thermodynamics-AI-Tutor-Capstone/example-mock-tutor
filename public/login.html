@@ -8,23 +8,44 @@
 <link rel="stylesheet" href="/account.css">
 <script src="/account.js"></script>
 <style>
-  /* The name picker, used only on this page. */
-  .name-choices { display: flex; flex-wrap: wrap; gap: 6px; }
-  .name-field-head { font-size: 13.5px; font-weight: 500; }
-  .name-choice {
-    font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  /* Sign-in and sign-up, used only on this page. */
+  .signin, .signup { display: flex; flex-direction: column; gap: 14px; }
+  .signup { gap: 22px; }
+  .signin[hidden], .signup[hidden] { display: none; }
+  .su-block { display: flex; flex-direction: column; gap: 10px; }
+  .su-block .acct-section { margin: 0; }
+
+  /* The name card: the name being built, then the first- and last-name choices. */
+  .name-card { border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .name-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; }
+  .name-big { font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+  .name-big.is-empty { font-size: 15px; font-weight: 400; color: var(--text2); }
+  .name-shuffle {
+    flex: none; font: inherit; font-size: 13px; color: var(--text2); background: none; border: 0; cursor: pointer;
+    padding: 6px 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;
   }
+  .name-shuffle:hover:not(:disabled) { color: var(--text); background: var(--hover); }
+  .name-shuffle:disabled { opacity: .5; cursor: default; }
+  .name-shuffle svg { width: 14px; height: 14px; }
+  .name-row { display: flex; flex-direction: column; gap: 7px; }
+  .name-row-label { font-size: 12.5px; color: var(--text2); }
+  .name-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+  .name-choice {
+    font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--chip-border); background: none; color: var(--text);
+  }
+  .name-choice:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--hover); }
   .name-choice[aria-pressed="true"] { background: var(--send-bg); color: var(--send-fg); border-color: var(--send-bg); }
-  .name-choice:disabled { opacity: .45; cursor: default; text-decoration: line-through; }
-  .name-choice:focus-visible { outline: 2px solid var(--text2); outline-offset: 2px; }
-  .name-preview { border: 1px dashed var(--border); border-radius: 12px; padding: 10px 14px; }
-  .name-preview-line { margin: 0; font-size: 14.5px; }
-  .name-preview-warn { margin: 3px 0 0; color: var(--text2); font-size: 12.5px; line-height: 1.4; }
+  .name-choice:disabled { opacity: .4; cursor: default; text-decoration: line-through; }
+  .name-choice:focus-visible, .name-shuffle:focus-visible { outline: 2px solid var(--text2); outline-offset: 2px; }
+  .name-card-note { margin: 0; font-size: 12.5px; color: var(--text2); line-height: 1.45; border-top: 1px solid var(--border); padding-top: 12px; }
+
   .login-hint { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.4; }
-  .login-note { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.45; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
-  .acct-check { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--text2); line-height: 1.4; cursor: pointer; }
-  .acct-check input { margin-top: 2px; flex: none; }
+  .login-hint:empty { display: none; }
+  .study-note { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.5; padding-left: 12px; border-left: 2px solid var(--border); }
+  .study-note strong { color: var(--text); font-weight: 600; }
+  .acct-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--text); line-height: 1.45; cursor: pointer; }
+  .acct-check input { margin-top: 3px; flex: none; width: 16px; height: 16px; accent-color: var(--send-bg); }
   .hidden-username { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
 </style>
 </head>
@@ -34,43 +55,53 @@
   <h1 id="title" class="acct-title">Welcome back</h1>
   <p id="sub" class="acct-sub">Sign in to your thermodynamics tutor.</p>
   <form id="form" class="acct-form" novalidate>
-    <div id="signinFields">
+    <div id="signinFields" class="signin">
       <div class="acct-field">
         <label for="username">Your Kelvin name</label>
         <input id="username" name="username" autocomplete="username" placeholder="e.g. Mary Smith" required>
-        <p class="login-hint">The first and last name you picked when you signed up.</p>
       </div>
       <div class="acct-field">
         <label for="password">Password</label>
         <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required>
       </div>
     </div>
-    <div id="signupFields" hidden>
-      <p class="login-note">Kelvin is a Penn State capstone prototype and part of a research study on AI in engineering education: we're trying to build a tutor that's better than ChatGPT and Claude at teaching students. Your chats are saved and the capstone research team can read them, and your messages are sent to AI services (DeepSeek, and TypeSafe's Jev) to write Kelvin's replies. Kelvin never asks for your real name: please don't type your name, PSU ID or other personal details into your chats.</p>
-      <div class="acct-field">
-        <span class="name-field-head">First name</span>
-        <div id="firstChoices" class="name-choices" role="group" aria-label="First name choices"></div>
-      </div>
-      <div class="acct-field">
-        <span class="name-field-head">Last name</span>
-        <div id="lastChoices" class="name-choices" role="group" aria-label="Last name choices"></div>
-      </div>
-      <button id="newNames" type="button" class="acct-btn secondary">Show different names</button>
-      <div class="name-preview">
-        <p class="name-preview-line">You'll be: <strong id="previewName">—</strong></p>
-        <p class="name-preview-warn">This is your username. Write it down — it can't be changed.</p>
+    <div id="signupFields" class="signup" hidden>
+      <div class="su-block">
+        <div class="acct-section">Your Kelvin name</div>
+        <div class="name-card">
+          <div class="name-card-top">
+            <span id="previewName" class="name-big is-empty" aria-live="polite">Pick a first and last name</span>
+            <button id="newNames" type="button" class="name-shuffle" aria-label="Show different names">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+              New names
+            </button>
+          </div>
+          <div class="name-row">
+            <span class="name-row-label" id="firstLabel">First name</span>
+            <div id="firstChoices" class="name-choices" role="group" aria-labelledby="firstLabel"></div>
+          </div>
+          <div class="name-row">
+            <span class="name-row-label" id="lastLabel">Last name</span>
+            <div id="lastChoices" class="name-choices" role="group" aria-labelledby="lastLabel"></div>
+          </div>
+          <p class="name-card-note">This is your username. Write it down: you can't change it later.</p>
+        </div>
       </div>
       <input id="hiddenUsername" type="text" autocomplete="username" class="hidden-username" tabindex="-1" aria-hidden="true">
-      <div class="acct-field">
-        <label for="newPassword">Password</label>
-        <input id="newPassword" type="password" autocomplete="new-password" minlength="8">
-        <p class="login-hint">At least 8 characters.</p>
+      <div class="su-block">
+        <div class="acct-row">
+          <div class="acct-field">
+            <label for="newPassword">Password</label>
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters">
+          </div>
+          <div class="acct-field">
+            <label for="newPassword2">Confirm password</label>
+            <input id="newPassword2" type="password" autocomplete="new-password" minlength="8" placeholder="Type it again">
+          </div>
+        </div>
+        <p id="matchNote" class="login-hint" aria-live="polite"></p>
       </div>
-      <div class="acct-field">
-        <label for="newPassword2">Type it again</label>
-        <input id="newPassword2" type="password" autocomplete="new-password" minlength="8">
-        <p id="matchNote" class="login-hint"></p>
-      </div>
+      <p class="study-note"><strong>About this study.</strong> Kelvin is a Penn State capstone prototype and part of a research study on AI in engineering education: we're trying to build a tutor that's better than ChatGPT and Claude at teaching students. Your chats are saved and the capstone research team can read them, and your messages are sent to AI services (DeepSeek, and TypeSafe's Jev) to write Kelvin's replies. Kelvin never asks for your real name: please don't type your name, PSU ID or other personal details into your chats.</p>
       <label class="acct-check" for="savedAck">
         <input id="savedAck" type="checkbox">
         <span>I've saved my Kelvin name and password somewhere safe. If I lose them, my account can't be recovered.</span>
@@ -84,13 +115,8 @@
 <script>
 (function () {
   const A = window.KelvinAccount;
-  // New visitors start on sign-up; anyone who has signed in on this browser before starts on sign-in.
-  // ?mode=signup or ?mode=signin picks one explicitly.
-  const HAS_ACCOUNT = 'kelvin_has_account';
-  const remember = () => { try { localStorage.setItem(HAS_ACCOUNT, '1'); } catch (e) {} };
-  const remembered = () => { try { return localStorage.getItem(HAS_ACCOUNT) === '1'; } catch (e) { return false; } };
-  const asked = new URLSearchParams(location.search).get('mode');
-  let mode = asked === 'signup' || asked === 'signin' ? asked : remembered() ? 'signin' : 'signup';
+  // Sign-in is the default; "Create an account" (or a link with ?mode=signup) switches to sign-up.
+  let mode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin';
   const $ = (id) => document.getElementById(id);
   let options = { first: [], last: [], taken: [] };
   let chosenFirst = null;
@@ -123,7 +149,8 @@
     buildChoices('firstChoices', options.first, chosenFirst, chosenLast ? (n) => `${n} ${chosenLast}` : null);
     buildChoices('lastChoices', options.last, chosenLast, chosenFirst ? (n) => `${chosenFirst} ${n}` : null);
     const name = chosenFirst && chosenLast ? chosenFirst + ' ' + chosenLast : '';
-    $('previewName').textContent = name || '—';
+    $('previewName').textContent = name || 'Pick a first and last name';
+    $('previewName').classList.toggle('is-empty', !name);
     $('hiddenUsername').value = name;
     $('matchNote').textContent = '';
     updateSubmit();
@@ -154,8 +181,9 @@
     const up = mode === 'signup';
     $('title').textContent = up ? 'Create your account' : 'Welcome back';
     $('sub').textContent = up
-      ? 'Kelvin never asks for your real name or email — you pick a made-up name instead, and that name is how you sign in from now on.'
+      ? 'Pick a made-up name and a password. Kelvin never asks for your real name or email.'
       : 'Sign in to your thermodynamics tutor.';
+    document.title = (up ? 'Create an account' : 'Sign in') + ' — Kelvin AI';
     $('signinFields').hidden = up;
     $('signupFields').hidden = !up;
     $('submit').textContent = up ? 'Create account' : 'Sign in';
@@ -169,7 +197,7 @@
     mode = mode === 'signup' ? 'signin' : 'signup';
     render();
     if (mode === 'signup' && !options.first.length) loadNames();
-    (mode === 'signup' ? $('newPassword') : $('username')).focus();
+    if (mode === 'signin') $('username').focus();
   });
   $('newNames').addEventListener('click', loadNames);
   for (const id of ['newPassword', 'newPassword2', 'savedAck']) {
@@ -193,7 +221,6 @@
       $('error').textContent = '';
       try {
         await A.signUp(chosenFirst, chosenLast, pw);
-        remember();
         location.replace('/onboarding');
       } catch (err) {
         $('error').textContent = err.message;
@@ -215,7 +242,6 @@
     $('error').textContent = '';
     try {
       await A.signIn(username, password);
-      remember();
       const me = await A.me();
       location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
     } catch (err) {
@@ -223,13 +249,13 @@
       $('submit').disabled = false;
     }
   });
-  A.me().then((me) => { if (me) { remember(); location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); } });
+  A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
   render();
   if (mode === 'signup') loadNames();
   const q = new URLSearchParams(location.search);
   if (q.has('deleted')) $('error').textContent = 'Your account has been deleted.';
   else if (q.has('inactive')) $('error').textContent = 'This account has been deleted.';
-  (mode === 'signup' ? $('newPassword') : $('username')).focus();
+  if (mode === 'signin') $('username').focus();
 })();
 </script>
 </body>
