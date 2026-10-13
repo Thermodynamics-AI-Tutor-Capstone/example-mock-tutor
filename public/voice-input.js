@@ -179,6 +179,8 @@
         maxBytes = capability.maxBytes || maxBytes;
         maxSeconds = capability.maxSeconds || maxSeconds;
         $('micBtn').title = enabled ? 'Explain your reasoning aloud' : 'Voice input is not configured yet. You can still type.';
+        // Not set up on this server (no transcription key): hide the button rather than show a dead one.
+        $('micBtn').hidden = !enabled;
 
       } catch { $('micBtn').title = 'Voice input is unavailable right now. You can still type.'; }
       refresh();

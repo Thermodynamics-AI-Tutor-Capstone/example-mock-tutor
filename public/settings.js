@@ -41,6 +41,7 @@
         <div class="acct-field"><label for="set_major">Major</label><input id="set_major" maxlength="120"></div>
         <div class="acct-section">Tutoring</div>
         <div class="acct-field"><label for="set_default_style">Default teaching style for new chats</label><select id="set_default_style"></select></div>
+        <div class="set-testing" style="display: contents">
         <div class="acct-section">Testing <span class="opt">(capstone team)</span></div>
         <label class="acct-toggle" for="set_use_jev">
           <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev is a fast decision model that reads each message before Kelvin answers: whether you showed your own work, which misconception your words point to, how much help you've earned, which teaching style fits. Turn it off to see Kelvin run on its backup instead: a DeepSeek model answers the same questions (keyword rules only if that fails too), and Kelvin picks its own teaching style.</span></span>
@@ -59,12 +60,13 @@
           <input id="set_show_decisions" type="checkbox" role="switch">
           <span class="acct-toggle-track" aria-hidden="true"></span>
         </label>
+        </div>
         <div class="set-error acct-error" role="alert"></div>
         <div class="set-ok acct-ok" role="status"></div>
         <button class="set-submit acct-btn" type="submit" disabled>Save changes</button>
         <div class="acct-section">Account</div>
         <button class="set-delete acct-btn acct-btn-danger" type="button">Delete account</button>
-        <p class="acct-note">Kelvin AI is a capstone prototype and part of a Penn State research study. It stores your account email, the profile fields above, your chats and uploads, and notes Kelvin makes about what you've learned. The capstone team can see all of them. Deleting a chat hides it from you and stops it counting toward what Kelvin thinks you know, but the team keeps a copy; deleting your account signs you out and closes it, and the team keeps your data. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies. While "Use Jev" is on, your messages and Kelvin's replies are also sent to TypeSafe's Jev model through OpenRouter.</p>
+        <p class="acct-note">Kelvin AI is a capstone prototype and part of a Penn State research study. It stores your Kelvin name (or your email, for team accounts), the profile fields above, your chats and uploads, and notes Kelvin makes about what you've learned. The capstone team can see all of them. Deleting a chat hides it from you and stops it counting toward what Kelvin thinks you know, but the team keeps a copy; deleting your account signs you out and closes it, and the team keeps your data. Messages you send, and any course material Kelvin reads to answer you, are sent to DeepSeek's API to generate replies. Your messages and Kelvin's replies are also sent to TypeSafe's Jev model through OpenRouter (always for students; for team accounts, while "Use Jev" is on).</p>
       </form>
     </div>`;
 
@@ -192,6 +194,8 @@
     $('set_display_name').readOnly = Boolean(username);
     $('set_display_name').required = !username;
     root.querySelector('.set-name-note').hidden = !username;
+    // The testing switches are the capstone team's; students don't see them (the server ignores them too).
+    root.querySelector('.set-testing').style.display = username ? 'none' : 'contents';
     // Their account email is made up from the name, so it means nothing to them.
     root.querySelector('.set-email-field').hidden = Boolean(username);
     if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = 'auto';
@@ -207,8 +211,10 @@
     const body = {};
     for (const f of FIELDS) body[f] = $('set_' + f).value.trim();
     if ($('set_display_name').readOnly) delete body.display_name;
-    for (const f of Object.keys(SWITCHES)) body[f] = $('set_' + f).checked;
-    body.style_router = $('set_style_router').value;
+    if (root.querySelector('.set-testing').style.display !== 'none') {
+      for (const f of Object.keys(SWITCHES)) body[f] = $('set_' + f).checked;
+      body.style_router = $('set_style_router').value;
+    }
     if (!$('set_display_name').readOnly && !body.display_name) {
       message('error', 'Please enter your name.');
       return;

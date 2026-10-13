@@ -22,6 +22,7 @@
   .name-preview-line { margin: 0; font-size: 14.5px; }
   .name-preview-warn { margin: 3px 0 0; color: var(--text2); font-size: 12.5px; line-height: 1.4; }
   .login-hint { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.4; }
+  .login-note { font-size: 12.5px; color: var(--text2); margin: 0; line-height: 1.45; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
   .acct-check { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--text2); line-height: 1.4; cursor: pointer; }
   .acct-check input { margin-top: 2px; flex: none; }
   .hidden-username { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; }
@@ -37,7 +38,7 @@
       <div class="acct-field">
         <label for="username">Your Kelvin name</label>
         <input id="username" name="username" autocomplete="username" placeholder="e.g. Mary Smith" required>
-        <p class="login-hint">Existing team accounts can sign in with their email.</p>
+        <p class="login-hint">The first and last name you picked when you signed up.</p>
       </div>
       <div class="acct-field">
         <label for="password">Password</label>
@@ -45,6 +46,7 @@
       </div>
     </div>
     <div id="signupFields" hidden>
+      <p class="login-note">Kelvin is a Penn State capstone prototype and part of a research study on AI in engineering education. Your chats are saved and the capstone research team can read them, and your messages are sent to AI services (DeepSeek, and TypeSafe's Jev) to write Kelvin's replies. Kelvin never asks for your real name: please don't type your name, PSU ID or other personal details into your chats.</p>
       <div class="acct-field">
         <span class="name-field-head">First name</span>
         <div id="firstChoices" class="name-choices" role="group" aria-label="First name choices"></div>
@@ -82,7 +84,13 @@
 <script>
 (function () {
   const A = window.KelvinAccount;
-  let mode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin';
+  // New visitors start on sign-up; anyone who has signed in on this browser before starts on sign-in.
+  // ?mode=signup or ?mode=signin picks one explicitly.
+  const HAS_ACCOUNT = 'kelvin_has_account';
+  const remember = () => { try { localStorage.setItem(HAS_ACCOUNT, '1'); } catch (e) {} };
+  const remembered = () => { try { return localStorage.getItem(HAS_ACCOUNT) === '1'; } catch (e) { return false; } };
+  const asked = new URLSearchParams(location.search).get('mode');
+  let mode = asked === 'signup' || asked === 'signin' ? asked : remembered() ? 'signin' : 'signup';
   const $ = (id) => document.getElementById(id);
   let options = { first: [], last: [], taken: [] };
   let chosenFirst = null;
@@ -137,11 +145,9 @@
     $('newNames').disabled = false;
   }
 
+  // The button stays usable: pressing it says what is still missing (see the submit handler).
   function updateSubmit() {
-    if (mode !== 'signup') return;
-    const pw = $('newPassword').value;
-    const match = pw.length >= 8 && pw === $('newPassword2').value;
-    $('submit').disabled = !(chosenFirst && chosenLast && match && $('savedAck').checked);
+    $('submit').disabled = false;
   }
 
   function render() {
@@ -187,6 +193,7 @@
       $('error').textContent = '';
       try {
         await A.signUp(chosenFirst, chosenLast, pw);
+        remember();
         location.replace('/onboarding');
       } catch (err) {
         $('error').textContent = err.message;
@@ -208,6 +215,7 @@
     $('error').textContent = '';
     try {
       await A.signIn(username, password);
+      remember();
       const me = await A.me();
       location.replace(me && me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding');
     } catch (err) {
@@ -215,7 +223,7 @@
       $('submit').disabled = false;
     }
   });
-  A.me().then((me) => { if (me) location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); });
+  A.me().then((me) => { if (me) { remember(); location.replace(me.profile && me.profile.onboarded ? A.nextUrl() : '/onboarding'); } });
   render();
   if (mode === 'signup') loadNames();
   const q = new URLSearchParams(location.search);

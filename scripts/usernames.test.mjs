@@ -92,7 +92,7 @@ await test('retired names still sign in but are never offered or reservable', as
   }
 });
 
-await test('offerNames draws distinct names and lists taken combinations', async () => {
+await test('offerNames draws again past taken names, and lists them only if it keeps hitting them', async () => {
   const F = FIRST_NAMES;
   const L = LAST_NAMES;
   const realRandomInt = crypto.randomInt;
@@ -101,13 +101,22 @@ await test('offerNames draws distinct names and lists taken combinations', async
   try {
     await query('INSERT INTO usernames (name_key, first_name, last_name, user_id) VALUES ($1, $2, $3, $4)', [names.nameKey(F[2], L[8]), F[2], L[8], 'u-taken']);
     await query("INSERT INTO usernames (name_key, first_name, last_name, reserved_until) VALUES ($1, $2, $3, now() + interval '1 hour')", [names.nameKey(F[0], L[5]), F[0], L[5]]);
+    // The first seeded draw (F0-F4 with L5-L9) holds one claimed and one reserved name, so it is
+    // drawn again; the next draw (F10-F14 with L15-L19) is free and is the one offered.
     seq = 0;
     const offer = await names.offerNames();
-    assert.deepEqual(offer.first, [F[0], F[1], F[2], F[3], F[4]], 'the seeded draw');
-    assert.deepEqual(offer.last, [L[5], L[6], L[7], L[8], L[9]], 'the seeded draw');
+    assert.deepEqual(offer.first, [F[10], F[11], F[12], F[13], F[14]], 'the second seeded draw');
+    assert.deepEqual(offer.last, [L[15], L[16], L[17], L[18], L[19]], 'the second seeded draw');
     assert.equal(new Set(offer.first).size, 5);
     assert.equal(new Set(offer.last).size, 5);
-    assert.deepEqual(offer.taken.sort(), [names.displayName(F[0], L[5]), names.displayName(F[2], L[8])].sort(), 'one claimed, one reserved');
+    assert.deepEqual(offer.taken, []);
+    // When every draw is the same taken-heavy one, the offer still says which names are taken.
+    crypto.randomInt = (max) => (seq++ % 10) % max;
+    seq = 0;
+    const stuck = await names.offerNames();
+    assert.deepEqual(stuck.first, [F[0], F[1], F[2], F[3], F[4]]);
+    assert.deepEqual(stuck.taken.sort(), [names.displayName(F[0], L[5]), names.displayName(F[2], L[8])].sort(), 'one claimed, one reserved');
+    crypto.randomInt = (max) => seq++ % max;
     const other = await names.offerNames({ count: 3 });
     assert.equal(other.first.length, 3);
     assert.equal(other.last.length, 3);
