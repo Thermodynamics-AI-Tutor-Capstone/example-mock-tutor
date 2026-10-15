@@ -39,7 +39,7 @@ says what kind it is, and the folder matches.
 | misconception | `misc:` | `misconceptions/` | A wrong belief students hold, a probe to detect it, a move to repair it. |
 | worked example | `ex:` | `examples/` | A solved problem in the six ME 300 fields, so the tutor can reveal them one at a time. |
 | assessment item | `item:` | `items/` | A homework or exam question and which objectives it tests. **Homework items are published here; exam items stay private in `kelvin-ingestion`.** |
-| source | `src:` | `sources/` | One per ingested course file: what it is, what is in it, which topics it feeds. **Private, like items.** |
+| source | `src:` | `sources/` | One per ingested course file: what it is, what is in it, which topics it feeds. **Published here, except the summaries of exam files, which stay in `kelvin-ingestion`.** |
 
 Every folder is populated from Dr. O'Connor's Summer 2023 ME 300 Canvas course, ingested
 2026-09-29: the course card, 9 units, 83 topics (one per lecture video plus exams and admin), about

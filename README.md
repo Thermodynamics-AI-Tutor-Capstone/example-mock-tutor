@@ -35,7 +35,7 @@ system prompt and the starter skills remain unreviewed drafts.
 > **Warning: this repository is public.** Course files and exam problems and their solutions never
 > go in it. They live in the private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion)
 > repo, which publishes only cleaned cards into `agent/knowledge-brain/` (homework problems and their
-> answers included). CI fails if a course file or an exam card shows up here. Chat messages, plus any
+> answers, and the summaries of the non-exam course files, included). CI fails if a course file or an exam card shows up here. Chat messages, plus any
 > course text the tutor reads, are sent to DeepSeek's API.
 
 ### Narrated whiteboard

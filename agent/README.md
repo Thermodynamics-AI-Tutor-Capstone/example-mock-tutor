@@ -69,8 +69,9 @@ Course files and `knowledge-brain/` are easy to confuse, so:
 - **[`knowledge-brain/`](knowledge-brain/README.md) is what the tutor understands.** Short markdown cards, one idea each,
   with a citation back to the file and page they came from. This is the only course content the
   tutor sees. Cards are drafted from the course files in `kelvin-ingestion`, which publishes the
-  public-safe ones here by pull request: everything except the exam problems and their answers and
-  the per-file summaries. Fix a drafted card (course, unit, topic, equation, example, homework item) in
+  public-safe ones here by pull request: everything except the exam problems, their answers and the
+  summaries of the exam files. Fix a drafted card (course, unit, topic, equation, example, homework
+  item, file summary) in
   `kelvin-ingestion` and publish, or the next publish overwrites the fix; the hand-written files
   (`INDEX.md`, `taxonomy.yml`, `symbols.md`, `misconceptions/`) are edited here.
   **A human edit is never overwritten** — see the no-clobber rule in
@@ -82,7 +83,8 @@ index unless the offline `--with-files` flag is passed.
 
 > **The brain now holds real ME 300 material** (Dr. O'Connor's Summer 2023 Canvas course, ingested
 > 2026-09-29): 140 course files and about 540 cards drafted from them, all in `kelvin-ingestion`.
-> This repo gets the roughly 320 public-safe cards, homework items included. Nearly all are `status: auto` — drafted by AI, not checked by an
+> This repo gets the roughly 440 public-safe cards: homework items and the summaries of the non-exam
+> course files included. Nearly all are `status: auto` — drafted by AI, not checked by an
 > instructor. See [`kb/README.md`](knowledge-brain/README.md) for what each `status` claims.
 
 ## Testing a change to how Kelvin teaches
