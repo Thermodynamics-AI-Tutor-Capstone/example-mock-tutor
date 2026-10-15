@@ -324,13 +324,14 @@
     return row;
   }
 
-  function addAssistantMessage(content, finished) {
+  function addAssistantMessage(content, finished, id) {
     const row = document.createElement('div');
     row.className = 'msg assistant';
     const md = document.createElement('div');
     md.className = 'md';
     row.appendChild(md);
     row._text = content || '';
+    row._messageId = id || null;
     if (content) setMarkdown(md, content);
     thread.appendChild(row);
     if (finished) addActions(row);
@@ -348,7 +349,40 @@
     btn.innerHTML = ICON_COPY;
     btn.addEventListener('click', () => copyText(row._text || '', btn, ICON_COPY));
     bar.appendChild(btn);
+    if (row._messageId && window.KelvinFeedback) {
+      for (const [rating, label, icon] of [['up', 'Helpful', window.KelvinFeedback.ICON_UP], ['down', 'Not helpful', window.KelvinFeedback.ICON_DOWN]]) {
+        const thumb = document.createElement('button');
+        thumb.type = 'button';
+        thumb.title = label;
+        thumb.setAttribute('aria-label', label + ': give feedback on this reply');
+        thumb.setAttribute('aria-pressed', 'false');
+        thumb.dataset.rating = rating;
+        thumb.innerHTML = icon;
+        thumb.addEventListener('click', () => openFeedback(row, rating, thumb));
+        bar.appendChild(thumb);
+      }
+    }
     row.appendChild(bar);
+  }
+
+  // Feedback (public/feedback.js). The top-bar button is about the open chat; the thumbs under a
+  // reply are about that reply, and stay pressed once the feedback is sent.
+  function openFeedback(row, rating, opener) {
+    window.KelvinVoice?.cancel();
+    window.KelvinTips?.hide();
+    const conv = state.conversations.find((c) => c.id === state.currentId);
+    window.KelvinFeedback.open({
+      conversationId: state.currentId,
+      messageId: row ? row._messageId : null,
+      title: conv ? conv.title : null,
+      excerpt: row ? row._text : null,
+      rating,
+      opener,
+      onSent: (saved) => {
+        if (!row) return;
+        for (const b of row.querySelectorAll('.actions button[data-rating]')) b.setAttribute('aria-pressed', String(b.dataset.rating === saved.rating));
+      },
+    });
   }
 
   function showError(row, message) {
@@ -397,7 +431,7 @@
     const replyRows = new Map();
     for (const m of msgs) {
       if (m.role === 'user') addUserMessage(m.content, m.attachments);
-      else replyRows.set(m.id, addAssistantMessage(m.content, true));
+      else replyRows.set(m.id, addAssistantMessage(m.content, true, m.id));
     }
     setThreadMode(msgs.length > 0);
     scrollToBottom();
@@ -821,7 +855,10 @@
         showDecision(row, ev);
       } else if (ev.type === 'status') {
         showStatus(ev.message);
+      } else if (ev.type === 'done') {
+        if (ev.messageId) row._messageId = ev.messageId;
       } else if (ev.type === 'error') {
+        if (ev.messageId) row._messageId = ev.messageId;
         dot.remove();
         showError(row, ev.message);
       }
@@ -1085,6 +1122,7 @@
     });
   }
   $('settingsBtn').addEventListener('click', () => openSettings());
+  $('feedbackBtn').addEventListener('click', () => openFeedback(null, null, $('feedbackBtn')));
 
   window.KelvinAttachments.init({
     api,

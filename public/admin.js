@@ -9,6 +9,7 @@
     overview: 'Overview',
     students: 'Students',
     conversations: 'Conversations',
+    feedback: 'Feedback',
     misconceptions: 'Misconceptions',
     tutoring: 'Tutoring decisions',
     usage: 'Cost & usage',
@@ -16,6 +17,7 @@
   };
   const GROUP_KEY = 'kelvin-admin-group';
   const CONV_KEY = 'kelvin-admin-conversations';
+  const FEEDBACK_KEY = 'kelvin-admin-feedback';
   let group = 'all';
   try { group = sessionStorage.getItem(GROUP_KEY) || 'all'; } catch (e) {}
   if (!['all', 'real', 'eval'].includes(group)) group = 'all';
@@ -61,6 +63,23 @@
     return h('span', { class: 'chip' + (cls ? ' ' + cls : '') }, color ? h('span', { class: 'dot', style: `background:${color}` }) : null, text);
   }
   const catChip = (c) => chip(CATEGORY_LABEL[c] || c, '', catColor(c));
+  const ratingChip = (r) => (r === 'up' ? chip('👍 Helpful', 'ok') : r === 'down' ? chip('👎 Not helpful', 'bad') : '—');
+
+  function aboutCell(f) {
+    if (!f.conversation) return h('span', { class: 'note' }, 'Kelvin in general (no chat open)');
+    const c = f.conversation;
+    return h('div', {},
+      h('div', {}, c.missing ? 'A chat that no longer exists' : c.title || 'Untitled', c.deleted ? ' ' : null, c.deleted ? chip('Deleted', 'warn') : null),
+      h('div', { class: 'match' }, f.messageId ? [h('span', { class: 'match-who' }, 'Reply: '), f.reply || '—'] : 'The whole chat')
+    );
+  }
+
+  function feedbackNote(f, who) {
+    return h('div', { class: `feedback ${f.rating || ''}`.trim() },
+      h('div', { class: 'fb-head' }, `Feedback from ${who} · ${when(f.at)}`, f.rating ? ' · ' : null, f.rating ? ratingChip(f.rating) : null),
+      f.text ? h('div', { class: 'fb-text' }, f.text) : null
+    );
+  }
 
   function tile(k, v, s) {
     return h('div', { class: 'tile' }, h('div', { class: 'k' }, k), h('div', { class: 'v' }, v), s ? h('div', { class: 's' }, s) : null);
@@ -377,13 +396,13 @@
 
   // ── routing ──────────────────────────────────────────────────────────────────────────────────
   function route() {
-    const [tab, id] = location.hash.replace(/^#/, '').split('/');
-    return { tab: TABS[tab] ? tab : 'overview', id: id ? decodeURIComponent(id) : null };
+    const [tab, id, sub] = location.hash.replace(/^#/, '').split('/');
+    return { tab: TABS[tab] ? tab : 'overview', id: id ? decodeURIComponent(id) : null, sub: sub ? decodeURIComponent(sub) : null };
   }
 
   async function render() {
     const seq = ++renderSeq;
-    const { tab, id } = route();
+    const { tab, id, sub } = route();
     charts.forEach((c) => c.destroy());
     charts = [];
     pending = [];
@@ -394,7 +413,7 @@
     $('app').classList.remove('rail-open');
     view.replaceChildren(h('p', { class: 'empty' }, 'Loading…'));
     try {
-      const node = await PAGES[tab](id);
+      const node = await PAGES[tab](id, sub);
       if (seq !== renderSeq) return;
       view.replaceChildren(node);
       pending.splice(0).forEach((draw) => draw());
@@ -492,8 +511,8 @@
     // Search runs on the server over every message (lib/admin.js conversations); the search box,
     // the star/share filter and the deleted filter are kept for the tab, so coming back from a chat
     // shows the same list.
-    async conversations(id) {
-      if (id) return conversationPage(id);
+    async conversations(id, sub) {
+      if (id) return conversationPage(id, sub);
       let saved = {};
       try { saved = JSON.parse(sessionStorage.getItem(CONV_KEY) || '{}') || {}; } catch (e) {}
       const search = h('input', { type: 'search', placeholder: 'Search words in chats, or “Student 3”', 'aria-label': 'Search chats', value: saved.q || '' });
@@ -559,6 +578,67 @@
       await load();
       pending.push(() => { if (search.value) search.focus(); });
       return h('div', {}, h('div', { class: 'toolbar' }, search, show, deletedOnly), holder);
+    },
+
+    // Everything students said about Kelvin, newest first. A row opens the chat at the reply (or the
+    // chat) it is about; feedback sent with no chat open has nothing to open.
+    async feedback() {
+      let saved = 'all';
+      try { saved = sessionStorage.getItem(FEEDBACK_KEY) || 'all'; } catch (e) {}
+      const show = h('select', { 'aria-label': 'Which feedback' },
+        h('option', { value: 'all' }, 'All feedback'),
+        h('option', { value: 'down' }, 'Not helpful (👎)'),
+        h('option', { value: 'up' }, 'Helpful (👍)'),
+        h('option', { value: 'text' }, 'With a comment'));
+      show.value = ['all', 'down', 'up', 'text'].includes(saved) ? saved : 'all';
+      const first = await api('feedback');
+      const items = first.feedback.slice();
+      const holder = h('div', {});
+      const more = h('button', { type: 'button', class: 'btn' }, 'Load older feedback');
+      const draw = () => {
+        more.hidden = items.length >= first.total;
+        const list = items.filter((f) => show.value === 'all' || (show.value === 'text' ? Boolean(f.text) : f.rating === show.value));
+        if (!list.length) {
+          holder.replaceChildren(h('p', { class: 'empty' }, first.total ? 'No feedback matches.' : 'No feedback in this group yet.'));
+          return;
+        }
+        holder.replaceChildren(table(
+          [{ label: 'When' }, { label: 'Student' }, { label: 'Kind' }, { label: 'Rating' }, { label: 'Feedback', wrap: true }, { label: 'About', wrap: true }],
+          list.map((f) => ({
+            f,
+            cells: [
+              when(f.at), f.student || '—', catChip(f.category), ratingChip(f.rating),
+              f.text ? h('div', { class: 'fb-text' }, f.text) : h('span', { class: 'note' }, 'No comment'),
+              aboutCell(f),
+            ],
+          })),
+          { onRow: (r) => { if (r.f.conversation && !r.f.conversation.missing) location.hash = `conversations/${r.f.conversation.id}/${r.f.messageId ?? 'feedback'}`; } }
+        ));
+      };
+      more.addEventListener('click', async () => {
+        more.disabled = true;
+        try {
+          const next = await api(`feedback?offset=${items.length}`);
+          items.push(...next.feedback);
+          draw();
+        } catch (err) {
+          holder.append(h('p', { class: 'error' }, err.message));
+        } finally {
+          more.disabled = false;
+        }
+      });
+      show.addEventListener('change', () => {
+        try { sessionStorage.setItem(FEEDBACK_KEY, show.value); } catch (e) {}
+        draw();
+      });
+      draw();
+      return h('div', {},
+        h('p', { class: 'lede' }, `${groupNote()}. What students told the team about Kelvin, from the Feedback button and the thumbs under each reply. Click one to read it in its chat. Admins' own feedback is left out.`),
+        h('div', { class: 'tiles', style: 'margin-bottom:16px' }, tile('Feedback', fmt(first.total)), tile('Helpful 👍', fmt(first.up)), tile('Not helpful 👎', fmt(first.down))),
+        h('div', { class: 'toolbar' }, show),
+        holder,
+        h('div', { style: 'margin-top:12px' }, more)
+      );
     },
 
     async misconceptions() {
@@ -697,11 +777,23 @@
     );
   }
 
-  async function conversationPage(id) {
+  async function conversationPage(id, sub) {
     const c = await api(`conversations/${encodeURIComponent(id)}`);
     const total = c.cost.reduce((s, r) => s + r.usd, 0);
+    const notes = c.feedback || [];
+    const forChat = notes.filter((f) => f.messageId === null);
+    const byReply = new Map();
+    for (const f of notes) if (f.messageId !== null) byReply.set(f.messageId, [...(byReply.get(f.messageId) || []), f]);
+    if (sub) {
+      pending.push(() => setTimeout(() => {
+        const el = document.getElementById(`msg-${sub}`);
+        if (!el) return;
+        el.scrollIntoView({ block: 'center' });
+        el.classList.add('flash');
+      }, 0));
+    }
     return h('div', {},
-      h('a', { class: 'back', href: '#conversations' }, '← All chats'),
+      sub ? h('a', { class: 'back', href: '#feedback' }, '← All feedback') : h('a', { class: 'back', href: '#conversations' }, '← All chats'),
       h('div', { class: 'toolbar' },
         starButton(c),
         h('strong', {}, c.title || 'Untitled'),
@@ -719,7 +811,12 @@
             r.answers.map((a) => `${a.quantity || a.name || ''} = ${a.value ?? ''} ${a.unit || ''}`.trim()).join(' · ')
           )))
         : null,
-      h('div', { class: 'transcript' }, c.messages.map((m) => h('div', { class: `msg ${m.role}` },
+      forChat.length
+        ? h('div', { class: 'feedback-chat', id: 'msg-feedback' },
+          h('h2', { class: 'section-title', style: 'margin-top:0' }, `Feedback on this chat (${forChat.length})`),
+          forChat.map((f) => feedbackNote(f, c.student)))
+        : null,
+      h('div', { class: 'transcript' }, c.messages.map((m) => h('div', { class: `msg ${m.role}`, id: m.id ? `msg-${m.id}` : null },
         h('div', { class: 'who' }, `${m.role === 'user' ? c.student : 'Kelvin'} · ${when(m.at)}`),
         (() => {
           const body = h('div', { class: 'body', html: md(m.content) });
@@ -733,7 +830,8 @@
           h('span', {}, `ceiling: ${m.decision.ceiling ?? '—'}`),
           m.decision.misconceptions.length ? h('span', {}, `flags: ${m.decision.misconceptions.map((x) => `${x.title || pretty(x.id)} (${Math.round(x.p * 100)}%)`).join(', ')}`) : null,
           m.decision.auditFlags.length ? h('span', {}, `audit: ${m.decision.auditFlags.join(', ')}`) : null
-        ) : null
+        ) : null,
+        (byReply.get(m.id) || []).map((f) => feedbackNote(f, c.student))
       ))),
       c.cost.length
         ? h('div', {}, h('h2', { class: 'section-title' }, 'Model calls in this chat'), table([{ label: 'Provider' }, { label: 'Purpose' }, { label: 'Calls', num: true }, { label: 'Cost', num: true }], c.cost.map((r) => ({ cells: [r.provider, r.purpose, fmt(r.calls), usd(r.usd, 4)] }))))
