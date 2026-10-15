@@ -35,7 +35,6 @@ misconceptions: []
 examples:
 - ex:m6-09-example-compressors-turbines
 items:
-- item:exam2-2022-iii-a-3e
 - item:hw07-2
 - item:hw07-3
 sources:

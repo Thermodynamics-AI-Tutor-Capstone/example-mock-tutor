@@ -43,8 +43,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam1-2022-conflict-i-1
-- item:exam1-2022-regular-i-1
 - item:hw03-1
 - item:hw03-2
 sources:

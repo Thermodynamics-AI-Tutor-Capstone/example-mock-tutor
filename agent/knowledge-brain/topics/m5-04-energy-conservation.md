@@ -34,13 +34,6 @@ misconceptions: []
 examples:
 - ex:ee03-energy-conservation-with-phase-change-in-a-piston
 items:
-- item:exam1-2021-iii
-- item:exam1-2022-conflict-i-3
-- item:exam1-2022-conflict-ii-2
-- item:exam1-2022-regular-i-3
-- item:exam1-2022-regular-ii-2
-- item:exam1-2023-i-1
-- item:exam1-2023-i-3
 - item:hw05-2
 - item:hw05-5
 sources:

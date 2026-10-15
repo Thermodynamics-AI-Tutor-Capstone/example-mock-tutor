@@ -36,7 +36,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:final-2021-2
 - item:hw10-4
 sources:
 - path: lectures/Module8_14_DieselCycle_annotated.pdf

@@ -19,7 +19,6 @@ equations: []
 misconceptions: []
 examples: []
 items:
-- item:exam1-2023-ii-1
 - item:hw04-2
 sources:
 - path: lectures/Module3_8_NISTWebbook_annotated.pdf

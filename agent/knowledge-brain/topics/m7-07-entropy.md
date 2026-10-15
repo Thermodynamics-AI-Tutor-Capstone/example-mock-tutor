@@ -43,13 +43,6 @@ misconceptions:
 - misc:m08-entropy-is-only-disorder
 examples: []
 items:
-- item:exam2-2021-i-2
-- item:exam2-2021-ii-2
-- item:exam2-2022-i-2a-2d
-- item:exam2-2022-ii-2a-2d
-- item:exam2-2023-i-2
-- item:exam2-2023-i-3
-- item:exam2-2023-ii-1
 - item:hw08-1
 - item:hw08-2
 - item:hw08-3

@@ -38,12 +38,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:final-2021-3
-- item:final-2022-3
-- item:final-2022-4
-- item:final-2022-ii-i
-- item:final-2023-2
-- item:final-2023-3
 - item:hw09-5
 sources:
 - path: lectures/Module8_1_HeatEngineCycleAnalysis_annotated.pdf

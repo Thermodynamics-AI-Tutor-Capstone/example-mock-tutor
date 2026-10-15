@@ -32,7 +32,6 @@ misconceptions: []
 examples:
 - ex:m3-03-example-2-ideal-gas-p-v-t
 items:
-- item:exam1-2021-i-1
 - item:hw03-5
 sources:
 - path: lectures/Module3_3_Example2_IdealGasPvT_annotated.pdf

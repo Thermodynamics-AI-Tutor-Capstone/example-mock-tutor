@@ -42,22 +42,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:final-2021-a
-- item:final-2021-b
-- item:final-2021-c
-- item:final-2021-d
-- item:final-2021-e
-- item:final-2021-f
-- item:final-2022-2
-- item:final-2022-5
-- item:final-2022-ii-a
-- item:final-2022-ii-b
-- item:final-2022-ii-c
-- item:final-2022-ii-d
-- item:final-2022-ii-e
-- item:final-2022-ii-f
-- item:final-2022-ii-i
-- item:final-2023-4
 - item:hw10-1
 - item:hw10-3
 sources:

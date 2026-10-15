@@ -38,9 +38,6 @@ misconceptions:
 - misc:m11-state-function-vs-path-function
 examples: []
 items:
-- item:exam2-2022-i-2a-2d
-- item:exam2-2023-i-2
-- item:exam2-2023-ii-1
 - item:hw08-1
 - item:hw08-3
 - item:hw08-4

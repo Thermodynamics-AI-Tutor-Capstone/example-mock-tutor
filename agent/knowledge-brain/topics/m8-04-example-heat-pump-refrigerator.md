@@ -34,8 +34,6 @@ examples:
 - ex:ee09-combined-engine-refrigerator-cycle-ratio-of-heat-i
 - ex:m8-04-example-heat-pump-refrigerator
 items:
-- item:final-2021-1
-- item:final-2023-1
 - item:hw09-3
 - item:hw09-4
 sources:

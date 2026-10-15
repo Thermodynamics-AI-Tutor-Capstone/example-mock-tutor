@@ -38,16 +38,6 @@ misconceptions:
 - misc:m11-state-function-vs-path-function
 examples: []
 items:
-- item:exam1-2022-conflict-i-3
-- item:exam1-2022-conflict-ii-1
-- item:exam1-2022-conflict-ii-2
-- item:exam1-2022-conflict-iii
-- item:exam1-2022-regular-i-3
-- item:exam1-2022-regular-ii-1
-- item:exam1-2022-regular-ii-2
-- item:exam1-2022-regular-iii
-- item:exam1-2023-i-3
-- item:exam1-2023-ii-2
 - item:hw05-2
 - item:hw05-3
 - item:hw05-4

@@ -44,6 +44,8 @@ jobs:
       # No LLM, no API key: it runs on forks too.
       - name: Validate the knowledge base
         run: node scripts/kb/validate.mjs --summary "$GITHUB_STEP_SUMMARY"
+      - name: No course files or assessment cards in the public repo
+        run: npm run brain:check
       - name: Validate tools and teaching styles
         run: node scripts/validate-agent.mjs --summary "$GITHUB_STEP_SUMMARY"
       - name: Load every server module
@@ -66,10 +68,3 @@ jobs:
 
       - name: Student feedback tests (feedback API, admin Feedback tab; no network)
         run: npm run feedback:test
-
-      # Informational. Retrieval quality is a number to watch, not a reason to
-      # block a deploy — except for the one regression check the eval itself
-      # enforces, which is reported here and does not gate this workflow.
-      - name: Offline retrieval eval
-        continue-on-error: true
-        run: node scripts/kb/eval.mjs --summary "$GITHUB_STEP_SUMMARY"

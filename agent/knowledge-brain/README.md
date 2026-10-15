@@ -17,8 +17,8 @@ what the tutor believes.
 
 | Folder | Who writes it | What it is |
 |---|---|---|
-| [`agent/raw-course-files/`](../raw-course-files/README.md) | **Humans only.** Drag and drop. | Raw uploaded course files — PDFs, slides, handouts. The pipeline never writes here. |
-| **`agent/knowledge-brain/`** (this folder) | Humans, and an AI pipeline via pull request | Cards. The brain. Committed, reviewable, diffable. |
+| Course files, in the private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion) repo | **Humans only.** | Raw course files — PDFs, slides, handouts, homework, exams. Never committed to this public repo. |
+| **`agent/knowledge-brain/`** (this folder) | Humans (hand-written files), and the `kelvin-ingestion` publish step via pull request | Cards. The brain. Committed, reviewable, diffable. |
 | `build/knowledge-index.json` | A build script | Compiled from the other two at deploy time. Not committed, never edited by hand. |
 
 Nothing in this folder is secret and nothing here is student data. Do not put either in it.
@@ -38,8 +38,8 @@ says what kind it is, and the folder matches.
 | equation | `eq:` | `equations/` | One equation: the LaTeX, its symbols, and **when it is and is not valid**. |
 | misconception | `misc:` | `misconceptions/` | A wrong belief students hold, a probe to detect it, a move to repair it. |
 | worked example | `ex:` | `examples/` | A solved problem in the six ME 300 fields, so the tutor can reveal them one at a time. |
-| assessment item | `item:` | `items/` | A homework or exam question and which objectives it tests. |
-| source | `src:` | `sources/` | One per ingested course file: what it is, what is in it, which topics it feeds. |
+| assessment item | `item:` | `items/` | A homework or exam question and which objectives it tests. **Homework items are published here; exam items stay private in `kelvin-ingestion`.** |
+| source | `src:` | `sources/` | One per ingested course file: what it is, what is in it, which topics it feeds. **Private, like items.** |
 
 Every folder is populated from Dr. O'Connor's Summer 2023 ME 300 Canvas course, ingested
 2026-09-29: the course card, 9 units, 83 topics (one per lecture video plus exams and admin), about
@@ -109,7 +109,7 @@ existing one first.
 | `derives_from`, `specializes_to` | Equation to equation — general energy balance → steady-flow form → nozzle form. |
 | `signatures[]`, `not_signatures[]`, `confusable_with[]` | **On misconception cards.** How a student who holds the belief talks or writes (4–8 short lines in a student's voice), correct statements that sound similar and must *not* trigger it, and other cards it's easily confused with, each with one `separating_question`. The Jev classifier reads these on every message to decide which misconception a student's words show; the tutor uses the separating question to confirm before repairing. Write them to discriminate, not just to describe. |
 | `valid_when[]`, `invalid_when[]` | **On equation cards, the most important fields in the brain.** The assumptions under which the equation holds, drawn from the closed list in `taxonomy.yml`. Right equation, wrong assumptions is the most common way to get a thermo problem wrong, and this is the field that catches it. |
-| `sources[]` | Where the content came from: `{path, pages}` or `{path, slides}` for a file in `agent/raw-course-files/`, or `{url, title, retrieved}` for something outside the repo. **Every card needs at least one.** No card without a citation. |
+| `sources[]` | Where the content came from: `{path, pages}` or `{path, slides}` for a course file (kept in `kelvin-ingestion`), or `{url, title, retrieved}` for something outside the repo. **Every card needs at least one.** No card without a citation. |
 
 **Risk control**
 
@@ -187,8 +187,8 @@ thing that computes it. Do not compute one by hand.
 ## How a card reaches the live tutor
 
 ```
-  you upload a course file            you edit a card in GitHub
-  to agent/raw-course-files/                         │
+  you add a course file to            you edit a card in GitHub
+  kelvin-ingestion (private)                         │
           │                                   │
           ▼                                   │
   GitHub Action (the only step that uses an   │
@@ -251,7 +251,7 @@ specializes_to:
 misconceptions:
   - misc:m12-boundary-flow-and-shaft-work-confused
 sources:
-  - path: lectures/lec24-open-system-steady-flow.pptx    # a real file in agent/raw-course-files/
+  - path: lectures/lec24-open-system-steady-flow.pptx    # a real course file in kelvin-ingestion
     slides: [8, 9, 10]                                  # so a student can check in one click
 generated:
   model: deepseek-v4-pro
@@ -319,12 +319,12 @@ Done by hand in a Claude Code session, not by `.github/workflows/kb.yml`:
 1. **Pulled from Canvas** (course 2492426) with the project's login: 140 files (syllabus, 76 annotated
    lecture decks, 10 homeworks and solutions, 11 explained examples, 2021–2023 exams and solutions,
    review decks, property tables), plus the Canvas pages, assignment descriptions and discussion prompts
-   as markdown in `agent/raw-course-files/other/canvas/`. No student data: no submissions, grades,
+   as markdown in `kelvin-ingestion`'s `agent/raw-course-files/other/canvas/`. No student data: no submissions, grades,
    rosters or discussion replies. Quiz questions were not accessible. `canvas-manifest.json` maps every
    file to its Canvas id.
 2. **Transcribed** page by page from images, because almost every PDF is handwriting or a scan with no
    text layer: 55 documents by Claude, 75 by DeepSeek (`deepseek-flash` vision). Transcripts are in
-   `agent/raw-course-files/_transcripts/`. Spot checks found the numbers right and occasional symbol
+   `kelvin-ingestion`'s `agent/raw-course-files/_transcripts/`. Spot checks found the numbers right and occasional symbol
    misreads (entropy generation $\Phi$ read as $\Sigma$ or $S_{gen}$); cards use the course's $\Phi$.
 3. **Drafted** card content from the transcripts with DeepSeek (`deepseek-v4-pro`): one call per
    lecture, per example, per assignment/exam, then one merge of equations per module and one

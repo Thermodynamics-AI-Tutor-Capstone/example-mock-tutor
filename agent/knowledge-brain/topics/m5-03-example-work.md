@@ -40,10 +40,6 @@ misconceptions:
 examples:
 - ex:m5-03-example-work
 items:
-- item:exam1-2021-i-3
-- item:exam1-2021-ii-1
-- item:exam1-2023-ii-2
-- item:exam1-2023-iii
 - item:hw05-3
 - item:hw05-4
 - item:hw05-5

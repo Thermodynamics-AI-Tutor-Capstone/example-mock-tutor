@@ -42,8 +42,6 @@ examples:
 - ex:ee07-explained-example-7-isentropic-expansion
 - ex:m7-13-example-isentropic-turbine
 items:
-- item:exam2-2021-ii-1
-- item:exam2-2022-ii-1a-1c
 - item:hw09-1
 sources:
 - path: lectures/Module7_13_Example_IsentropicTurbine_annotated.pdf

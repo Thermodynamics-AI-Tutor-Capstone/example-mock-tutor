@@ -36,18 +36,6 @@ misconceptions: []
 examples:
 - ex:m8-10-example-brayton-cycle
 items:
-- item:final-2021-b
-- item:final-2021-c
-- item:final-2021-d
-- item:final-2021-e
-- item:final-2021-f
-- item:final-2022-5
-- item:final-2022-ii-b
-- item:final-2022-ii-c
-- item:final-2022-ii-d
-- item:final-2022-ii-e
-- item:final-2022-ii-f
-- item:final-2023-4
 - item:hw10-3
 sources:
 - path: lectures/Module8_10_Example_BraytonCycle_annotated.pdf

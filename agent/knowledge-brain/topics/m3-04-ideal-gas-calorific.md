@@ -41,8 +41,6 @@ misconceptions:
 - misc:m16-internal-energy-and-enthalpy-interchangeable
 examples: []
 items:
-- item:exam1-2022-conflict-i-3
-- item:exam1-2022-regular-i-3
 - item:hw04-1
 sources:
 - path: lectures/Module3_4_IdealGasCalorific_annotated.pdf

@@ -35,8 +35,6 @@ misconceptions:
 examples:
 - ex:m7-08-example-entropy
 items:
-- item:exam2-2022-i-2a-2d
-- item:exam2-2023-ii-1
 - item:hw08-5
 sources:
 - path: lectures/Module7_8_Example_Entropy_annotated.pdf

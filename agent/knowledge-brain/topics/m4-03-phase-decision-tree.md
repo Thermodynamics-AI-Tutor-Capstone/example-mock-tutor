@@ -39,11 +39,6 @@ misconceptions: []
 examples:
 - ex:ee02-explained-example-2-determining-phase-and-internal
 items:
-- item:exam1-2021-ii-2
-- item:exam1-2022-conflict-i-2
-- item:exam1-2022-regular-i-2
-- item:exam1-2023-i-2
-- item:exam1-2023-ii-2
 - item:hw04-3a-3g
 - item:hw04-4
 - item:hw04-5

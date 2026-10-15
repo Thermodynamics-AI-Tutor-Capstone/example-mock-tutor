@@ -35,7 +35,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam2-2021-iii-a-e
 - item:hw06-2
 sources:
 - path: lectures/Module6_1_MassConservation_annotated.pdf

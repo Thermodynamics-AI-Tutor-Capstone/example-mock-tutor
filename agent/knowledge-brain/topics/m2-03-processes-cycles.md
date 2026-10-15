@@ -31,10 +31,6 @@ misconceptions:
 - misc:m15-adiabatic-implies-isentropic
 examples: []
 items:
-- item:exam1-2021-i-3
-- item:exam1-2022-conflict-iii
-- item:exam1-2022-regular-iii
-- item:exam1-2023-i-1
 - item:hw02-1
 - item:hw02-2a
 - item:hw02-2b
