@@ -51,8 +51,6 @@ misconceptions:
 - misc:m13-work-read-off-a-pv-diagram
 examples:
 - ex:m5-07-example-3-energy-conservation
-items:
-- item:exam1-2021-iii
 sources:
 - path: lectures/Module5_7_Example3_EnergyConservation_annotated.pptx
   slides:

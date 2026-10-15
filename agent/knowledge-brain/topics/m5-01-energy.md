@@ -30,7 +30,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam1-2021-i-2
 - item:hw05-2
 - item:hw05-3
 sources:

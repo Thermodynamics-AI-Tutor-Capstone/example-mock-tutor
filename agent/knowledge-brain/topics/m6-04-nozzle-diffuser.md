@@ -25,7 +25,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam2-2022-i-3a-3c
 - item:hw06-2
 sources:
 - path: lectures/Module6_4_NozzleDiffuser_annotated.pdf

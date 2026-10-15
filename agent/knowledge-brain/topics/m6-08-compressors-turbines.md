@@ -32,13 +32,6 @@ misconceptions: []
 examples:
 - ex:ee05-steady-flow-energy-equation-for-an-adiabatic-steam
 items:
-- item:exam2-2021-i-3
-- item:exam2-2021-ii-1
-- item:exam2-2022-i-3a-3c
-- item:exam2-2022-ii-1a-1c
-- item:exam2-2022-iii-a-3e
-- item:exam2-2023-i-3
-- item:exam2-2023-iii
 - item:hw07-1
 - item:hw07-2
 - item:hw07-3

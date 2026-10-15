@@ -42,7 +42,6 @@ examples:
 - ex:ee08-explained-example-8-isentropic-efficiency-of-a-ste
 - ex:m7-15-example-isentropic-efficiency
 items:
-- item:exam2-2021-i-3
 - item:hw09-1
 - item:hw09-2
 - item:hw09-5

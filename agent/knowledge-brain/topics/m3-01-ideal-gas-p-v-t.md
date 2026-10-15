@@ -41,15 +41,6 @@ misconceptions: []
 examples:
 - ex:ee01-p-v-t-equation-of-state-isobaric-and-isothermal-co
 items:
-- item:exam1-2021-i-1
-- item:exam1-2021-iii
-- item:exam1-2022-conflict-i-1
-- item:exam1-2022-conflict-ii-1
-- item:exam1-2022-regular-i-1
-- item:exam1-2022-regular-ii-1
-- item:exam1-2023-i-1
-- item:exam1-2023-ii-1
-- item:exam1-2023-iii
 - item:hw03-1
 - item:hw03-3
 - item:hw03-4

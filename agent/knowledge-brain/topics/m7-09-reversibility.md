@@ -30,7 +30,6 @@ misconceptions:
 - misc:m10-entropy-of-an-isolated-system
 examples: []
 items:
-- item:exam2-2021-i-2
 - item:hw08-2
 - item:hw08-5
 sources:

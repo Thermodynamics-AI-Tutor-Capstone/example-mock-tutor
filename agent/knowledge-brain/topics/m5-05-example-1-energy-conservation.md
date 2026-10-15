@@ -32,10 +32,6 @@ misconceptions: []
 examples:
 - ex:ee03-energy-conservation-with-phase-change-in-a-piston
 - ex:m5-05-example-1-energy-conservation
-items:
-- item:exam1-2021-ii-1
-- item:exam1-2021-ii-2
-- item:exam1-2023-i-3
 sources:
 - path: lectures/Module5_5_Example1_EnergyConservation_annotated.pdf
   pages:

@@ -30,7 +30,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam2-2022-i-3a-3c
 - item:hw06-3
 sources:
 - path: lectures/Module6_5_Throttles_annotated.pdf

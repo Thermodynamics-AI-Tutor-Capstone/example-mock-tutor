@@ -12,7 +12,7 @@ can be edited in GitHub's web editor (open a file → pencil icon → **Commit c
 | Student uploads | [`attachments/`](attachments/README.md) | change how students' photos and files are turned into Markdown: the transcription prompt, which model reads images, size limits |
 | Skills | [`skills/`](skills/README.md) | add or change focused instruction modules the tutor loads when needed |
 | Connections | [`connections/`](connections/README.md) | change the AI model and its settings, including the Jev decider (`decider`); see what services the tutor uses |
-| Course materials | [`raw-course-files/`](raw-course-files/README.md) | raw inputs to ingestion. The tutor never reads them; it reads the cards made from them |
+| Course materials | private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion) repo | raw inputs to ingestion, kept out of this public repo. The tutor never reads them; it reads the cleaned cards published into `knowledge-brain/` |
 | Knowledge brain | [`knowledge-brain/`](knowledge-brain/README.md) | correct what the tutor believes about the course — units, topics, equations, misconceptions, notation |
 
 ```
@@ -26,13 +26,6 @@ agent/
 ├── skills/
 │   ├── README.md           ← how to write a skill (with template)
 │   └── <skill-name>/SKILL.md
-├── raw-course-files/       ← drop course files here (raw uploads, humans only)
-│   ├── README.md
-│   ├── syllabus/
-│   ├── lectures/
-│   ├── assignments/
-│   ├── reference/
-│   └── other/
 └── knowledge-brain/        ← the knowledge brain: reviewable cards about the course
     ├── README.md           ← how the brain works, and how to correct a card
     ├── INDEX.md            ← the map the tutor sees in every message (2,000-token cap)
@@ -68,15 +61,18 @@ You never need to list skills, files or cards in the system prompt by hand.
 
 ### Two folders, two jobs
 
-`raw-course-files/` and `knowledge-brain/` are easy to confuse, so:
+Course files and `knowledge-brain/` are easy to confuse, so:
 
-- **[`raw-course-files/`](raw-course-files/README.md) is the raw material.** Whatever the instructor gives
-  you — slides, handouts, the syllabus — goes in as-is. Humans upload here; nothing writes to it
-  automatically. **The tutor never reads it.**
+- **Course files are the raw material, and they stay private.** Whatever the instructor gives — slides,
+  handouts, the syllabus, homework, exams — lives in the private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion) repo with the ingestion
+  pipeline. Nothing in this public repo holds them. **The tutor never reads them.**
 - **[`knowledge-brain/`](knowledge-brain/README.md) is what the tutor understands.** Short markdown cards, one idea each,
   with a citation back to the file and page they came from. This is the only course content the
-  tutor sees. Cards are drafted from the raw files during ingestion and land by pull request, and
-  are corrected by humans editing them directly.
+  tutor sees. Cards are drafted from the course files in `kelvin-ingestion`, which publishes the
+  public-safe ones here by pull request: everything except the exam problems and their answers and
+  the per-file summaries. Fix a drafted card (course, unit, topic, equation, example, homework item) in
+  `kelvin-ingestion` and publish, or the next publish overwrites the fix; the hand-written files
+  (`INDEX.md`, `taxonomy.yml`, `symbols.md`, `misconceptions/`) are edited here.
   **A human edit is never overwritten** — see the no-clobber rule in
   [`kb/README.md`](knowledge-brain/README.md).
 
@@ -85,8 +81,8 @@ AI calls at all, so a redeploy is deterministic and needs no API key. Raw files 
 index unless the offline `--with-files` flag is passed.
 
 > **The brain now holds real ME 300 material** (Dr. O'Connor's Summer 2023 Canvas course, ingested
-> 2026-09-29): 140 course files in `agent/raw-course-files/`, transcribed in `_transcripts/`, and about
-> 540 cards drafted from them. Nearly all are `status: auto` — drafted by AI, not checked by an
+> 2026-09-29): 140 course files and about 540 cards drafted from them, all in `kelvin-ingestion`.
+> This repo gets the roughly 320 public-safe cards, homework items included. Nearly all are `status: auto` — drafted by AI, not checked by an
 > instructor. See [`kb/README.md`](knowledge-brain/README.md) for what each `status` claims.
 
 ## Testing a change to how Kelvin teaches

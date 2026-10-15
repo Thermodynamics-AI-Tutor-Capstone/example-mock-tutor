@@ -27,8 +27,6 @@ misconceptions: []
 examples:
 - ex:ee04-steady-flow-energy-equation-for-a-hair-dryer-heat
 items:
-- item:exam2-2022-iii-a-3e
-- item:exam2-2023-iii
 - item:hw07-1
 sources:
 - path: lectures/Module6_6_HeatExchangers_annotated.pdf

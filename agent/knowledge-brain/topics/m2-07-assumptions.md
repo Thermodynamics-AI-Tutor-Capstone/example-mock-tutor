@@ -34,8 +34,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam1-2022-conflict-ii-1
-- item:exam1-2022-regular-ii-1
 - item:hw03-4
 sources:
 - path: lectures/Module2_7_Assumptions_annotated.pdf

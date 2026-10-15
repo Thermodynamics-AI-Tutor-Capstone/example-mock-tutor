@@ -36,8 +36,6 @@ equations:
 misconceptions: []
 examples:
 - ex:ee10-turbojet-engine-turbine-exit-temperature
-items:
-- item:final-2021-d
 sources:
 - path: lectures/Module8_11_GasTurbineEngines_annotated.pdf
   pages:

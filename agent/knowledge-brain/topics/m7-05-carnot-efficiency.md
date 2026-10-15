@@ -36,9 +36,6 @@ misconceptions:
 examples:
 - ex:ee06-explained-example-6-carnot-cycle
 items:
-- item:exam2-2021-ii-2
-- item:exam2-2022-ii-2a-2d
-- item:exam2-2023-ii-2
 - item:hw08-1
 - item:hw08-2
 sources:

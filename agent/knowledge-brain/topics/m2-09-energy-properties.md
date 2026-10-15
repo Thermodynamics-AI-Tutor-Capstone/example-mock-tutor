@@ -41,7 +41,6 @@ misconceptions:
 - misc:m16-internal-energy-and-enthalpy-interchangeable
 examples: []
 items:
-- item:exam1-2021-i-2
 - item:hw03-6
 sources:
 - path: lectures/Module2_9_EnergyProperties_annotated.pdf

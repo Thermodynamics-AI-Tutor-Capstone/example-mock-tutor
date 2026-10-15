@@ -37,13 +37,6 @@ equations:
 misconceptions: []
 examples: []
 items:
-- item:exam1-2022-conflict-i-2
-- item:exam1-2022-conflict-ii-2
-- item:exam1-2022-conflict-iii
-- item:exam1-2022-regular-i-2
-- item:exam1-2022-regular-ii-2
-- item:exam1-2022-regular-iii
-- item:exam1-2023-i-2
 - item:hw04-3a-3g
 - item:hw04-4
 - item:hw04-5

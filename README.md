@@ -8,7 +8,7 @@
 | System prompt | [`agent/system-prompt.md`](agent/system-prompt.md) |
 | Skills | [`agent/skills/`](agent/skills/README.md) |
 | Connections (model, database, tools) | [`agent/connections/`](agent/connections/README.md) |
-| Course materials — **drop course files here** | [`agent/raw-course-files/`](agent/raw-course-files/README.md) |
+| Course files and the ingestion pipeline (private, team only) | [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion) |
 | Knowledge brain — **correct what the tutor believes** | [`agent/knowledge-brain/`](agent/knowledge-brain/README.md) |
 
 ---
@@ -16,11 +16,11 @@
 A throwaway example of a ChatGPT-style thermodynamics tutor, built for the Penn State ME 300
 capstone team to poke at. **This is not the product.** It has no evaluation and no user accounts,
 and it only knows course content that has been ingested into its knowledge brain
-(`agent/knowledge-brain/`) from the raw files in `agent/raw-course-files/`.
+(`agent/knowledge-brain/`) from course files kept in the private `kelvin-ingestion` repo.
 
 [`agent/knowledge-brain/`](agent/knowledge-brain/README.md) is the first piece with any research behind it: a committed set
 of markdown cards — Dr. O'Connor's Summer 2023 ME 300 course ingested from Canvas (8 modules, 76
-lectures, equations, worked examples, homework and exam items), a hand-authored symbol table, and
+lectures, equations, worked examples, and homework problems with their answers; the exam problems stay private), a hand-authored symbol table, and
 misconception cards drawn from a 2025 ASEE systematic review of 32 studies. It is a
 knowledge structure, not a teaching result: **nothing in it has been checked by an ME 300
 instructor, and there is still no evidence that any of it makes the tutor teach better.** The
@@ -32,11 +32,11 @@ system prompt and the starter skills remain unreviewed drafts.
 > and the capstone's IRB determination is still pending. Keep the link within the team until it
 > is in hand. Sign-up is currently open to any email address.
 
-> **Warning: this repository is public.** Anything in `agent/raw-course-files/` or `agent/knowledge-brain/` is
-> visible to the whole internet, and chat messages plus any course text the tutor reads are sent
-> to DeepSeek's API. See [`agent/raw-course-files/README.md`](agent/raw-course-files/README.md) before
-> uploading anything, and note that cards in `agent/knowledge-brain/` quote and summarise whatever is in
-> `agent/raw-course-files/`.
+> **Warning: this repository is public.** Course files and exam problems and their solutions never
+> go in it. They live in the private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion)
+> repo, which publishes only cleaned cards into `agent/knowledge-brain/` (homework problems and their
+> answers included). CI fails if a course file or an exam card shows up here. Chat messages, plus any
+> course text the tutor reads, are sent to DeepSeek's API.
 
 ### Narrated whiteboard
 
@@ -99,7 +99,7 @@ win over `.env`.
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL; point it at a local fake server for offline testing. |
 | `PORT` | `3300` | Local port (local server only). |
 | `PGLITE_DIR` | `data/pglite` | Optional. Where the embedded database lives, relative to this folder. |
-| `KNOWLEDGE_DIR` | `agent/raw-course-files` | Optional. Course-materials folder, absolute or relative to this folder. Used by both `npm run knowledge` and the server (handy for testing with throwaway files). |
+| `KNOWLEDGE_DIR` | `agent/raw-course-files` | Optional. Course-materials folder, absolute or relative to this folder (gitignored: course files belong in `kelvin-ingestion`). Used by both `npm run knowledge` and the server (handy for testing with throwaway files). |
 
 The model settings (`model`, `baseUrl`, `temperature`, `maxToolRounds`) default to
 [`agent/connections/connections.json`](agent/connections/connections.json). `DEEPSEEK_MODEL` and
@@ -129,14 +129,14 @@ summary of the indexed course materials, and the knowledge map rendered from
 open a card, list a card's siblings, read a course file, and load a skill. See
 [`agent/README.md`](agent/README.md).
 
-Two folders feed the tutor and they do different jobs:
+Two places feed the tutor and they do different jobs:
 
-- **[`agent/raw-course-files/`](agent/raw-course-files/README.md)** — raw uploaded course files. Humans only.
+- **Course files** — kept in the private [`kelvin-ingestion`](https://github.com/Thermodynamics-AI-Tutor-Capstone/kelvin-ingestion) repo with the ingestion pipeline, never here.
 - **[`agent/knowledge-brain/`](agent/knowledge-brain/README.md)** — the knowledge brain: short, committed, human-editable
   markdown cards about the course, each citing the file and page it came from. AI drafts are
   proposed by pull request; a human edit is never overwritten.
 
-Both are read from a prebuilt index, `build/knowledge-index.json` (gitignored). On Vercel the
+The cards are read from a prebuilt index, `build/knowledge-index.json` (gitignored). On Vercel the
 index is built by `npm run build` during each deploy, by a script that makes **no AI calls** —
 the build is deterministic and works without an API key. Locally, `npm start` rebuilds it every
 time the server starts and keeps it in memory, so **restart the server** after adding or changing

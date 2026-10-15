@@ -27,9 +27,6 @@ equations:
 - eq:pressure-definition
 misconceptions: []
 examples: []
-items:
-- item:exam1-2022-conflict-i-1
-- item:exam1-2022-regular-i-1
 sources:
 - path: lectures/Module2_2_Dimensions_annotated.pdf
   pages:

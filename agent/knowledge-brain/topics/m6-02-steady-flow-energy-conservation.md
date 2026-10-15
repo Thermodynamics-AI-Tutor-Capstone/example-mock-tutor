@@ -41,8 +41,6 @@ misconceptions:
 examples:
 - ex:ee04-steady-flow-energy-equation-for-a-hair-dryer-heat
 items:
-- item:exam2-2021-iii-a-e
-- item:exam2-2023-iii
 - item:hw06-1
 - item:hw06-2
 - item:hw06-3

@@ -39,10 +39,6 @@ misconceptions: []
 examples:
 - ex:ee07-explained-example-7-isentropic-expansion
 items:
-- item:exam2-2021-ii-1
-- item:exam2-2021-iii-a-e
-- item:exam2-2022-ii-1a-1c
-- item:exam2-2023-ii-2
 - item:hw09-2
 sources:
 - path: lectures/Module7_12_IsentropicRelations_annotated.pdf

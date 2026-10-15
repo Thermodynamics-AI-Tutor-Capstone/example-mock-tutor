@@ -42,16 +42,6 @@ misconceptions:
 - misc:m15-adiabatic-implies-isentropic
 examples:
 - ex:m8-06-example-rankine-cycle
-items:
-- item:final-2022-ii-g
-- item:final-2022-ii-h
-- item:final-2022-ii-j
-- item:final-2023-b
-- item:final-2023-c
-- item:final-2023-d
-- item:final-2023-e
-- item:final-2023-f
-- item:final-2023-g
 sources:
 - path: lectures/Module8_6_Example_RankineCycle_annotated.pdf
   pages:

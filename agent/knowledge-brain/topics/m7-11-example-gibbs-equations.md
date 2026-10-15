@@ -36,7 +36,6 @@ misconceptions:
 examples:
 - ex:m7-11-example-gibbs-equations
 items:
-- item:exam2-2023-i-2
 - item:hw08-3
 - item:hw08-4
 - item:hw08-6

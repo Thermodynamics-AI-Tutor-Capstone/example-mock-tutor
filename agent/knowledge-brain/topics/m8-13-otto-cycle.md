@@ -37,7 +37,6 @@ misconceptions: []
 examples:
 - ex:ee11-explained-example-11-otto-cycle-analysis
 items:
-- item:final-2021-2
 - item:hw10-1
 - item:hw10-4
 sources:

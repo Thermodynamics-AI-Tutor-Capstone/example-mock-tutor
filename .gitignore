@@ -7,5 +7,6 @@ public/vendor/
 .vercel
 .env*
 build/
+agent/raw-course-files/
 .claude/worktrees/
 .claude/.github-coordination.json

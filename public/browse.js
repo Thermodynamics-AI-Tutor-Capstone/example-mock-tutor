@@ -3,11 +3,6 @@
 (function () {
   'use strict';
 
-  var REPO = 'Thermodynamics-AI-Tutor-Capstone/example-mock-tutor';
-  var BRANCH = 'main';
-  var KNOWLEDGE_ROOT = 'agent/raw-course-files';
-  var GITHUB_UPLOAD = 'https://github.com/' + REPO + '/upload/' + BRANCH + '/' + KNOWLEDGE_ROOT;
-
   var $ = function (id) { return document.getElementById(id); };
   var app = $('app');
   var pane = $('pane');
@@ -294,11 +289,7 @@
   }
 
   function githubUrlFor(src) {
-    if (src && src.githubUrl) return src.githubUrl;
-    var p = String((src && (src.path || src.file)) || '').replace(/^\/+/, '');
-    if (!p) return '';
-    if (p.indexOf(KNOWLEDGE_ROOT + '/') !== 0) p = KNOWLEDGE_ROOT + '/' + p;
-    return 'https://github.com/' + REPO + '/blob/' + BRANCH + '/' + p.split('/').map(encodeURIComponent).join('/');
+    return (src && src.githubUrl) || '';
   }
   function pagesLabel(src) {
     if (!src) return '';
@@ -501,9 +492,7 @@
   function emptyState() {
     setCrumbs([{ text: 'Course map' }]);
     notice('No course material yet',
-      '<p>Nothing has been added to the knowledge base, so there are no cards to browse. ' +
-      'Course files are uploaded to <code>' + KNOWLEDGE_ROOT + '/</code> in the repository; the build turns them into cards.</p>' +
-      '<p><a href="' + escapeHtml(GITHUB_UPLOAD) + '" target="_blank" rel="noopener">Upload course files on GitHub &rarr;</a></p>');
+      '<p>Nothing has been added to the knowledge base, so there are no cards to browse.</p>');
   }
 
   // The map comes from taxonomy.yml, so it renders in full even when no course file has been
@@ -512,8 +501,7 @@
     if (state.courseFiles !== 0) return '';
     return '<div class="banner-warn">No course files have been uploaded yet, so every topic below is ' +
       'a placeholder built from the syllabus outline alone. Nothing here is drawn from lecture notes, ' +
-      'slides or problem sets. <a href="' + escapeHtml(GITHUB_UPLOAD) + '" target="_blank" rel="noopener">' +
-      'Upload course files on GitHub &rarr;</a></div>';
+      'slides or problem sets.</div>';
   }
 
   async function renderHome() {

@@ -36,15 +36,6 @@ misconceptions:
 examples:
 - ex:m8-08-example-vapor-compression
 items:
-- item:final-2021-g
-- item:final-2021-h
-- item:final-2021-i
-- item:final-2021-j
-- item:final-2022-6
-- item:final-2023-5
-- item:final-2023-h
-- item:final-2023-i
-- item:final-2023-j
 - item:hw10-2
 sources:
 - path: lectures/Module8_8_Example_VaporCompression_annotated.pdf

@@ -33,12 +33,6 @@ misconceptions:
 - misc:m09-friction-is-the-only-efficiency-limit
 examples: []
 items:
-- item:exam2-2021-i-1
-- item:exam2-2021-ii-2
-- item:exam2-2022-i-1
-- item:exam2-2022-ii-2a-2d
-- item:exam2-2023-i-1
-- item:exam2-2023-ii-2
 - item:hw07-5
 - item:hw07-6
 sources:

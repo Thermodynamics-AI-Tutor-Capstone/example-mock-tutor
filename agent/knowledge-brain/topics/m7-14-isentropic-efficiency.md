@@ -41,8 +41,6 @@ misconceptions:
 examples:
 - ex:ee08-explained-example-8-isentropic-efficiency-of-a-ste
 items:
-- item:exam2-2021-i-3
-- item:exam2-2023-i-3
 - item:hw09-1
 - item:hw09-2
 - item:hw09-5
