@@ -29,7 +29,8 @@
     "limits:test": "node scripts/limits.test.mjs",
     "usernames:test": "node scripts/usernames.test.mjs",
     "routing:test": "node scripts/routing.test.mjs",
-    "launch:test": "node scripts/launch.test.mjs"
+    "launch:test": "node scripts/launch.test.mjs",
+    "feedback:test": "node scripts/feedback.test.mjs"
   },
   "engines": {
     "node": "24.x"

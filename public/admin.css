@@ -214,3 +214,13 @@ mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1
   .tile .v { font-size: 22px; }
   .seg button { flex: 1; }
 }
+
+/* Students' feedback: the Feedback tab and the notes under a reply in a chat. */
+.fb-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.feedback { font-size: 13px; line-height: 1.5; border: 1px solid var(--border); border-left: 3px solid var(--s4); border-radius: 8px; padding: 8px 12px; margin-top: 8px; background: var(--card); }
+.feedback.up { border-left-color: var(--good); }
+.feedback.down { border-left-color: var(--critical); }
+.feedback .fb-head { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+.feedback-chat { margin-bottom: 16px; max-width: 820px; }
+.msg.flash, .feedback-chat.flash { outline: 2px solid var(--s1); outline-offset: 6px; border-radius: 6px; }
+.btn[hidden] { display: none; }
