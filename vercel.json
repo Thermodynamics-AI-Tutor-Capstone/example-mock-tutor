@@ -8,7 +8,7 @@
     "api/handler.js": {
       "maxDuration": 300,
       "supportsCancellation": true,
-      "includeFiles": "{agent/system-prompt.md,agent/solver-prompt.md,agent/policy.yml,agent/course-profile.json,agent/connections/**,agent/skills/**,agent/styles/**,agent/tools/**,agent/attachments/**,agent/properties/**,agent/figures.md,build/knowledge-index.json,eval/results/**}",
+      "includeFiles": "{agent/*.*,agent/connections/**,agent/skills/**,agent/styles/**,agent/tools/**,agent/attachments/**,agent/properties/**,build/knowledge-index.json,eval/results/**}",
       "excludeFiles": "{node_modules/@electric-sql/**,agent/raw-course-files/**,agent/knowledge-brain/**}"
     }
   },

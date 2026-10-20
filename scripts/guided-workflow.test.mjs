@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { applyPolicy, policySection } from '../lib/policy.js';
 import { loadStyles, listStyles, resolveStyleId } from '../lib/styles.js';
 import { cardCitations, sourceLink, safeSourceUrl } from '../lib/course-profile.js';
@@ -62,3 +63,8 @@ const opened = await openCard({ id: card.id }, { knowledge: { openCard: () => ca
 assert.equal(opened.citationUrl, citation.citationUrl);
 assert.equal(opened.sources[0].path, source.path);
 console.log('ok citation links preserve provenance and expose only configured HTTPS destinations');
+
+const deployment = JSON.parse(fs.readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+assert.ok(deployment.functions['api/handler.js'].includeFiles.length <= 256, 'Vercel limits includeFiles to 256 characters');
+assert.match(deployment.functions['api/handler.js'].excludeFiles, /agent\/raw-course-files/);
+console.log('ok deployment file pattern fits Vercel schema and excludes raw course files');
