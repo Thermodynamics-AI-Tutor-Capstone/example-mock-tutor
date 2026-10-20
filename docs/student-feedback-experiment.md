@@ -13,6 +13,22 @@ Branch: `experiment/student-feedback`. This is an evaluation version, not a demo
 
 ## Compare with main
 
+The Equation button above the message box opens a searchable local editor with thermodynamic
+quantities and editable structure templates. Students can preview and insert an equation at
+the message cursor before sending. The message carries TeX, and student equations render in
+both the live conversation and reloaded history. A small contextual tip offers "Try it" when
+students type an equation or related terms. The existing per-user tip preferences remember
+dismissal/use and limit tips to one per visit/day.
+
+The catalog in `public/thermo-symbols.js` uses the [NIST fluid-property database](https://webbook.nist.gov/chemistry/fluid/)
+to select properties, [IAPWS nomenclature](https://iapws.org/technical-guidance/release/IF97-Rev)
+and the [IUPAC Green Book](https://iupac.org/wp-content/uploads/2025/03/IUPAC-GB4Abridged.pdf)
+for notation, with ME300 engineering conventions for rates, states and cycles. It is a bundled
+curated catalog, not a live property lookup. Greek symbols appear with their quantity names.
+Tooltips distinguish specific/total quantities and units; more specialized fluid properties
+are grouped separately. These symbols do not imply current syllabus or future exam coverage.
+No sign convention is selected by inserting a symbol. Plain chat remains available.
+
 Use fresh conversations in each environment and the same problem statement. Try each case below with Whiteboard Off, then On. Keep model settings and problem data comparable.
 
 | Case | Example student follow-up | What to look for |
@@ -50,6 +66,7 @@ Before live evaluation, the project owner must provision/confirm Preview-scoped 
 ## Checks
 
 - `npm run guided:test`: help availability, state completion, presentation tool selection, and reference URL handling.
+- `npm run equation:browser`: equation insertion, cursor selection, template editing, API payload, history rendering, keyboard controls and mobile layout. Uses the same optional Playwright setup below.
 - `npm run agent:test`: existing policy compatibility and real agent-loop checks, including attempted whiteboard calls when Off.
 - `npm run board:test` and `npm run narration:test`: board data/rendering and narration.
 - `node scripts/narration.browser.test.mjs`: speech stub, visual playback, switch persistence, request payload, mobile and reduced motion. Set `PLAYWRIGHT_MODULE` / `CHROME_EXECUTABLE` as needed.

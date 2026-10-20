@@ -323,7 +323,8 @@
     if (attachments && attachments.length) row.appendChild(window.KelvinAttachments.chipsFor(attachments));
     const b = document.createElement('div');
     b.className = 'bubble';
-    b.textContent = content;
+    if (window.KelvinEquations) window.KelvinEquations.renderMessage(b, content);
+    else b.textContent = content;
     row.appendChild(b);
     thread.appendChild(row);
     return row;

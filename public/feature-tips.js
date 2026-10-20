@@ -5,6 +5,13 @@
   let options, storageKey, preferences = {}, timer, shownThisVisit = false, current;
   const definitions = [
     {
+      id: 'equation', target: 'equationToggle', title: 'Type equations faster', action: 'Try it',
+      text: 'Try the equation toolbar to type equations faster. Choose a quantity, preview your equation, and insert it into your message.',
+      minLength: 3,
+      matches: (draft) => /[=^\\]|\b(equation|formula|enthalpy|entropy|pressure|temperature|density|heat|work|mass|energy|divided)\b/i.test(draft),
+      available: () => $('equationPanel')?.hidden === true,
+    },
+    {
       id: 'attachment', target: 'attBtn', title: 'Show Kelvin your working', action: 'Attach your work',
       text: 'A photo of your calculations helps Kelvin see the steps you tried. Add what you expected and where you got stuck.',
       matches: (draft) => /\b(my work|my solution|my calculation|handwritten|screenshot|check my|check this)\b/i.test(draft),
@@ -38,8 +45,9 @@
   function consider() {
     if (shownThisVisit || preferences.disabled || blocked() || Date.now() - (preferences.lastShown || 0) < DAY) return;
     const draft = $('input').value;
-    if (document.activeElement !== $('input') || draft.trim().length < 12) return;
-    const tip = definitions.find((item) => !preferences.seen?.[item.id] && item.matches(draft)
+    if (document.activeElement !== $('input')) return;
+    const tip = definitions.find((item) => draft.trim().length >= (item.minLength || 12)
+      && !preferences.seen?.[item.id] && item.matches(draft)
       && item.available() && !$(item.target).disabled);
     if (!tip) return;
     current = tip;

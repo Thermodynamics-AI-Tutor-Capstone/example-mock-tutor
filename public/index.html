@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/vendor/katex/katex.min.css">
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/narration.css">
+<link rel="stylesheet" href="/equation-editor.css">
 <link rel="stylesheet" href="/account.css">
 <script src="/vendor/marked.umd.js"></script>
 <script src="/vendor/purify.min.js"></script>
@@ -18,6 +19,8 @@
 <script src="/attachments.js" defer></script>
 <script src="/voice-input.js" defer></script>
 <script src="/feature-tips.js" defer></script>
+<script src="/thermo-symbols.js" defer></script>
+<script src="/equation-editor.js" defer></script>
 <script src="/app.js" defer></script>
 <script src="/narration.js" defer></script>
 </head>
@@ -129,7 +132,28 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>
       </button>
       <input id="attInput" type="file" hidden multiple accept=".pdf,.docx,.pptx,.txt,.md,.csv,image/*">
+      <section id="equationPanel" class="equation-panel" aria-labelledby="equationTitle" hidden>
+        <div class="equation-heading">
+          <strong id="equationTitle">Equation editor</strong>
+          <button id="equationClose" type="button" aria-label="Close equation editor">Close</button>
+        </div>
+        <p class="equation-help" id="equationHelp">Choose symbols, then type numbers and operators. Templates select the part to replace.</p>
+        <input id="equationSearch" type="search" aria-label="Find a thermodynamic quantity" placeholder="Find a quantity, e.g. entropy or viscosity">
+        <div id="equationCategories" class="equation-categories" role="group" aria-label="Symbol categories"></div>
+        <div id="equationSymbols" class="equation-symbols" role="group" aria-label="Common thermodynamics symbols"></div>
+        <label class="equation-label" for="equationSource">Your equation</label>
+        <textarea id="equationSource" rows="2" spellcheck="false" autocapitalize="off" aria-describedby="equationHelp" placeholder="Choose a symbol to begin, or type an equation"></textarea>
+        <div class="equation-preview-label">Preview</div>
+        <div id="equationPreview" class="equation-preview" aria-label="Equation preview"></div>
+        <p id="equationStatus" class="equation-status" role="status"></p>
+        <div class="equation-actions">
+          <button id="equationClear" type="button">Clear equation</button>
+          <button id="equationInsert" type="button" disabled>Insert into message</button>
+        </div>
+        <p class="equation-references">Property catalog: <a href="https://webbook.nist.gov/chemistry/fluid/" target="_blank" rel="noopener noreferrer">NIST</a>. Notation: <a href="https://iapws.org/technical-guidance/release/IF97-Rev" target="_blank" rel="noopener noreferrer">IAPWS</a> / <a href="https://iupac.org/what-we-do/books/greenbook/" target="_blank" rel="noopener noreferrer">IUPAC</a>, with ME300 conventions. Symbols can have different meanings; check their labels.</p>
+      </section>
       <div class="whiteboard-preference">
+        <button id="equationToggle" type="button" class="equation-toggle" aria-expanded="false" aria-controls="equationPanel"><span aria-hidden="true">ƒx</span> Equation <span class="equation-chevron" aria-hidden="true">⌃</span></button>
         <button id="whiteboardBtn" type="button" role="switch" class="whiteboard-btn" aria-label="Whiteboard" aria-describedby="whiteboardHint" title="Keep visual, spoken walkthroughs on or use regular chat" aria-checked="false">
           <span class="whiteboard-track" aria-hidden="true"></span>
           <span>Whiteboard</span><strong id="whiteboardState">Off</strong>
