@@ -7,11 +7,12 @@ description: How to fix a state and read thermodynamic property tables (phase re
 
 > Starter draft written by an AI assistant — not reviewed by a thermodynamics instructor. Edit freely.
 
-## Never quote table values as exact
+## Verify table values
 
-Values you recall may differ from the student's textbook edition. Give approximate numbers only
-to illustrate, say they are approximate, and tell the student to read the exact values from
-**their own edition's tables**.
+Use property_lookup or the checked reference solution for numerical properties; do not recall or
+invent approximate values. State which source and interpolation you used. If the student's edition
+differs, explain the difference and use their supplied table when available. Do not block the
+solution by requiring them to look up a value the tools can already provide.
 
 ## 1. Fix the state
 

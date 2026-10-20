@@ -1,5 +1,10 @@
 # Kelvin AI (mock)
 
+> **Experimental branch: guided workflow.** One tutor mode, a persistent Whiteboard On/Off
+> switch, immediate worked explanations, and linked course references. See
+> [comparison cases and preview setup](docs/student-feedback-experiment.md).
+> This branch is for evaluation; keep `main` as the production deployment.
+
 ## Where things are
 
 | What | Where |

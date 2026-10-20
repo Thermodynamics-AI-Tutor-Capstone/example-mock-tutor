@@ -11,10 +11,17 @@
   const sendBtn = $('sendBtn');
   const whiteboardBtn = $('whiteboardBtn');
   let requestWhiteboard = false;
+  try { requestWhiteboard = localStorage.getItem('kelvin-experiment-whiteboard') === 'on'; } catch {}
+  function renderWhiteboardPreference() {
+    whiteboardBtn.setAttribute('aria-checked', String(requestWhiteboard));
+    $('whiteboardState').textContent = requestWhiteboard ? 'On' : 'Off';
+    input.placeholder = requestWhiteboard ? 'Work through a problem on the whiteboard…' : 'Ask anything';
+  }
+  renderWhiteboardPreference();
   whiteboardBtn.addEventListener('click', () => {
     requestWhiteboard = !requestWhiteboard;
-    whiteboardBtn.setAttribute('aria-pressed', String(requestWhiteboard));
-    input.placeholder = requestWhiteboard ? 'What should Kelvin explain on the whiteboard?' : 'Ask anything';
+    try { localStorage.setItem('kelvin-experiment-whiteboard', requestWhiteboard ? 'on' : 'off'); } catch {}
+    renderWhiteboardPreference();
     input.focus();
   });
   const scrollDownBtn = $('scrollDown');
@@ -293,9 +300,7 @@
   function goEmpty(pushUrl) {
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
-    requestWhiteboard = false;
-    whiteboardBtn.setAttribute('aria-pressed', 'false');
-    input.placeholder = 'Ask anything';
+    renderWhiteboardPreference();
     state.loadToken++;
     state.currentId = null;
     if (window.KelvinAttachments) window.KelvinAttachments.clear();
@@ -423,7 +428,7 @@
     window.KelvinAttachments.setPending(conv.pendingAttachments || []);
     state.routedStyle = conv.routedStyle || null;
     if (state.styles.length) {
-      state.activeStyle = styleById(conv.style) ? conv.style : 'auto';
+      state.activeStyle = styleById(conv.style) ? conv.style : defaultStyleId();
       renderStyleButton();
     }
     updateTitle(conv);
@@ -482,16 +487,16 @@
     if (d.wantsAnswer) read.push('wants the answer');
     if (d.stalled) read.push('stalling');
     if (d.frustrated) read.push('frustrated');
-    if (d.givingUp) read.push('giving up → park');
+    if (d.givingUp) read.push(d.guidedWorkflow ? 'discouraged → demonstrate next step' : 'giving up → park');
     const m = d.misconception || { action: 'none', candidates: [] };
     let misc;
     if (m.action === 'repair') misc = 'Misconception: ' + m.candidates[0].title + ' (' + m.candidates[0].p + ') → repair it';
-    else if (m.action === 'confirm') misc = 'Possible misconception: ' + m.candidates.map((c) => c.title + ' (' + c.p + ')').join(', ') + ' → ask one question first';
+    else if (m.action === 'confirm') misc = 'Possible misconception: ' + m.candidates.map((c) => c.title + ' (' + c.p + ')').join(', ') + (d.guidedWorkflow ? ' → assess within the explanation' : ' → ask one question first');
     else misc = modelRead ? 'No misconception in this message' : 'No misconception read (needs a decision model)';
     const style = d.style ? (d.style.icon ? d.style.icon + ' ' : '') + d.style.name + (d.auto ? '' : ' (pinned)') : '—';
     return [
       source + ' — ' + (read.length ? read.join(' · ') : 'nothing detected'),
-      'Style: ' + style + (d.router === 'skills' ? ' (picked by Kelvin)' : '') + ' · Help ceiling: rung ' + d.ceiling + ' of ' + d.maxRung + (d.rungName ? ' (' + d.rungName + ')' : ''),
+      d.guidedWorkflow ? 'Guided tutor · Worked explanations available' : 'Style: ' + style + (d.router === 'skills' ? ' (picked by Kelvin)' : '') + ' · Help ceiling: rung ' + d.ceiling + ' of ' + d.maxRung + (d.rungName ? ' (' + d.rungName + ')' : ''),
       misc,
     ];
   }
@@ -581,7 +586,7 @@
     });
   }
   function openStyleMenu() {
-    if (!state.styles.length) return;
+    if (state.styles.length < 2) return;
     renderStyleMenu();
     styleMenu.hidden = false;
     styleBtn.setAttribute('aria-expanded', 'true');
@@ -711,18 +716,15 @@
     if (state.streaming || files.busy() || window.KelvinVoice?.active()) return;
     const sentFiles = text != null ? [] : files.pendingList();
     const baseContent = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
-    const content = baseContent && requestWhiteboard
-      ? baseContent + '\n\nPlease explain this on the narrated whiteboard, with spoken explanation and drawing together.'
-      : baseContent;
+    const content = baseContent;
+    const whiteboard = requestWhiteboard;
     if (!content) return;
 
     window.KelvinTips?.hide();
     window.KelvinVoice?.cancel();
 
     window.KelvinNarration?.pauseAll();
-    requestWhiteboard = false;
-    whiteboardBtn.setAttribute('aria-pressed', 'false');
-    input.placeholder = 'Ask anything';
+    renderWhiteboardPreference();
 
     state.streaming = true;
     input.value = '';
@@ -868,7 +870,7 @@
       const res = await apiFetch('/api/conversations/' + convId + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify({ content, attachments: sentFiles.map((a) => a.id) }),
+        body: JSON.stringify({ content, whiteboard, attachments: sentFiles.map((a) => a.id) }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {

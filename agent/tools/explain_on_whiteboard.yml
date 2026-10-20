@@ -2,8 +2,7 @@ name: explain_on_whiteboard
 description: >-
   Create a spoken, animated whiteboard explanation when the student asks to hear an explanation,
   watch a walkthrough, or use the narrated whiteboard. Pair short plain-language speech with
-  reveal cues for a schematic and equation steps. Respect the current teaching style and help
-  ceiling: explain the next justified step or a checked analogous example, not unearned answers.
+  reveal cues for a schematic and equation steps. In guided workflow mode, explain the requested steps of the actual problem through to a checked answer. In other modes respect the help ceiling.
   Use only problem givens or quantities verified by tools. Use plot_property_diagram for scaled
   property plots. The app saves and shows the lesson; do not copy its figure or repeat the transcript.
   Audio starts only when the student presses Play; captions and manual steps work without audio.

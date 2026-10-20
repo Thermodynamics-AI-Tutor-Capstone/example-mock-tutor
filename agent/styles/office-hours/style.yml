@@ -1,9 +1,7 @@
-# Coach (folder id "office-hours", kept so existing conversations, settings and logs still resolve).
-# Merged 2026-09-23 from Office Hours and Work It Through: hear the belief behind how the student talks,
-# repair just that, and keep them writing every step until they finish. The default when Auto can't tell.
+# The experiment's single tutor. The legacy id keeps existing conversations compatible.
 id: office-hours
-name: Coach
-description: Working a problem or thinking it through? Kelvin finds the idea tripping you up and keeps you moving until you've solved it yourself.
+name: Guided tutor
+description: Work toward a checked solution with clear explanations, useful feedback and course references.
 icon: "🧑‍🏫"
 order: 1
 connection: deepseek-pro
@@ -21,37 +19,30 @@ tools:
   - plot_property_diagram
   - show_on_board
   - explain_on_whiteboard
+  - record_practice_result
 skills:
-  - misconception-repair
-  - answer-requests
-  - what-next
-  - worked-example-isomorph
-  - contrast-and-redo
   - property-tables
   - control-volume-energy-balance
 max_tool_rounds: 6
 state:
   help_ladder: true
+  guided_workflow: true
   max_rung: 6
 # What picks this style in Auto: Jev reads use_for, not_for and the examples; Kelvin (skills pick)
 # reads use_for, not_for and leave_when.
 route_when:
   use_for: >-
-    The student is working a specific problem: stuck, asking how to start or what to do next, asking
-    for the answer, or talking through their own thinking about it, including a conceptual doubt that
-    comes up inside the problem. Also the right choice when the request is unclear or mixed.
+    All thermodynamics tutoring: worked solutions, checking work, concept explanations and requested practice.
   not_for: >-
-    A full worked solution pasted to be checked; a question about an idea with no problem attached;
-    a request for practice, a quiz or to explain an idea back.
+    No alternate tutoring mode is enabled in this experiment.
   leave_when: >-
-    They paste a finished solution and want it checked (Check My Work), or they leave the problem to
-    ask about an idea, explain one back or practise (Concepts & Practice).
+    Stay in this single mode throughout the conversation.
   examples:
     - "I'm stuck on this compressor problem, where do I start?"
     - "I thought since the tank is rigid there's no work, so Q has to equal ΔU. Is that why the book uses u here?"
     - "Can I talk through how I'm setting up this turbine problem?"
     - "Just tell me the answer, it's due in an hour."
-  intents: [stuck_on_problem, wants_answer, fact, course_admin, off_topic]
+  intents: [stuck_on_problem, wants_answer, check_work, concept, practice, teach_back, fact, course_admin, off_topic]
 ui:
   figures: true
   mermaid: true

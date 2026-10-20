@@ -13,18 +13,24 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const saved = validateLesson(lessonInput);
 const board = { ...saved.board, lesson: { id: '11111111-1111-4111-8111-111111111111', segments: saved.segments } };
 const content = '```kelvin-board\n' + JSON.stringify(board) + '\n```\n\nWhich words justify steady state?';
-let audioRequests = 0, postedMessage = '', pendingStream;
+let audioRequests = 0, postedMessage = '', postedWhiteboard = null, pendingStream;
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://test');
   const json = (value, status = 200) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
   if (url.pathname === '/api/me') return json({ user: { id: 'test', name: 'Test Student' }, profile: { onboarded: true, default_style: 'office-hours' } });
-  if (url.pathname === '/api/styles') return json([{ id: 'office-hours', name: 'Coach', available: true, default: true }]);
+  if (url.pathname === '/api/styles') return json([{ id: 'office-hours', name: 'Guided tutor', available: true, default: true }]);
+  if (url.pathname === '/api/me/usage') return json({ percent: 0, state: 'normal' });
   if (url.pathname === '/api/conversations') return json([{ id: 'chat', title: 'Turbine explanation', style: 'office-hours' }]);
   if (url.pathname === '/api/conversations/chat') return json({ id: 'chat', title: 'Turbine explanation', style: 'office-hours', messages: [{ role: 'assistant', content }] });
   if (url.pathname === '/api/conversations/chat/messages') {
     let body = ''; for await (const chunk of req) body += chunk;
     postedMessage = JSON.parse(body).content;
+    postedWhiteboard = JSON.parse(body).whiteboard;
     res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+    if (!postedWhiteboard) {
+      res.end('data: {"type":"delta","content":"Continue with the energy balance in chat."}\n\ndata: {"type":"done"}\n\n');
+      return;
+    }
     res.write('data: ' + JSON.stringify({ type: 'delta', content: '```kelvin-board\n' + JSON.stringify(board) + '\n```\n\n' }) + '\n\n');
     pendingStream = () => { res.end('data: ' + JSON.stringify({ type: 'delta', content: 'Which words justify steady state?' }) + '\n\ndata: {"type":"done"}\n\n'); };
     return;
@@ -64,6 +70,7 @@ try {
     };
   });
   await page.goto(origin + '/#/c/chat');
+  assert.equal(await page.locator('#stylePicker').isVisible(), false, 'single tutor has no style picker');
   await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => testSpeech.history.length), 0, 'no autoplay from history');
   assert.equal(await page.getByLabel('Narration voice').inputValue(), 'local-en', 'prefer local English voice');
@@ -125,11 +132,12 @@ try {
   console.log('ok  marker drawing, pause, phrase resume, speed, voice, stale callbacks, completion, errors, navigation');
 
   await page.goto(origin + '/#/c/chat');
-  await page.getByRole('button', { name: 'Explain on whiteboard', exact: true }).click();
+  await page.getByRole('switch', { name: 'Whiteboard', exact: true }).click();
   await page.locator('#input').fill('Explain a turbine');
   await page.getByRole('button', { name: 'Send', exact: true }).click();
   await page.locator('.knarration').nth(1).waitFor();
-  assert.match(postedMessage, /narrated whiteboard/);
+  assert.equal(postedMessage, 'Explain a turbine', 'display preference must not pollute student text');
+  assert.equal(postedWhiteboard, true);
   await page.locator('.knarration').nth(1).getByRole('button', { name: 'Play narration', exact: true }).click();
   await page.locator('.knarration').nth(1).getByRole('button', { name: 'Pause', exact: true }).waitFor();
   const count = await page.evaluate(() => testSpeech.history.length);
@@ -142,6 +150,21 @@ try {
   await page.locator('.knarration').nth(1).getByRole('button', { name: 'Next step', exact: true }).click();
   assert.equal(await page.evaluate(() => Boolean(testSpeech.active)), true, 'inactive player must not cancel active speech');
   console.log('ok  composer, streaming reuse, one active voice, independent manual controls');
+
+  assert.equal(await page.getByRole('switch', { name: 'Whiteboard' }).getAttribute('aria-checked'), 'true');
+  await page.getByRole('button', { name: 'New chat', exact: true }).click();
+  assert.equal(await page.getByRole('switch', { name: 'Whiteboard' }).getAttribute('aria-checked'), 'true');
+  await page.goto(origin + '/#/c/chat');
+  await page.reload();
+  assert.equal(await page.getByRole('switch', { name: 'Whiteboard' }).getAttribute('aria-checked'), 'true');
+  await page.getByRole('switch', { name: 'Whiteboard' }).click();
+  await page.locator('#input').fill('Continue in chat');
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
+  await page.getByText('Continue with the energy balance in chat.', { exact: true }).waitFor();
+  assert.equal(postedWhiteboard, false);
+  await page.reload();
+  assert.equal(await page.getByRole('switch', { name: 'Whiteboard' }).getAttribute('aria-checked'), 'false');
+  console.log('ok  persistent switch survives sends, new chats and reload; Off sends ordinary chat preference');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });

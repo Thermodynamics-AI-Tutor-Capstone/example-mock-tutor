@@ -170,7 +170,9 @@ await t('"finished" is refused before the student has a complete attempt', async
 
 console.log('skills pick (choose_style)');
 
-const styles = loadStyles().styles.filter((x) => x.enabled);
+// Exercise the reusable routing engine with explicit legacy fixtures. The experiment exposes
+// only office-hours; guided-workflow.test.mjs checks that public contract and legacy aliases.
+const styles = loadStyles().styles.filter((x) => ['office-hours', 'pinpointer', 'probe'].includes(x.id)).map((x) => ({ ...x, enabled: true }));
 const byId = (id) => styles.find((x) => x.id === id);
 
 await t('the style index lists every style with when to use it, and flags the first message', () => {
@@ -324,9 +326,9 @@ await t('calculate does exact arithmetic with units and refuses what mathjs flag
 
 await t('merged styles answer to their old ids', () => {
   assert.equal(resolveStyleId('work-it-through'), 'office-hours');
-  assert.equal(resolveStyleId('teach-kelvin'), 'probe');
-  assert.equal(resolveStyleId('practice'), 'probe');
-  assert.equal(resolveStyleId('pinpointer'), 'pinpointer');
+  assert.equal(resolveStyleId('teach-kelvin'), 'office-hours');
+  assert.equal(resolveStyleId('practice'), 'office-hours');
+  assert.equal(resolveStyleId('pinpointer'), 'office-hours');
   assert.equal(resolveStyleId('auto'), 'auto');
 });
 
@@ -365,6 +367,22 @@ await t('the solver runs its tools, saves a solution for the problem, and the tu
   assert.equal(ref.ok, true);
   assert.match(referenceSection(ref), /Reference solution/);
   assert.equal(referenceSection({ ok: false, solution: null }), '');
+});
+
+await t('Whiteboard Off excludes both tools and refuses a model attempt to call one', async () => {
+  const { shown, bodies, out } = await run([
+    { tools: [{ name: 'show_on_board', arguments: { kind: 'solution', title: 'Example', steps: [{ label: 'Balance', latex: 'Q-W=\\Delta U' }] } }] },
+    { text: ['Start with the energy balance in chat.'] },
+  ], turnFor({ guidedWorkflow: true, ceiling: 6 }), { whiteboard: false });
+  assert.doesNotMatch(shown, /kelvin-board/);
+  assert.ok(out.toolLog[0].error);
+  assert.ok(bodies.every((b) => !(b.tools || []).some((t) => ['show_on_board', 'explain_on_whiteboard'].includes(t.function.name))));
+});
+
+await t('Whiteboard On offers the narrated tool without changing the student message', async () => {
+  const { bodies } = await run([{ text: ['A walkthrough.'] }], turnFor({ guidedWorkflow: true, ceiling: 6 }), { whiteboard: true });
+  assert.ok(bodies[0].tools.some((t) => t.function.name === 'explain_on_whiteboard'));
+  assert.equal(bodies[0].messages.at(-1).content, 'I got h2 = 275.4, is that right?');
 });
 
 await closeDb();

@@ -65,6 +65,7 @@
       <span id="viewAsText"></span>
       <button id="viewAsBack" class="view-as-back" type="button">Switch back</button>
     </div>
+    <div class="experiment-banner">Experimental Kelvin · Guided solutions · ME300 summer course</div>
     <header class="topbar">
       <div class="topbar-left">
         <button id="openSidebar" class="icon-btn only-collapsed" title="Open sidebar" aria-label="Open sidebar">
@@ -73,7 +74,8 @@
         <button id="topNewChat" class="icon-btn only-collapsed" title="New chat" aria-label="New chat">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L12 14.8 8 16l1.2-4z"/></svg>
         </button>
-        <div id="stylePicker" class="style-picker">
+        <span class="model-label">Kelvin AI</span>
+        <div id="stylePicker" class="style-picker" style="display:none">
           <button id="styleBtn" class="model-label" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="styleMenu" title="Choose a tutoring style">
             <span id="styleBtnIcon" class="style-btn-icon" aria-hidden="true"></span><span>Kelvin AI</span><span id="styleBtnName" class="style-btn-name"></span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
@@ -127,9 +129,13 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>
       </button>
       <input id="attInput" type="file" hidden multiple accept=".pdf,.docx,.pptx,.txt,.md,.csv,image/*">
-      <button id="whiteboardBtn" type="button" class="whiteboard-btn" aria-label="Explain on whiteboard" title="Explain on whiteboard with narration" aria-pressed="false">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5M8 21h8M9 7l6 3-6 3z"/></svg>
-      </button>
+      <div class="whiteboard-preference">
+        <button id="whiteboardBtn" type="button" role="switch" class="whiteboard-btn" aria-label="Whiteboard" aria-describedby="whiteboardHint" title="Keep visual, spoken walkthroughs on or use regular chat" aria-checked="false">
+          <span class="whiteboard-track" aria-hidden="true"></span>
+          <span>Whiteboard</span><strong id="whiteboardState">Off</strong>
+        </button>
+        <span id="whiteboardHint">Step by step · Optional audio</span>
+      </div>
       <textarea id="input" rows="1" placeholder="Ask anything"></textarea>
       <button id="micBtn" type="button" class="mic-btn" disabled aria-label="Dictate your reasoning" aria-describedby="voiceMessage voiceHint" aria-keyshortcuts="Control+Shift+Space" title="Checking voice input availability" aria-pressed="false">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>

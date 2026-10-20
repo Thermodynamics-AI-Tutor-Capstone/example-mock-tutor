@@ -39,16 +39,15 @@
           </div>
         </div>
         <div class="acct-field"><label for="set_major">Major</label><input id="set_major" maxlength="120"></div>
-        <div class="acct-section">Tutoring</div>
-        <div class="acct-field"><label for="set_default_style">Default teaching style for new chats</label><select id="set_default_style"></select></div>
+        <div class="acct-field" style="display:none"><label for="set_default_style">Default teaching style for new chats</label><select id="set_default_style"></select></div>
         <div class="set-testing" style="display: contents">
         <div class="acct-section">Testing <span class="opt">(capstone team)</span></div>
         <label class="acct-toggle" for="set_use_jev">
-          <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev is a fast decision model that reads each message before Kelvin answers: whether you showed your own work, which misconception your words point to, how much help you've earned, which teaching style fits. Turn it off to see Kelvin run on its backup instead: a DeepSeek model answers the same questions (keyword rules only if that fails too), and Kelvin picks its own teaching style.</span></span>
+          <span class="acct-toggle-text"><span class="acct-toggle-name">Use Jev</span><span class="acct-toggle-desc">Jev helps interpret the student's reasoning and possible misconceptions. Turning it off uses the backup reader. Both settings use the same guided tutor, with explanations available immediately.</span></span>
           <input id="set_use_jev" type="checkbox" role="switch">
           <span class="acct-toggle-track" aria-hidden="true"></span>
         </label>
-        <div class="acct-field"><label for="set_style_router">Who picks the teaching style (in Auto)</label>
+        <div class="acct-field" style="display:none"><label for="set_style_router">Who picks the teaching style (in Auto)</label>
           <select id="set_style_router">
             <option value="jev">Jev picks</option>
             <option value="skills">Kelvin picks (skills)</option>
@@ -198,7 +197,7 @@
     root.querySelector('.set-testing').style.display = username ? 'none' : 'contents';
     // Their account email is made up from the name, so it means nothing to them.
     root.querySelector('.set-email-field').hidden = Boolean(username);
-    if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = 'auto';
+    if (!p.default_style || !sel.querySelector('option[value="' + p.default_style + '"]')) sel.value = sel.options[0]?.value || '';
     for (const [f, fallback] of Object.entries(SWITCHES)) $('set_' + f).checked = typeof p[f] === 'boolean' ? p[f] : fallback;
     $('set_style_router').value = p.style_router === 'skills' ? 'skills' : 'jev';
     syncRouter();

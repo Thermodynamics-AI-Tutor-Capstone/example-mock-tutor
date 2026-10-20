@@ -3,7 +3,7 @@
 # with that, one error per turn, under the server-set help ceiling.
 id: pinpointer
 name: Check My Work
-description: Show your work — Kelvin finds the first line or assumption that goes wrong and asks about just that.
+description: Check your reasoning, understand corrections and continue to a solution.
 icon: "✅"
 order: 2
 connection: deepseek-pro
@@ -22,15 +22,12 @@ tools:
   - show_on_board
   - explain_on_whiteboard
 skills:
-  - misconception-repair
-  - answer-requests
-  - worked-example-isomorph
-  - contrast-and-redo
   - property-tables
   - control-volume-energy-balance
 max_tool_rounds: 6
 state:
   help_ladder: true
+  guided_workflow: true
   max_rung: 6
 route_when:
   use_for: >-
@@ -49,4 +46,5 @@ route_when:
 ui:
   figures: true
   mermaid: true
-enabled: true
+enabled: false
+merged_into: office-hours

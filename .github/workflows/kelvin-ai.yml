@@ -56,6 +56,8 @@ jobs:
         run: node scripts/properties/test.mjs
       - name: Tutor unit tests (policy, decider, agent loop; no network)
         run: npm run agent:test
+      - name: Guided workflow and reference links
+        run: npm run guided:test
 
       - name: Teaching board tool and renderer tests
         run: npm run board:test

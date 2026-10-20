@@ -406,12 +406,12 @@
       return '<div class="section"><h2>Sources</h2><p class="chip-note">No source file is recorded on this card.</p></div>';
     }
     return '<div class="section"><h2>Sources</h2><ul class="src">' + list.map(function (s) {
-      var path = String((s && (s.path || s.file)) || s || '');
+      var path = String((s && (s.title || s.path || s.file)) || 'Course source');
       var url = githubUrlFor(typeof s === 'string' ? { path: s } : s);
       var pl = pagesLabel(s);
       return '<li>' + (url
         ? '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(path) + '</a>'
-        : escapeHtml(path)) +
+        : escapeHtml(path) + ' <span class="pages">Original link not configured</span>') +
         (pl ? '<span class="pages">' + escapeHtml(pl) + '</span>' : '') + '</li>';
     }).join('') + '</ul></div>';
   }

@@ -20,7 +20,7 @@
       id: 'whiteboard', target: 'whiteboardBtn', title: 'See and hear the explanation', action: 'Use the whiteboard',
       text: 'Try a narrated whiteboard to follow the explanation alongside diagrams and equations. Select it, then send your question when you’re ready.',
       matches: (draft) => /\b(explain|visualize|diagram|understand|cycle|confused)\b/i.test(draft),
-      available: () => $('whiteboardBtn').getAttribute('aria-pressed') !== 'true',
+      available: () => $('whiteboardBtn').getAttribute('aria-checked') !== 'true',
     },
   ];
   function save() { try { localStorage.setItem(storageKey, JSON.stringify(preferences)); } catch {} }

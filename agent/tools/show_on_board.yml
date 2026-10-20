@@ -5,9 +5,9 @@ description: >-
   reasoning steps. Use for a control-volume sketch, a system boundary, energy flows, or the next
   step in a student's solution. A board is schematic, not to scale. Use plot_property_diagram for
   T-s, P-v, P-h, and T-v plots. Give only quantities already in the problem or checked with tools;
-  do not invent values or reveal later solution steps beyond the current help level. The result
+  do not invent values. Guided workflow may show the requested solution steps. The result
   contains validated board data. The app shows the board immediately when this tool succeeds;
-  continue with one short question and do not copy the figure block.
+  continue with a concise explanation or optional check-in and do not copy the figure block.
 status: Showing on board
 parameters:
   type: object

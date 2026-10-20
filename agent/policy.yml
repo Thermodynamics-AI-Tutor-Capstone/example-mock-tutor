@@ -1,4 +1,6 @@
 # Kelvin's teaching policy — the part the tutoring model does NOT decide.
+# Experimental styles with state.guided_workflow use the immediate-help policy in lib/policy.js.
+# The legacy ladder below remains for compatibility tests; it does not gate the guided tutor.
 #
 # Every message, a fast classifier (Jev, see connections.json → decider) reads the student's
 # message and answers typed questions: what are they doing, have they shown their own work, have
