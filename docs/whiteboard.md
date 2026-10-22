@@ -1,42 +1,81 @@
-# Kelvin teaching board prototype
+# Kelvin teaching board
 
-For the spoken version with synchronized drawing, captions, and playback controls, see
-[Narrated whiteboard](narrated-whiteboard.md). It extends this renderer with browser speech and multicolor marker strokes; no speech key is needed.
+The single guided tutor can show a diagram and equations when Whiteboard is on. A board is
+bounded JSON: up to eight labeled nodes, twelve arrows, and six equation steps. The browser owns
+all SVG artwork and escapes labels; the model cannot supply SVG, HTML, JavaScript, or image URLs.
+No image API or additional runtime package is needed. Live agent-generated lessons still require
+an available model connection. See [Narrated whiteboard](narrated-whiteboard.md) for speech controls.
 
-The `show_on_board` tool accepts a bounded JSON board: up to eight labeled nodes, twelve arrows,
-and six solution steps. The server validates the structure, streams a `kelvin-board` block into the
-assistant reply, and saves that block with the message. The browser draws the SVG and KaTeX steps
-in sequence. It reopens as a static board in chat history. No image API or new runtime dependency is
-needed. This is a schematic; use `plot_property_diagram` for scale and property values.
+## Apparatus and surroundings
 
-The tool is offered to the enabled Coach, Check My Work, and Concepts & Practice styles. Try a
-prompt such as: “Show a turbine control volume on the board, label the inlet, outlet, mass flow,
-heat, and work, and write only the energy balance we should start from.” A configured DeepSeek key
-and sign-in are still required for a live agent turn. The offline tool and renderer can be checked
-with `node scripts/board.test.mjs`.
+A node may include an `illustration`:
 
-## Extend the display
+- `piston-cylinder`, `rigid-tank`, `boiler`, `condenser`, `mixing-chamber`
+- `turbine`, `compressor`, `pump`, `nozzle`, `diffuser`, `valve`
+- `heat-exchanger`, `refrigerator`, `hose`, `immersed-object`
 
-The current renderer is [public/board.js](../public/board.js). The streaming chat retains its SVG
-node while more reply text arrives, so the animation is not restarted. For richer diagrams, extend
-the JSON schema in both [agent/tools/show_on_board.yml](../agent/tools/show_on_board.yml) and
-[lib/tools/show_on_board.js](../lib/tools/show_on_board.js), then update the browser's validation
-and rendering together. Keep the model's output as data; the browser owns SVG creation and escapes
-all labels. Add one diagram type at a time, with a real thermodynamics example and a narrow layout
-check. The next useful type is a control-volume boundary with heat, work, and mass arrows anchored
-to its perimeter. Preserve the reduced-motion rule and the SVG title/description when extending it.
+These are reusable, authored apparatus sketches rather than a closed list of problems. Compose
+multiple apparatus with state nodes and heat/work/mass arrows. Plain nodes remain available for
+abstract states, explanatory notes, and unsupported apparatus. Extend the bounded catalog when
+another physical device is needed; do not substitute unrelated artwork.
 
-## Give students a scratchpad
+Optional descriptors are based only on the problem statement:
 
-1. Add a “Draw work” button beside the attachment button in [public/index.html](../public/index.html)
-   and a small overlay or side panel. Create `public/scratchpad.js` for a canvas with pointer events,
-   undo, clear, and an equation/text field. Keep strokes as normalized points so resizing the panel
-   does not alter them. Reuse KaTeX for display; add MathLive only if students need a math keyboard.
-2. For the first usable version, export the canvas as a PNG with `canvas.toBlob()`, wrap it in a
-   `File`, and pass it to `window.KelvinAttachments.upload([file])`. That uses the existing private
-   upload, image transcription, student review, and `read_attachment` path. Ask the student to check
-   the transcription before Kelvin diagnoses a handwritten equation.
-3. If students need to reopen and edit a board, store its strokes and equation fields as JSON in a
-   new conversation-owned database row behind authenticated GET/PUT routes. Keep the PNG attachment
-   as the snapshot Kelvin reads. Verify two users cannot read each other's boards, and test mouse,
-   touch, mobile layout, undo, and reconnecting to an existing chat.
+- `surroundings: air | water | gas` shows the medium around the device. Water depicts complete
+  submersion. Do not use it for partial submersion or merely because a hose carries water.
+- `contents: gas | liquid | two-phase` shows known contents inside a piston cylinder, rigid tank,
+  mixing chamber, boiler, or condenser. The drawn interface is schematic, never a vapor-quality
+  measurement. Omit unknown phase rather than guessing it.
+- `boundary: closed-system | control-volume` draws an explicitly labeled dashed boundary. For
+  composite systems use a separate explanation rather than pretending individual boundaries form
+  one combined boundary.
+
+Coordinates remain 10–90 percent across/down. Illustrated nodes require separation of at least
+29 x units **or** 36 y units; plain nodes need 23 x or 22 y. Prefer two to four apparatus per board.
+The server rejects overlapping nodes. Large boards show diagrams beside equations; smaller boards
+stack them and allow horizontal scrolling to keep labels readable. On desktop, a conversation
+containing an illustrated board widens to accommodate that pairing.
+
+Every apparatus stays inside its existing `node:ID` narration target. Nodes, arrows, and equation
+steps therefore retain their saved cue IDs. SVG title/description includes the apparatus, medium,
+contents, and system boundary. Motion and audio remain optional; the final diagram is readable
+without them. Geometry and colors are illustrative, not quantitative simulation results.
+
+## Link the picture to the reasoning
+
+1. Identify the system and depict only stated surroundings and phase.
+2. Reuse numbered state labels between ports, equations, and any property plot.
+3. Reveal the relevant device or energy/mass arrow when explaining its equation term.
+4. State assumptions before removing terms. A turbine is not automatically adiabatic; a nozzle
+   does not automatically have equal inlet/outlet density; heat-exchanger stream losses need
+   an explicit assumption. Use `plot_property_diagram` for scaled thermodynamic plots.
+
+Examples for offline review are in [illustrated-boards.mjs](../scripts/fixtures/illustrated-boards.mjs):
+piston expansion, a hose and nozzle, a cooling submerged solid, and refrigerator heat/work flows.
+`node scripts/board.test.mjs` validates every apparatus and schema parity, untrusted descriptors,
+legacy boards, spacing, and the example compositions. `node scripts/validate-agent.mjs` validates
+the tool definitions.
+
+## Problem references informing the authored sketches
+
+The following primary educational sources guided the apparatus choices and links to equations;
+no source images are copied or loaded at runtime:
+
+- [OpenStax: flow rate and velocity](https://openstax.org/books/college-physics-2e/pages/12-1-flow-rate-and-its-relation-to-velocity):
+  hose/nozzle geometry and continuity, with distinct areas and velocities.
+- [LearnChemE: ideal gas law piston](https://learncheme.github.io/demos/IdealGasLaw/dist/index.html):
+  a piston, gas region, external loading, and the relation between volume change and work.
+- [OpenStax: calorimetry](https://openstax.org/books/chemistry/pages/5-2-calorimetry):
+  solid/water surroundings, heat transfer, and combined-system energy accounting.
+- [Purdue ME200 Week 6 problems](https://engineering.purdue.edu/ME200/files/homework/WK6/Wk6_HW_Questions.pdf):
+  hose/nozzle, reservoir/pump, mixing chamber, throttling valve, and heat exchanger compositions.
+- [Penn State: control-volume energy](https://www.me.psu.edu/cimbala/Learning/Fluid/CV_Energy/home.htm):
+  control boundaries and the distinction between shaft work and flow crossings.
+- [Waterloo worked thermodynamics tutorial](https://www.mhtlab.uwaterloo.ca/courses/syde381/tutorials/Spring2014/tutorial6_s14_381.pdf):
+  compressor/turbine heat exchange with surroundings; avoid universal insulation assumptions.
+- [OpenStax: refrigerators and heat pumps](https://openstax.org/books/physics/pages/12-4-applications-of-thermodynamics-heat-engines-heat-pumps-and-refrigerators):
+  cold space, warm surroundings, heat transfers, input work, and coefficient of performance.
+
+Future catalog additions should include a real problem example, accessible description, bounded
+schema validation, and layout checks at desktop/mobile sizes. Update both tool schemas and the
+server/browser validators together. Keep the model output as data and retain existing target IDs.

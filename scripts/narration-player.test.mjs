@@ -27,3 +27,28 @@ for (let wordCount = 1; wordCount <= 100; wordCount++) {
 assert.equal(phrases({ speech: 'A sentence. Another sentence!', cues: [] }).length, 2);
 assert.equal(phrases({ speech: '  A   short phrase. ', cues: [] })[0].text, 'A short phrase.');
 console.log('ok  browser phrase segmentation preserves speech, cue order, coincident cues and sentence breaks');
+
+const { speechClock } = window.KelvinNarration;
+const clock = speechClock('Draw the turbine slowly.', 1, 0);
+assert.ok(clock.progress(0) < .01);
+assert.equal(clock.boundary({ name: 'sentence', charIndex: 0 }, 0), false);
+assert.equal(clock.boundary({ name: 'word', charIndex: -1 }, 0), false);
+assert.equal(clock.boundary({ name: 'word', charIndex: 0 }, 0), true);
+const firstWord = clock.progress(400);
+assert.equal(clock.progress(3000), firstWord, 'do not race through a slow pause before the next spoken word');
+assert.ok(firstWord <= 4 / 24);
+clock.boundary({ name: 'word', charIndex: 5, charLength: 0 }, 3000);
+assert.equal(clock.progress(3000), firstWord, 'new word smoothly continues the pen rather than jumping');
+assert.ok(clock.progress(3200) > firstWord);
+assert.equal(clock.boundary({ name: 'word', charIndex: 0 }, 3300), false, 'ignore out-of-order boundaries');
+clock.boundary({ name: 'word', charIndex: 17 }, 3400);
+assert.ok(clock.progress(6000) < 1, 'wait for speech end even on the last word');
+const slow = speechClock('One two three four five six.', .75, 0);
+const fast = speechClock('One two three four five six.', 1.5, 0);
+assert.ok(fast.progress(500) > slow.progress(500), 'fallback follows the selected speech rate');
+assert.equal(slow.progress(90000), .9, 'missing word boundaries cannot complete a phrase early');
+const delayed = speechClock('A boundary may arrive late.', 1, 0);
+const alreadyDrawn = delayed.progress(900);
+delayed.boundary({ name: 'word', charIndex: 0 }, 1000);
+assert.ok(delayed.progress(1200) >= alreadyDrawn, 'late boundary must not erase drawing');
+console.log('ok  speech-boundary interpolation, stalled speech, malformed events and bounded rate-aware fallback');

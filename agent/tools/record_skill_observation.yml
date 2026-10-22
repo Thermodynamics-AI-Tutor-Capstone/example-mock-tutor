@@ -1,0 +1,40 @@
+name: record_skill_observation
+description: >-
+  Save one meaningful observation of a specific skill from the current student's OWN work.
+  Give useful help first; this records evidence without gating progress. Never assess a bare question,
+  copied problem or tutor text, agreement, typo, missing notation dot, or calculator request.
+  Mark steps completed with hints as assisted, not independent. Use unknown when independence is unclear.
+  Quote the current student's work exactly and explain the evidence. At most one observation per skill
+  and three distinct skills per student message. Conflicting later observations revise the assessment.
+status: Updating skill observations
+parameters:
+  type: object
+  additionalProperties: false
+  properties:
+    skill:
+      type: string
+      enum: [algebra-ratios, units-dimensions, rates-derivatives, integrals-work, system-boundary, state-properties, property-tables, ideal-gas-model, mass-balance, energy-balance, heat-work-signs, entropy-balance, process-assumptions, cycles-efficiency]
+    outcome:
+      type: string
+      enum: [success, needs_support]
+    independence:
+      type: string
+      enum: [independent, assisted, unknown]
+    confidence:
+      type: string
+      enum: [low, medium, high]
+      description: Confidence that this quoted work supports the observation, never a mastery probability.
+    evidence_kind:
+      type: string
+      enum: [reasoning, calculation, model_choice]
+    quote:
+      type: string
+      minLength: 8
+      maxLength: 300
+      description: Exact excerpt from the current student message, not the problem prompt or tutor solution.
+    rationale:
+      type: string
+      minLength: 12
+      maxLength: 300
+      description: What the student's reasoning demonstrates or where a conceptual/calculation difficulty occurs; no global ability or learning-style labels.
+  required: [skill, outcome, independence, confidence, evidence_kind, quote, rationale]

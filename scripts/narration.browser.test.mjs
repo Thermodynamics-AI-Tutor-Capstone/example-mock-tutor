@@ -10,7 +10,9 @@ import { validateLesson } from '../lib/whiteboard.js';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const saved = validateLesson(lessonInput);
+const illustratedInput = structuredClone(lessonInput);
+Object.assign(illustratedInput.board.nodes[1], { illustration: 'turbine', surroundings: 'air', boundary: 'control-volume' });
+const saved = validateLesson(illustratedInput);
 const board = { ...saved.board, lesson: { id: '11111111-1111-4111-8111-111111111111', segments: saved.segments } };
 const content = '```kelvin-board\n' + JSON.stringify(board) + '\n```\n\nWhich words justify steady state?';
 let audioRequests = 0, postedMessage = '', postedWhiteboard = null, pendingStream;
@@ -63,6 +65,8 @@ try {
     Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
     Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: class { constructor(text) { this.text = text; } } });
     window.testSpeech = { history, delayedVoices: false, holdStart: false,
+      boundary(charIndex, name = 'word') { active?.onboundary?.({ charIndex, name }); },
+      start() { active?.onstart?.(); },
       finish() { const old = active; active = null; old?.onend?.(); },
       fail() { active?.onerror?.({ error: 'synthesis-failed' }); },
       get active() { return active; },
@@ -83,6 +87,64 @@ try {
 
   await page.reload();
   await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Narration speed').inputValue(), '0.9', 'default to a slightly slower tutor pace');
+  await page.evaluate(() => { testSpeech.holdStart = true; });
+  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
+  await page.waitForTimeout(350);
+  const progress = () => page.locator('[data-board-target="node:turbine"]').evaluate((el) => Number(el.dataset.drawProgress));
+  assert.equal(await progress(), 0, 'queued voice delay never draws early');
+  await page.evaluate(() => { testSpeech.start(); testSpeech.boundary(0); });
+  await page.waitForTimeout(500);
+  const firstWord = await progress();
+  await page.waitForTimeout(500);
+  assert.equal(await progress(), firstWord, 'drawing waits when the next spoken word is delayed');
+  assert.ok(firstWord > 0 && firstWord < .25);
+  assert.equal(await page.locator('[data-board-target="step:0"]').evaluate((el) => el.style.opacity), '0', 'future equations wait for their phrase');
+  await page.evaluate(() => testSpeech.boundary(6));
+  await page.waitForTimeout(200);
+  assert.ok(await progress() > firstWord, 'word event advances the pen');
+  const lastWord = await page.evaluate(() => testSpeech.active.text.lastIndexOf(' ') + 1);
+  await page.evaluate((at) => testSpeech.boundary(at), lastWord);
+  await page.waitForTimeout(800);
+  assert.ok(await progress() < 1, 'last word still waits for utterance completion');
+  await page.evaluate(() => testSpeech.finish());
+  assert.equal(await progress(), 1);
+  const boundary = page.locator('.kboard-apparatus rect[stroke-dasharray]');
+  assert.equal(await boundary.getAttribute('stroke-dasharray'), '6 4', 'system boundary remains dashed');
+  assert.equal(await boundary.evaluate((el) => el.style.strokeDasharray), '');
+
+  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await page.evaluate(() => { testSpeech.holdStart = false; });
+  await page.getByRole('button', { name: 'Replay step', exact: true }).click();
+  await page.getByText('Step 3 of 3 · Listening', { exact: true }).waitFor();
+  await page.evaluate(() => testSpeech.finish());
+  await page.getByText('Step 3 of 3 · Listening', { exact: true }).waitFor();
+  await page.evaluate(() => testSpeech.boundary(0));
+  await page.waitForTimeout(500);
+  const equation = page.locator('[data-board-target="step:1"]');
+  const equationProgress = await equation.evaluate((el) => Number(el.dataset.drawProgress));
+  assert.ok(equationProgress > 0 && equationProgress < 1, 'equation writing follows its spoken phrase');
+  assert.ok(await equation.locator('.katex').count() > 0, 'math remains legible KaTeX rather than an image');
+  await page.waitForTimeout(350);
+  assert.equal(await equation.evaluate((el) => Number(el.dataset.drawProgress)), equationProgress, 'equation waits with delayed speech');
+  await page.evaluate(() => testSpeech.finish());
+  assert.equal(await equation.evaluate((el) => Number(el.dataset.drawProgress)), 1);
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Play narration', exact: true }).click();
+  await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
+  await page.waitForTimeout(2200);
+  assert.ok(await progress() > 0 && await progress() < 1, 'no-boundary voice uses speech-paced fallback, not the former 1.8s cap');
+  assert.equal(await page.locator('.kboard-marker').evaluate((el) => el.hidden), false, 'pen remains visible while outlining apparatus');
+  const parts = await page.locator('.kboard-apparatus [stroke]').evaluateAll((els) => els.map((el) => ({ opacity: el.style.opacity, fill: Number(el.style.fillOpacity) })));
+  assert.ok(parts.some((part) => part.fill < 1) && parts.some((part) => part.fill === 1), 'illustration is drawn in parts instead of appearing all at once');
+  await page.evaluate(() => testSpeech.finish());
+  assert.equal(await progress(), 1);
+  console.log('ok  delayed voice, word boundaries, smooth progress, slower pace, no-boundary fallback and sequential apparatus strokes');
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
   await page.evaluate(() => { testSpeech.delayedVoices = true; testSpeech.voicesChanged(); testSpeech.holdStart = true; });
   assert.equal(await page.getByLabel('Narration voice').locator('option').count(), 1);
   await page.evaluate(() => { testSpeech.delayedVoices = false; testSpeech.voicesChanged(); });
@@ -100,9 +162,9 @@ try {
   fs.mkdirSync(output, { recursive: true });
   await page.screenshot({ path: path.join(output, 'marker-drawing.png'), fullPage: true });
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  const pausedDrawing = await page.locator('.kboard-marker-outline').nth(1).evaluate((el) => el.style.strokeDashoffset);
+  const pausedDrawing = await progress();
   await page.waitForTimeout(150);
-  assert.equal(await page.locator('.kboard-marker-outline').nth(1).evaluate((el) => el.style.strokeDashoffset), pausedDrawing);
+  assert.equal(await progress(), pausedDrawing);
   assert.equal(await page.evaluate(() => testSpeech.active), null);
   await page.getByRole('button', { name: 'Resume phrase', exact: true }).click();
   await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
@@ -111,6 +173,7 @@ try {
   await page.waitForFunction(() => testSpeech.active?.rate === 2);
   // Force a stale callback after changing speed: it must not advance the replacement phrase.
   await page.evaluate(() => testSpeech.history[0].onend());
+  await page.evaluate(() => testSpeech.history[0].onboundary?.({ name: 'word', charIndex: 30 }));
   assert.equal(await page.evaluate(() => testSpeech.active.rate), 2);
   await page.getByLabel('Narration voice').selectOption('remote-en');
   await page.waitForFunction(() => testSpeech.active?.voice.voiceURI === 'remote-en');

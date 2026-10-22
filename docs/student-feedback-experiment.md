@@ -13,9 +13,10 @@ Branch: `experiment/student-feedback`. This is an evaluation version, not a demo
 
 ## Compare with main
 
-The Equation button above the message box opens a searchable local editor with thermodynamic
-quantities and editable structure templates. Students can preview and insert an equation at
-the message cursor before sending. The message carries TeX, and student equations render in
+The Equation button above the message box opens a compact palette of category tabs and
+thermodynamic symbol tiles. Each tile inserts directly at the cursor in the normal message
+box; structure templates select their editable placeholder. There is no search or separate
+equation draft. The message carries TeX, and student equations render in
 both the live conversation and reloaded history. A small contextual tip offers "Try it" when
 students type an equation or related terms. The existing per-user tip preferences remember
 dismissal/use and limit tips to one per visit/day.
@@ -29,6 +30,21 @@ Tooltips distinguish specific/total quantities and units; more specialized fluid
 are grouped separately. These symbols do not imply current syllabus or future exam coverage.
 No sign convention is selected by inserting a symbol. Plain chat remains available.
 
+The attachment review window uses a single editable, formatted preview. Students correct prose,
+values, and supported equation fields in place. Markdown and TeX remain internal storage formats;
+reviewing or editing an attachment never sends a chat message automatically.
+
+The student model adds skill-specific observations to the existing cross-conversation evidence
+ledger. A capable prerequisite background is an instructional starting assumption, not earned
+mastery. Quoted reasoning from the student's typed message can provide evidence of strengths or areas needing support; assisted
+success stays separate from independent success. Recent contradictory evidence can revise the
+assessment. Settings → What Kelvin knows shows the record and lets the student reset an assessment.
+Use preferences for diagrams, derivations, worked examples, or brevity as task-level requests,
+not permanent labels about a student's learning style. Help remains available regardless of profile.
+The first implementation does not record skill observations from attachment-only work. Exact
+quotation establishes provenance, but whether it shows the student's own reasoning is still a
+fallible model judgment. Students can inspect and correct the resulting assessments.
+
 Use fresh conversations in each environment and the same problem statement. Try each case below with Whiteboard Off, then On. Keep model settings and problem data comparable.
 
 | Case | Example student follow-up | What to look for |
@@ -40,6 +56,8 @@ Use fresh conversations in each environment and the same problem statement. Try 
 | Full walkthrough | “Please derive this from the first law and finish the calculation.” | Explain assumptions, derive the simplification, compute with tools, check the answer. |
 | Missing physics | A compressor problem omits whether heat is transferred. | Clarify once or present a labeled conditional setup; do not silently assume adiabatic. |
 | Course connection | “Which lecture supports that equation?” | Open a relevant source, link its actual course card, and label unavailable original slides honestly. |
+| Physical illustration | “Show the object submerged in water and explain the energy balance.” | Show the apparatus and stated surroundings, connect labeled heat/flow/work to the equation, and avoid inventing assumptions. |
+| Narration timing | Play a long explanation, pause, and change speed. | Reveal each visual with its spoken phrase, keep later equations hidden until their turn, and ignore callbacks from canceled speech. |
 
 Suggested observations to replace or extend with your own rubric: turns to the requested result; repeated questions; notation-related interruptions; correctness and tool verification; whether assumptions are justified; whether the source actually supports the explanation; usefulness of the diagram and narration. A finished assisted solution is different from an independently solved problem. Test transfer to a new problem separately.
 
@@ -68,6 +86,11 @@ Live tutor responses and generated whiteboards still require a model API key; wi
 use the local version to evaluate the interface, equation editor and course browser.
 `node scripts/local-dev-auth.test.mjs` checks the isolation and session boundaries.
 
+For authored whiteboard examples without a model key, run `node scripts/preview-whiteboard.mjs`
+and open `http://127.0.0.1:3302/`. The first lesson supports browser narration and the moving
+pen; the remaining examples show apparatus, surroundings, and equations. This loopback-only
+demonstration serves fixtures, not live AI responses, and does not read or write student data.
+
 Deploy this branch to the existing Vercel project's **Preview** environment. Keep `main` as the production branch; never use `--prod` or promote this experiment to production.
 
 Before live evaluation, the project owner must provision/confirm Preview-scoped database, authentication and storage, plus the model API keys. Use separate test data and an allowed preview callback/origin for sign-in. A separate Git branch by itself does not isolate those services. No production secrets or student data are included in this branch.
@@ -76,8 +99,12 @@ Before live evaluation, the project owner must provision/confirm Preview-scoped 
 
 - `npm run guided:test`: help availability, state completion, presentation tool selection, and reference URL handling.
 - `npm run equation:browser`: equation insertion, cursor selection, template editing, API payload, history rendering, keyboard controls and mobile layout. Uses the same optional Playwright setup below.
+- `npm run attachment:browser`: direct preview editing, equation round trips, paste safety, save/cancel, and mobile review.
+- `npm run skills:test`: evidence grounding, deduplication, user isolation, cross-chat history, correction, and cautious adaptation.
+- `npm run skills:browser`: student correction controls and error recovery in Settings.
 - `npm run agent:test`: existing policy compatibility and real agent-loop checks, including attempted whiteboard calls when Off.
 - `npm run board:test` and `npm run narration:test`: board data/rendering and narration.
+- `node scripts/illustrations.browser.test.mjs`: apparatus clipping, paired layout inside the actual chat, manual playback, mobile layout, and all illustration variants.
 - `node scripts/narration.browser.test.mjs`: speech stub, visual playback, switch persistence, request payload, mobile and reduced motion. Set `PLAYWRIGHT_MODULE` / `CHROME_EXECUTABLE` as needed.
 
 Offline tests verify mechanisms. They do not establish actual model teaching quality, audible voice quality, or learning gains; use the preview and the comparison cases to assess those.

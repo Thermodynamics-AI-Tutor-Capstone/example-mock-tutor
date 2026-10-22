@@ -1,5 +1,5 @@
 // Student uploads in the chat: the 📎 button, the tray of files waiting to be sent, chips on sent
-// messages, and the review window where the student checks and edits the Markdown Kelvin will read.
+// messages, and the review window where the student checks and edits the formatted problem Kelvin will read.
 (function () {
   'use strict';
 
@@ -181,36 +181,51 @@
     }
   }
 
-  function renderPreview() {
-    const text = $('attEditor').value;
-    const pv = $('attPreview');
-    // Keep the line breaks the student wrote: a worked solution is one step per line.
-    pv.innerHTML = hooks.renderMarkdown(text, { breaks: true });
-    highlightUnsure(pv);
+  let initialPreview = '';
+  let lastUnsure = null;
+
+  function previewMarkdown() {
+    return window.KelvinProblemPreview.markdown($('attPreview'));
+  }
+
+  function updatePreviewStatus() {
+    for (const mark of $('attPreview').querySelectorAll('mark.unsure')) {
+      mark.classList.toggle('resolved', !/^(\?|unreadable)$/.test(mark.textContent));
+    }
+    const text = previewMarkdown();
     const n = (text.match(UNSURE_RE) || []).length;
     $('attUnsure').textContent = n ? `${n} spot${n === 1 ? '' : 's'} Kelvin wasn’t sure about` : 'No unsure spots';
     $('attUnsure').classList.toggle('none', n === 0);
     $('attNext').disabled = n === 0;
-    $('attDirty').hidden = text === current.markdown;
+    $('attDirty').hidden = text === initialPreview;
+  }
+
+  function renderPreview() {
+    const pv = $('attPreview');
+    $('attPasteNotice').hidden = true;
+    pv.innerHTML = hooks.renderMarkdown(current.markdown, { breaks: true });
+    window.KelvinProblemPreview.prepare(pv);
+    highlightUnsure(pv);
+    $('attEditHint').textContent = pv.querySelector('.att-math[contenteditable="false"]')
+      ? 'Click text, numbers, or equations to correct them. Unusual notation stays intact; click that equation to select it and type a replacement.'
+      : 'Click text, numbers, or an equation to correct them. Your original file stays available for comparison.';
+    initialPreview = previewMarkdown();
+    lastUnsure = null;
+    updatePreviewStatus();
   }
 
   function nextUnsure() {
-    const ed = $('attEditor');
-    const from = ed.selectionEnd || 0;
-    UNSURE_RE.lastIndex = 0;
-    const text = ed.value;
-    let m;
-    let hit = null;
-    while ((m = UNSURE_RE.exec(text))) {
-      if (m.index >= from) { hit = m; break; }
-      if (!hit) hit = m; // wrap around to the first one
-    }
-    if (!hit) return;
-    ed.focus();
-    ed.setSelectionRange(hit.index, hit.index + hit[0].length);
-    // Scroll the selection into view: measure with a hidden copy is overkill; approximate by line.
-    const line = text.slice(0, hit.index).split('\n').length;
-    ed.scrollTop = Math.max(0, (line - 3) * 22);
+    const pv = $('attPreview');
+    const spots = Array.from(pv.querySelectorAll('mark.unsure')).filter((el) => /^(\?|unreadable)$/.test(el.textContent));
+    if (!spots.length) return;
+    const spot = spots[(spots.indexOf(lastUnsure) + 1) % spots.length];
+    pv.focus();
+    const range = document.createRange();
+    range.selectNodeContents(spot);
+    const selection = window.getSelection();
+    selection.removeAllRanges(); selection.addRange(range);
+    spot.scrollIntoView({ block: 'nearest' });
+    lastUnsure = spot;
   }
 
   async function openReview(id) {
@@ -279,7 +294,6 @@
       card.append(t, link);
       orig.appendChild(card);
     }
-    $('attEditor').value = a.markdown;
     $('attConfirm').textContent = a.status === 'needs_review' ? 'Looks right' : 'Save';
     $('attModal').hidden = false;
     document.body.classList.add('modal-open');
@@ -305,7 +319,7 @@
     btn.disabled = true;
     $('attError').textContent = '';
     try {
-      const updated = await hooks.api('PATCH', '/api/attachments/' + current.id, { markdown: $('attEditor').value, confirmed: true });
+      const updated = await hooks.api('PATCH', '/api/attachments/' + current.id, { markdown: previewMarkdown() === initialPreview ? current.markdown : previewMarkdown(), confirmed: true });
       for (const p of pending) if (p.id === updated.id) Object.assign(p, updated);
       renderTray();
       // Chips under already-sent messages show the new status too.
@@ -333,7 +347,7 @@
           <div class="att-head-text"><h2 id="attTitle"></h2><span id="attBadge" class="att-badge"></span></div>
           <button type="button" class="att-x" id="attClose" aria-label="Close">×</button>
         </header>
-        <p id="attHelp" class="att-help">This is what Kelvin will read. Compare it with your original and fix anything it got wrong, especially the highlighted spots. Math is written between <code>$…$</code>.</p>
+        <p id="attHelp" class="att-help">This is what Kelvin will read. Compare it with your original and fix anything it got wrong, especially the highlighted spots. Edit the text and equations directly below.</p>
         <div class="att-tabs" role="tablist">
           <button type="button" class="att-tab" data-tab="original" role="tab">Original</button>
           <button type="button" class="att-tab" data-tab="text" role="tab">What Kelvin reads</button>
@@ -345,9 +359,10 @@
               <span id="attUnsure" class="att-unsure"></span>
               <button type="button" id="attNext" class="att-small">Next unsure spot ↓</button>
             </div>
-            <textarea id="attEditor" class="att-editor" spellcheck="false" aria-label="Edit the text Kelvin reads"></textarea>
-            <div class="att-preview-label">Preview</div>
-            <div id="attPreview" class="att-preview markdown"></div>
+            <div class="att-preview-label" id="attPreviewLabel">Edit what Kelvin reads</div>
+            <p id="attEditHint" class="att-edit-hint">Click text, numbers, or an equation to correct them. Your original file stays available for comparison.</p>
+            <p id="attPasteNotice" class="att-edit-hint" role="status" hidden></p>
+            <div id="attPreview" class="att-preview markdown" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="attPreviewLabel" aria-describedby="attEditHint" spellcheck="true"></div>
           </section>
         </div>
         <footer class="att-foot">
@@ -358,8 +373,28 @@
         </footer>
       </div>`;
     document.body.appendChild(m);
-    let t = null;
-    $('attEditor').addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderPreview, 120); });
+    $('attPreview').addEventListener('input', updatePreviewStatus);
+    $('attPreview').addEventListener('copy', (e) => window.KelvinProblemPreview.copy(e));
+    $('attPreview').addEventListener('cut', (e) => {
+      window.KelvinProblemPreview.copy(e);
+      if (e.defaultPrevented) document.execCommand('delete');
+    });
+    $('attPreview').addEventListener('paste', (e) => {
+      const notice = window.KelvinProblemPreview.paste(e);
+      $('attPasteNotice').textContent = notice || '';
+      $('attPasteNotice').hidden = !notice;
+      updatePreviewStatus();
+    });
+    $('attPreview').addEventListener('drop', (e) => e.preventDefault());
+    $('attPreview').addEventListener('click', (e) => {
+      if (e.target.closest('a')) e.preventDefault();
+      const equation = e.target.closest('.att-math[contenteditable="false"]');
+      if (equation) {
+        $('attPreview').focus();
+        const range = document.createRange(); range.selectNode(equation);
+        window.getSelection().removeAllRanges(); window.getSelection().addRange(range);
+      }
+    });
     $('attNext').addEventListener('click', nextUnsure);
     $('attClose').addEventListener('click', closeReview);
     $('attCancel').addEventListener('click', closeReview);

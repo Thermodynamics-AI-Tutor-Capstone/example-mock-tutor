@@ -8,6 +8,11 @@ description: >-
   do not invent values. Guided workflow may show the requested solution steps. The result
   contains validated board data. The app shows the board immediately when this tool succeeds;
   continue with a concise explanation or optional check-in and do not copy the figure block.
+  Prefer recognizable apparatus illustrations over generic boxes when useful. Surroundings and contents
+  must follow the problem; never infer submerged conditions or phase from an apparatus name. Use state
+  nodes for numbered inlet/outlet values and arrows for heat, work, and mass. Pair each equation step
+  with the corresponding physical feature, using the same state labels. Say what is neglected and why.
+  Illustration geometry is schematic; no dimensions, quality, or flow direction are implied by artwork.
 status: Showing on board
 parameters:
   type: object
@@ -23,7 +28,7 @@ parameters:
     nodes:
       type: array
       maxItems: 8
-      description: Schematic boxes. Coordinates are 10-90 percent across/down. Keep boxes separated by about 23 x and 22 y units.
+      description: Nodes at 10-90 percent across/down. For illustrated nodes separate by at least 29 x or 36 y units; plain nodes need 23 x or 22 y. Use 2-4 apparatus per board with state nodes and equations.
       items:
         type: object
         additionalProperties: false
@@ -31,6 +36,10 @@ parameters:
           id: { type: string, description: Unique lowercase id, such as turbine or state1. }
           label: { type: string, maxLength: 48 }
           kind: { type: string, enum: [component, state, boundary, note] }
+          illustration: { type: string, enum: [piston-cylinder, rigid-tank, turbine, compressor, pump, nozzle, diffuser, heat-exchanger, refrigerator, hose, valve, mixing-chamber, boiler, condenser, immersed-object], description: Optional apparatus cutaway. Choose the actual apparatus in the problem; omit for an abstract state or unsupported device. }
+          surroundings: { type: string, enum: [air, water, gas], description: Optional surrounding medium explicitly given in the problem. Water means fully submerged. }
+          contents: { type: string, enum: [gas, liquid, two-phase], description: Optional known vessel contents. Supported for piston-cylinder rigid-tank mixing-chamber boiler condenser only. Two-phase is schematic and does not imply quality. }
+          boundary: { type: string, enum: [closed-system, control-volume], description: Optional dashed system boundary around this apparatus. Only select after identifying the system. }
           x: { type: integer, minimum: 10, maximum: 90 }
           y: { type: integer, minimum: 10, maximum: 90 }
         required: [id, label, kind, x, y]

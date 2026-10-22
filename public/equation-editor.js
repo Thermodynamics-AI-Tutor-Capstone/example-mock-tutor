@@ -1,90 +1,66 @@
-// Local equation drafting. Only insertion into the ordinary message shares the equation.
+// Symbol tiles write directly into the ordinary message. Nothing is sent until Send.
 (function () {
   const $ = (id) => document.getElementById(id);
-  const source = $('equationSource'), input = $('input'), panel = $('equationPanel');
-  if (!source || !input || !panel) return;
-  const toggle = $('equationToggle'), preview = $('equationPreview'), status = $('equationStatus');
-  const insert = $('equationInsert');
+  const input = $('input'), panel = $('equationPanel'), toggle = $('equationToggle');
+  if (!input || !panel || !toggle) return;
   const groups = window.KelvinThermoSymbols;
-  const search = $('equationSearch');
-  let category = 'Common';
   const options = { throwOnError: true, trust: false, maxExpand: 200, maxSize: 20 };
-  let messageRange = [0, 0], equationRange = [0, 0];
+  let messageRange = [input.selectionStart, input.selectionEnd];
   function rememberMessage() { messageRange = [input.selectionStart, input.selectionEnd]; }
-  function rememberEquation() { equationRange = [source.selectionStart, source.selectionEnd]; }
-  for (const event of ['select', 'keyup', 'click', 'input', 'blur']) {
-    input.addEventListener(event, rememberMessage);
-    source.addEventListener(event, rememberEquation);
-  }
-  function updatePreview() {
-    preview.replaceChildren();
-    insert.disabled = true;
-    status.textContent = '';
-    if (!source.value.trim()) return;
-    if (source.value.length > 4000) {
-      status.textContent = 'This equation is too long. Split it into smaller equations.';
-      return;
-    }
-    try {
-      window.katex.render(source.value, preview, { ...options, displayMode: true });
-      insert.disabled = false;
-    } catch {
-      preview.replaceChildren();
-      status.textContent = 'Keep editing—check paired braces and fill in the equation before inserting.';
-    }
-  }
+  for (const event of ['select', 'keyup', 'click', 'input', 'blur']) input.addEventListener(event, rememberMessage);
   function setOpen(open) {
     panel.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
     if (open) {
       document.dispatchEvent(new CustomEvent('kelvin:feature-used', { detail: 'equation' }));
-      search.focus({ preventScroll: true });
       panel.scrollTop = 0;
+      $('equationCategories').querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true });
     } else toggle.focus();
   }
   toggle.addEventListener('click', () => setOpen(panel.hidden));
-  $('equationClose').addEventListener('click', () => setOpen(false));
-  panel.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { event.preventDefault(); setOpen(false); }
-    // Enter edits the equation; it must never submit the chat form.
-    if (event.key === 'Enter' && event.target === source) event.stopPropagation();
-    if (event.key === 'Enter' && event.target === search) event.preventDefault();
+  // The same toggle closes the compact palette; Escape also works after insertion.
+  for (const target of [panel, input]) target.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !panel.hidden) { event.preventDefault(); setOpen(false); }
   });
-  source.addEventListener('input', updatePreview);
+  function equations(content) {
+    return [...content.matchAll(/\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g)];
+  }
   function addSymbol(tex, placeholder) {
-    const [start, end] = equationRange;
-    // Spaces delimit TeX commands: clicking rho followed by T must not create \rhoT.
-    const before = source.value.slice(0, start);
+    let start = Math.min(messageRange[0], input.value.length);
+    let end = Math.min(messageRange[1], input.value.length);
+    // Insert inside existing math, including a cursor just after its closing delimiter.
+    // This keeps repeated clicks together and prevents nested TeX delimiters.
+    const existing = equations(input.value).find((match) =>
+      start >= match.index + 2 && end <= match.index + match[0].length - 2);
+    const adjacent = !existing && start === end && equations(input.value).find((match) =>
+      start === match.index + match[0].length);
+    if (adjacent) start = end = start - 2;
+    const math = existing || adjacent;
+    const before = input.value.slice(math ? math.index + 2 : start, start);
     const prefix = before && !/\s$/.test(before) ? ' ' : '';
-    const token = prefix + tex + ' ';
-    source.setRangeText(token, start, end, 'end');
-    source.focus();
+    const opening = math ? '' : '\\(';
+    const closing = math ? '' : '\\)';
+    const token = opening + prefix + tex + ' ' + closing;
+    input.setRangeText(token, start, end, 'end');
+    const texStart = start + opening.length + prefix.length;
+    let cursor = texStart + tex.length + 1;
     if (placeholder) {
       const braced = tex.indexOf('{' + placeholder + '}');
-      const from = start + prefix.length + (braced >= 0 ? braced + 1 : tex.indexOf(placeholder));
-      source.setSelectionRange(from, from + placeholder.length);
-    }
-    rememberEquation();
-    updatePreview();
+      const index = braced >= 0 ? braced + 1 : tex.indexOf(placeholder);
+      if (index >= 0) {
+        cursor = texStart + index;
+        input.setSelectionRange(cursor, cursor + placeholder.length);
+      } else input.setSelectionRange(cursor, cursor);
+    } else input.setSelectionRange(cursor, cursor);
+    input.focus({ preventScroll: true });
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    rememberMessage();
   }
   function showCategory(name) {
-    category = name;
-    const query = search.value.trim().toLowerCase();
-    for (const button of $('equationCategories').children) {
-      button.setAttribute('aria-pressed', String(!query && button.textContent === name));
-    }
+    for (const button of $('equationCategories').children) button.setAttribute('aria-pressed', String(button.textContent === name));
     $('equationSymbols').replaceChildren();
-    const entries = query
-      ? [...new Map(Object.values(groups).flat().map((entry) => [entry[0], entry])).values()]
-        .filter(([label, tex, , meaning]) => [label, tex, meaning || ''].join(' ').toLowerCase().includes(query))
-      : groups[name];
-    if (!entries.length) {
-      const empty = document.createElement('p');
-      empty.className = 'equation-help';
-      empty.textContent = 'No matching quantity. Try another name, or type it in your equation.';
-      $('equationSymbols').append(empty);
-    }
-    for (const [label, tex, placeholder, meaning] of entries) {
+    $('equationSymbols').setAttribute('aria-label', name + ' thermodynamics symbols');
+    for (const [label, tex, placeholder, meaning] of groups[name]) {
       const button = document.createElement('button');
       button.type = 'button';
       button.setAttribute('aria-label', label);
@@ -105,42 +81,19 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = name;
-    button.addEventListener('click', () => { search.value = ''; showCategory(name); });
+    button.addEventListener('click', () => showCategory(name));
     $('equationCategories').append(button);
   }
-  search.addEventListener('input', () => showCategory(category));
-  $('equationClear').addEventListener('click', () => {
-    source.value = '';
-    equationRange = [0, 0];
-    updatePreview();
-    source.focus();
-  });
-  insert.addEventListener('click', () => {
-    if (insert.disabled) return;
-    const start = Math.min(messageRange[0], input.value.length);
-    const end = Math.min(messageRange[1], input.value.length);
-    const before = input.value.slice(0, start), after = input.value.slice(end);
-    const text = (before && !/\n$/.test(before) ? '\n' : '') +
-      '\\[' + source.value.trim() + '\\]' + (after && !/^\n/.test(after) ? '\n' : '');
-    input.setRangeText(text, start, end, 'end');
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    source.value = '';
-    equationRange = [0, 0];
-    updatePreview();
-    setOpen(false);
-    input.focus();
-    rememberMessage();
-  });
-  // Keep student prose literal while rendering only delimited equations, including chat history.
+  // Preserve literal prose; render new inline math and older display equations in history.
   window.KelvinEquations = {
     renderMessage(element, content) {
-      const pattern = /\\\[([\s\S]+?)\\\]/g;
       let end = 0;
-      for (const match of content.matchAll(pattern)) {
+      for (const match of equations(content)) {
         element.append(document.createTextNode(content.slice(end, match.index)));
         const equation = document.createElement('span');
-        equation.className = 'user-equation';
-        try { window.katex.render(match[1], equation, { ...options, displayMode: true }); }
+        const displayMode = match[2] !== undefined;
+        equation.className = displayMode ? 'user-equation' : 'user-equation-inline';
+        try { window.katex.render(match[1] ?? match[2], equation, { ...options, displayMode }); }
         catch { equation.textContent = match[0]; }
         element.append(equation);
         end = match.index + match[0].length;

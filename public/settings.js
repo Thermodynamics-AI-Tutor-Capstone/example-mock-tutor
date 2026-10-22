@@ -20,6 +20,13 @@
       <div class="modal-body set-learning" data-panel="learning" hidden>
         <div class="set-learning-error acct-error" role="alert"></div>
         <div class="set-learning-doc"></div>
+        <div class="set-skill-correction acct-field" hidden>
+          <label for="set_skill_ref">Correct a skill assessment</label>
+          <p class="acct-note">If Kelvin’s assessment does not fit, reset it. New work can build a fresh assessment; your chats stay available.</p>
+          <select id="set_skill_ref" aria-label="Skill assessment to reset"></select>
+          <button type="button" class="acct-btn" id="set_skill_reset">Reset this skill assessment</button>
+        </div>
+        <p class="set-learning-status acct-ok" role="status"></p>
       </div>
       <form class="modal-body acct-form" data-panel="profile" novalidate>
         <div class="acct-section">Account</div>
@@ -89,6 +96,7 @@
     root.querySelector('form').addEventListener('submit', save);
     for (const tab of root.querySelectorAll('.set-tab')) tab.addEventListener('click', () => showTab(tab.dataset.tab));
     $('set_use_jev').addEventListener('change', syncRouter);
+    $('set_skill_reset').addEventListener('click', resetSkill);
     const del = root.querySelector('.set-delete');
     del.addEventListener('click', async () => {
       if (!del.dataset.armed) {
@@ -118,6 +126,8 @@
     const doc = root.querySelector('.set-learning-doc');
     const err = root.querySelector('.set-learning-error');
     err.textContent = '';
+    root.querySelector('.set-skill-correction').hidden = true;
+    root.querySelector('.set-learning-status').textContent = '';
     doc.textContent = 'Loading…';
     const r = await window.KelvinAccount.call('/api/me/learning');
     if (!r.ok) {
@@ -125,9 +135,42 @@
       err.textContent = (r.data && r.data.error) || 'Could not load (' + r.status + ').';
       return;
     }
-    const md = (r.data && r.data.markdown) || '';
+    renderLearning(r.data || {});
+  }
+
+  function renderLearning(data) {
+    const doc = root.querySelector('.set-learning-doc');
+    const md = data.markdown || '';
     if (window.marked && window.DOMPurify) doc.innerHTML = window.DOMPurify.sanitize(window.marked.parse(md));
     else doc.textContent = md;
+    const select = $('set_skill_ref');
+    select.replaceChildren();
+    for (const [ref, skill] of Object.entries(data.model?.skills || {})) {
+      const option = document.createElement('option');
+      option.value = ref;
+      option.textContent = skill.label || data.titles?.[ref] || ref.replace(/[-_]/g, ' ');
+      select.append(option);
+    }
+    root.querySelector('.set-skill-correction').hidden = !select.options.length;
+  }
+
+  async function resetSkill() {
+    const button = $('set_skill_reset');
+    const ref = $('set_skill_ref').value;
+    if (!ref || button.disabled) return;
+    const err = root.querySelector('.set-learning-error');
+    const status = root.querySelector('.set-learning-status');
+    err.textContent = ''; status.textContent = ''; button.disabled = true;
+    try {
+      const result = await window.KelvinAccount.call('/api/me/learning', {
+        method: 'POST', body: JSON.stringify({ action: 'reset_skill', ref }),
+      });
+      if (!result.ok) throw new Error(result.data?.error || 'Could not reset this assessment. Try again.');
+      renderLearning(result.data || {});
+      status.textContent = 'Skill assessment reset. Kelvin can learn from your next work.';
+      if (root.querySelector('.set-skill-correction').hidden) root.querySelector('[data-tab="learning"]').focus();
+    } catch (error) { err.textContent = error.message; }
+    finally { button.disabled = false; }
   }
 
   // Without Jev only Kelvin can pick the style, so the choice is shown but locked.

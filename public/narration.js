@@ -25,7 +25,7 @@
 
 
   // Cue fractions refer to positions in the spoken words. Sentence breaks keep utterances short
-  // even when a segment has no cues. Do not rely on browser-specific word-boundary events.
+  // even when a segment has no cues. A phrase starts only when its speech actually starts.
   function phrases(segment) {
     const words = segment.speech.trim().split(/\s+/);
     const starts = new Set([0]);
@@ -39,6 +39,38 @@
     words.forEach((word, i) => { if (i + 1 < words.length && /[.!?]["')]*$/.test(word)) starts.add(i + 1); });
     const positions = [...starts].sort((a, b) => a - b);
     return positions.map((at, i) => ({ text: words.slice(at, positions[i + 1] ?? words.length).join(' '), targets: cues.get(at) || [] }));
+  }
+
+  // Boundary events report the start of a spoken word, not an audio seek position. Interpolate
+  // only within that word and wait for the next event; a slow voice must not race the drawing.
+  // Voices without boundaries use a conservative estimate and cannot finish before onend.
+  function speechClock(text, rate, started) {
+    const speed = Number(rate) > 0 ? Number(rate) : 1;
+    const words = [...text.matchAll(/\S+/g)];
+    const estimated = Math.max(600, words.length * 400 + (text.match(/[,;:.!?]/g) || []).length * 180) / speed;
+    let boundary = null, last = 0;
+    return {
+      boundary(event, now) {
+        if (event.name && event.name !== 'word') return false;
+        const position = event.charIndex;
+        if (!Number.isInteger(position) || position < 0 || position >= text.length || (boundary && position < boundary.position)) return false;
+        const word = words.find((entry) => position >= entry.index && position < entry.index + entry[0].length);
+        if (!word) return false;
+        const end = Math.min(text.length, word.index + word[0].length);
+        boundary = { position, end, from: last, time: now, duration: Math.max(180, word[0].length * 55) / speed };
+        return true;
+      },
+      progress(now) {
+        const elapsed = Math.max(0, now - started);
+        const value = boundary
+          ? boundary.from + (boundary.end / Math.max(1, text.length) - boundary.from) * clamp((now - boundary.time) / boundary.duration)
+          : elapsed / estimated;
+        // The initial tiny stroke acknowledges speech start. Delayed first boundaries never
+        // erase an already drawn mark, and only speech completion reveals the final portion.
+        last = Math.max(last, Math.min(boundary ? .96 : .9, value), .002);
+        return last;
+      },
+    };
   }
 
   function element(tag, className, text) {
@@ -58,6 +90,11 @@
     const supported = Boolean(synth && window.SpeechSynthesisUtterance);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const items = [...root.querySelectorAll('[data-board-target]')];
+    const apparatusStrokes = new Map(items.map((item) => [item, [...item.querySelectorAll('.kboard-apparatus path, .kboard-apparatus ellipse, .kboard-apparatus rect, .kboard-apparatus circle')].map((stroke) => ({
+      stroke, length: Math.max(1, stroke.getTotalLength()),
+      ink: Boolean(stroke.getAttribute('stroke') && stroke.getAttribute('stroke') !== 'none'),
+      dashed: Boolean(stroke.getAttribute('stroke-dasharray')),
+    }))]));
     const script = lesson.segments.map(phrases);
     const marker = element('span', 'kboard-marker');
     marker.setAttribute('aria-hidden', 'true');
@@ -76,7 +113,7 @@
       el.type = 'button'; el.addEventListener('click', fn); toolbar.append(el); return el;
     };
     let index = -1, phrase = 0, running = false, speaking = false, disposed = false;
-    let utterance = null, generation = 0, frame = null, watchdog = null, began = 0;
+    let utterance = null, generation = 0, frame = null, watchdog = null, clock = null;
     let player, voices = [], paused = false;
     const previous = button('Previous', () => manual(index - 1));
     const play = button('Play narration', toggle);
@@ -85,8 +122,8 @@
     const next = button('Next step', () => manual(index + 1));
     const rateLabel = element('label', 'knarration-rate', 'Speed ');
     const rate = element('select'); rate.setAttribute('aria-label', 'Narration speed');
-    for (const value of [.75, 1, 1.25, 1.5, 2]) {
-      const option = element('option', '', value + '×'); option.value = String(value); option.selected = value === 1; rate.append(option);
+    for (const value of [.75, .9, 1, 1.25, 1.5, 2]) {
+      const option = element('option', '', value + '×'); option.value = String(value); option.selected = value === .9; rate.append(option);
     }
     rateLabel.append(rate); toolbar.append(rateLabel);
     const voiceLabel = element('label', 'knarration-rate knarration-voice', 'Voice ');
@@ -131,8 +168,29 @@
       let tip = null;
       for (const item of items) {
         const progress = revealed.get(item.dataset.boardTarget) || 0;
+        item.style.setProperty('--board-progress', String(progress));
+        item.dataset.drawProgress = String(progress);
         item.style.opacity = progress > 0 ? '1' : '0';
         item.setAttribute('aria-hidden', String(progress === 0));
+        const illustrated = apparatusStrokes.get(item);
+        if (illustrated?.length) {
+          const total = illustrated.reduce((sum, part) => sum + (part.ink ? part.length : 25), 0);
+          let offset = 0;
+          for (const part of illustrated) {
+            const weight = part.ink ? part.length : 25;
+            const amount = clamp((progress * total - offset) / weight);
+            offset += weight;
+            part.stroke.style.opacity = String(amount > 0 ? 1 : 0);
+            part.stroke.style.fillOpacity = String(amount);
+            if (part.ink && !part.dashed) {
+              part.stroke.style.strokeDasharray = String(part.length);
+              part.stroke.style.strokeDashoffset = String(part.length * (1 - amount));
+            } else if (part.dashed) part.stroke.style.strokeOpacity = String(amount);
+            if (part.ink && amount > 0 && amount < 1) tip = { item, stroke: part.stroke, progress: amount };
+          }
+          item.querySelectorAll('text').forEach((label) => { label.style.opacity = String(clamp((progress - .55) / .45)); });
+          continue;
+        }
         const stroke = item.matches('.kboard-arrow') ? item : item.querySelector('.kboard-marker-outline');
         if (stroke) {
           const length = stroke.getTotalLength();
@@ -161,10 +219,9 @@
     }
     function tick() {
       frame = null;
-      if (!speaking || disposed) return;
-      const duration = Math.min(1800, Math.max(500, script[index][phrase].text.split(/\s+/).length * 130)) / Number(rate.value);
-      draw(index, phrase, reducedMotion.matches ? 1 : clamp((performance.now() - began) / duration));
-      if (performance.now() - began < duration) frame = requestAnimationFrame(tick);
+      if (!speaking || disposed || !clock) return;
+      draw(index, phrase, reducedMotion.matches ? 1 : clock.progress(performance.now()));
+      if (!reducedMotion.matches) frame = requestAnimationFrame(tick);
     }
     function halt() {
       generation++;
@@ -172,6 +229,7 @@
       if (frame !== null) cancelAnimationFrame(frame); frame = null;
       // Only the player that owns an utterance may cancel the shared browser speech queue.
       const owned = utterance; utterance = null; running = false; speaking = false;
+      clock = null;
       if (owned) synth.cancel();
       marker.hidden = true; update();
     }
@@ -203,14 +261,18 @@
         clearTimeout(watchdog);
         // Recover from platforms that never deliver end/error (for example after sleep).
         watchdog = setTimeout(() => { if (current()) fail(); }, 90000);
-        speaking = true; began = performance.now(); tick();
+        speaking = true; clock = speechClock(part.text, speech.rate, performance.now()); tick();
         status.textContent = 'Step ' + (index + 1) + ' of ' + lesson.segments.length + ' · Listening';
+      };
+      speech.onboundary = (event) => {
+        if (!current() || !speaking || !clock) return;
+        clock.boundary(event, performance.now());
       };
       speech.onend = () => {
         if (!current()) return;
         clearTimeout(watchdog); watchdog = null;
         if (frame !== null) cancelAnimationFrame(frame); frame = null;
-        speaking = false; utterance = null; draw(index, phrase, 1); marker.hidden = true;
+        speaking = false; utterance = null; clock = null; draw(index, phrase, 1); marker.hidden = true;
         phrase++;
         if (phrase >= script[index].length) { index++; phrase = 0; }
         if (index >= script.length) {
@@ -259,5 +321,5 @@
   });
   observer.observe(document.body, { childList: true, subtree: true });
   window.addEventListener('pagehide', () => { for (const player of players) player.dispose(); });
-  window.KelvinNarration = { mount, validate, phrases, pauseAll() { for (const player of players) player.pause(); } };
+  window.KelvinNarration = { mount, validate, phrases, speechClock, pauseAll() { for (const player of players) player.pause(); } };
 })();

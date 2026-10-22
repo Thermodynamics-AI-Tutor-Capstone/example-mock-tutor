@@ -50,3 +50,34 @@ assert.doesNotMatch(window.KelvinBoard.render(unsafe), /<img/);
 assert.throws(() => window.KelvinBoard.render({ ...result.board, arrows: [{ from: 'inlet', to: 'outlet', label: '', kind: '__proto__' }] }), /Invalid teaching board arrow/);
 
 console.log('Board tool and renderer: ok');
+
+// Keep authored apparatus, tool contracts, escaping, and legacy node targets in agreement.
+const { ILLUSTRATIONS } = await import('../lib/tools/show_on_board.js');
+const { illustrationBoards } = await import('./fixtures/illustrated-boards.mjs');
+const YAML = await import('yaml');
+for (const file of ['show_on_board', 'explain_on_whiteboard']) {
+  const schema = YAML.parse(fs.readFileSync(new URL(`../agent/tools/${file}.yml`, import.meta.url), 'utf8')).parameters;
+  const board = file === 'show_on_board' ? schema : schema.properties.board;
+  assert.deepEqual(board.properties.nodes.items.properties.illustration.enum, ILLUSTRATIONS);
+}
+for (const illustration of ILLUSTRATIONS) {
+  const board = validateBoard({ kind: 'sketch', title: illustration, nodes: [{ id: 'device', kind: 'component', label: 'Apparatus', x: 50, y: 50, illustration, surroundings: 'water', boundary: 'control-volume' }] });
+  const html = window.KelvinBoard.render(board);
+  assert.match(html, new RegExp(`data-illustration="${illustration}"`));
+  assert.match(html, /data-board-target="node:device"/);
+  assert.match(html, /surrounded by water/);
+  assert.match(html, /Schematic/);
+  assert.doesNotMatch(html, /<image|<script|foreignObject/);
+}
+for (const input of illustrationBoards) {
+  const html = window.KelvinBoard.render(validateBoard(input));
+  assert.match(html, /kboard-layout kboard-paired/);
+  assert.match(html, /kboard-apparatus/);
+}
+const single = { kind: 'sketch', title: 'Invalid illustration', nodes: [{ id: 'device', label: 'Device', kind: 'component', x: 50, y: 50, illustration: 'hose' }] };
+assert.throws(() => validateBoard({ ...single, nodes: [{ ...single.nodes[0], illustration: '<script>' }] }), /illustration is invalid/);
+assert.throws(() => validateBoard({ ...single, nodes: [{ ...single.nodes[0], contents: 'gas' }] }), /Contents are supported/);
+assert.throws(() => validateBoard({ ...single, nodes: [{ ...single.nodes[0], illustration: undefined, surroundings: 'air' }] }), /need an illustration/);
+assert.throws(() => validateBoard({ ...single, nodes: [single.nodes[0], { ...single.nodes[0], id: 'other', y: 80 }] }), /overlap/);
+assert.throws(() => window.KelvinBoard.render({ ...validateBoard(single), nodes: [{ ...single.nodes[0], surroundings: 'url(evil)' }] }), /Invalid illustration detail/);
+console.log('Illustrated apparatus, bounded details, layout and schema parity: ok');

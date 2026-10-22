@@ -439,10 +439,8 @@ body.modal-open { overflow: hidden; }
 .att-unsure.none { color: #15803d; }
 .att-small { font: inherit; font-size: 12.5px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
 .att-small:disabled { opacity: .45; cursor: default; }
-.att-editor { width: 100%; min-height: 170px; height: 34vh; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; line-height: 22px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; outline: none; }
-.att-editor:focus { border-color: var(--text2); }
 .att-preview-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text2); margin-top: 4px; }
-.att-preview { border: 1px dashed var(--border); border-radius: 10px; padding: 10px 14px; font-size: 15px; line-height: 1.6; overflow-x: auto; }
+.att-preview { min-height: 250px; outline: none; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 15px; line-height: 1.6; overflow-x: auto; }
 .att-preview p { margin: 0 0 8px; }
 mark.unsure { background: #fde68a; color: #78350f; border-radius: 4px; padding: 0 4px; font-weight: 600; }
 .att-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--border); }
@@ -468,7 +466,6 @@ mark.unsure { background: #fde68a; color: #78350f; border-radius: 4px; padding: 
   .att-body { grid-template-columns: 1fr; }
   .att-modal[data-tab="original"] .att-pane-text, .att-modal[data-tab="text"] .att-pane-original { display: none; }
   .att-pane-original { border-right: 0; }
-  .att-editor { height: 30vh; }
 }
 
 /* PDF preview and drag-and-drop */
@@ -545,3 +542,32 @@ mark.unsure { background: #fde68a; color: #78350f; border-radius: 4px; padding: 
   .topbar-feedback ~ .topbar-link { display: none; }
   .fb-thumb { flex: 1; justify-content: center; min-height: 44px; }
 }
+
+/* Editable problem preview: typography rather than a source-code editor. */
+.att-preview:focus { border-color: var(--text2); box-shadow: 0 0 0 2px var(--hover); }
+.att-edit-hint { margin: 0 0 6px; color: var(--text2); font-size: 13px; line-height: 1.5; }
+.att-math { display: inline-block; font-family: KaTeX_Main, "Times New Roman", serif; font-size: 1.12em; line-height: 1.5; padding: 1px 4px; border-radius: 4px; white-space: pre-wrap; }
+.att-math:hover, .att-math:focus-within { background: var(--hover); }
+.att-math-display { display: block; text-align: center; margin: 12px 0; padding: 8px 4px; overflow-x: auto; }
+.att-math-mi { font-style: italic; }
+.att-math-mo { padding: 0 .1em; }
+.att-math-mtext { font-family: inherit; font-style: normal; }
+.att-math-mfrac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; line-height: 1.3; margin: 0 .15em; }
+.att-math-mfrac > :first-child { border-bottom: 1px solid currentColor; padding: 0 .2em .08em; min-width: .5em; }
+.att-math-mfrac > :nth-child(2) { padding: .08em .2em 0; min-width: .5em; }
+.att-math-msub > :nth-child(2), .att-math-msubsup > :nth-child(2) { font-size: .75em; vertical-align: sub; }
+.att-math-msup > :nth-child(2), .att-math-msubsup > :nth-child(3) { font-size: .75em; vertical-align: super; }
+.att-math-msqrt { border-top: 1px solid; margin-left: .6em; position: relative; }
+.att-math-msqrt::before { content: '√'; position: absolute; right: 100%; top: -.13em; }
+.att-math-mover, .att-math-munder, .att-math-munderover { display: inline-flex; flex-direction: column; text-align: center; vertical-align: middle; line-height: 1.1; }
+.att-math-mover > :nth-child(2), .att-math-munderover > :nth-child(3) { order: -1; font-size: .8em; }
+.att-math-munder > :nth-child(2), .att-math-munderover > :nth-child(2) { font-size: .8em; }
+.att-math-mtable { display: inline-table; vertical-align: middle; }
+.att-math-mtr { display: table-row; }
+.att-math-mtd { display: table-cell; padding: 0 .4em; }
+.att-preview [contenteditable="false"] { cursor: default; }
+.att-preview mark.resolved { background: transparent; color: inherit; padding: 0; font-weight: inherit; }
+.att-preview table { border-collapse: collapse; margin: 12px 0; }
+.att-preview th, .att-preview td { border: 1px solid var(--border); padding: 5px 10px; text-align: left; }
+.att-preview mark.unsure { font-weight: inherit; }
+.att-math-roman { font-style: normal; }

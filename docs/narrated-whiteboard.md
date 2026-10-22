@@ -1,8 +1,7 @@
 # Narrated whiteboard
 
-Select **Explain on whiteboard** (the board icon next to Attach) before sending a question, or ask
-Kelvin to explain on the narrated whiteboard. Coach, Check My Work, and Concepts & Practice can
-call explain_on_whiteboard. DeepSeek writes a bounded lesson script; the browser speaks it while
+Turn **Whiteboard On** above the chat input before sending a question. The single Guided tutor
+can call explain_on_whiteboard. DeepSeek writes a bounded lesson script; the browser speaks it while
 JavaScript draws the diagrams and equations. **No OpenAI key or paid speech API is required.**
 
 ## Playback
@@ -11,7 +10,8 @@ Press **Play narration** to begin. Saved lessons never autoplay. Controls includ
 Next step, Replay step, speed, voice selection, captions, and a full transcript. Pause stops both
 the drawing and speech; **Resume phrase** repeats the current phrase. Changing voice or speed
 while playing also restarts only that phrase. Browser speech has no reliable audio seeking API,
-so navigation is by step and phrase rather than a time slider.
+so navigation is by step and phrase rather than a time slider. Playback starts at **0.9×** for a
+slightly slower tutor pace; students can select 0.75× through 2×.
 
 Local English voices are preferred when available. The voice selector labels local voices
 **on device** and other voices **browser service**. Browser service voices may need an internet
@@ -34,9 +34,16 @@ preserve meaning independently of color. Equations stay in KaTeX for legibility.
 
 DeepSeek supplies 1–8 short speech segments (500 characters each, 2500 total) with one cue per
 board element. Cue fractions map to word positions; cues and sentence breaks divide the segment
-into short phrases. Each actual speech-start event starts that phrase's drawing, and speech-end
-completes it before advancing. The marker animation is a short visual stroke, not phoneme or
-word alignment. It never starts the next phrase's drawing before its narration starts. Reduced
+into short phrases. Each actual speech-start event starts that phrase's drawing. Where the voice
+provides word-boundary events, the pen smoothly advances within the current spoken word and waits
+for the next boundary. Apparatus outlines draw sequentially, with gradual fills, while equations
+reveal beside the illustration. Dashed system/control-volume boundaries stay dashed.
+
+Voices without word-boundary events use a rate-aware duration estimate capped at 90% of the
+phrase's drawing; actual speech-end completes it before advancing. This is an approximate fallback,
+not exact audio alignment. A voice that emits only occasional boundaries may pause the pen until
+the next event or speech-end. The player never reveals the next phrase before its speech starts.
+Word events are browser/voice dependent, and this is not phoneme-level synchronization. Reduced
 motion reveals each phrase's elements immediately and hides the moving marker.
 
 Saved lessons from the earlier audio implementation work with browser narration automatically.
@@ -59,12 +66,14 @@ checks below test that retained backend, not browser voice playback.
 ## Verification
 
 - npm run narration:test: saved lesson validation, ownership and legacy audio endpoint safeguards,
-  plus phrase segmentation and cue ordering tests. No live provider calls.
+  plus phrase segmentation, cue ordering, boundary interpolation, stalled speech, and bounded
+  fallback clock tests. No live provider calls.
 - npm run board:test: board tool and renderer checks.
 - npm run agent:validate and npm run check:imports: configuration and server integration.
 - node scripts/narration.browser.test.mjs: optional Playwright/Chrome checks against the actual UI
   with a controllable SpeechSynthesis test double. Set PLAYWRIGHT_MODULE to Playwright's index.mjs
   and CHROME_EXECUTABLE to Chrome if they are not installed in standard locations. Tests drawing,
+  delayed speech-start, word boundaries, no-boundary fallback, sequential illustration strokes,
   pause/resume, rate/voice changes, stale callbacks, errors, navigation, streaming, mobile,
   reduced motion, and zero speech API requests. Screenshots go to ignored data/narration-ui/.
 

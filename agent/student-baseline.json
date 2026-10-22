@@ -1,0 +1,72 @@
+{
+  "id": "me300-capable-undergraduate",
+  "asOf": "2026-10-21",
+  "catalogEdition": "2026-27",
+  "instructionalPrior": "Start with the concise, technically sound explanation appropriate for a capable mechanical-engineering undergraduate. Assume familiarity with routine algebra and scientific notation; explain the new thermodynamics model and physical assumptions. This is a teaching starting point, not a claim about this student's enrollment, grades or demonstrated mastery.",
+  "foundations": [
+    {
+      "category": "course_expected_prior",
+      "course": "CHEM 110",
+      "topics": [
+        "ratios and stoichiometry",
+        "gas fundamentals",
+        "chemical quantities"
+      ],
+      "source": "https://bulletins.psu.edu/university-course-descriptions/undergraduate/me/"
+    },
+    {
+      "category": "expected_math_foundation",
+      "course": "MATH 140 → MATH 141 (concurrent with ME 300)",
+      "topics": [
+        "algebra",
+        "derivatives and rates",
+        "basic integration"
+      ],
+      "source": "https://bulletins.psu.edu/university-course-descriptions/undergraduate/math/"
+    },
+    {
+      "category": "typical_prior_exposure",
+      "course": "PHYS 211 / PHYS 212 in the suggested ME plan",
+      "topics": [
+        "units and dimensional analysis",
+        "vectors and mechanics",
+        "work and energy",
+        "electrical power"
+      ],
+      "source": "https://bulletins.psu.edu/undergraduate/colleges/engineering/mechanical-engineering-bs/"
+    },
+    {
+      "category": "typical_prior_exposure",
+      "course": "EMCH 211 (suggested ME plan)",
+      "topics": [
+        "free-body diagrams",
+        "equilibrium",
+        "translating a physical system into an analytical model"
+      ],
+      "thermoBridge": "Connect piston loads and boundary pressure to force balance when useful.",
+      "source": "https://bulletins.psu.edu/university-course-descriptions/undergraduate/emch/"
+    },
+    {
+      "category": "typical_prior_exposure",
+      "course": "MATH 251 (suggested ME plan)",
+      "topics": [
+        "first- and second-order differential equations",
+        "introductory partial differential equations"
+      ],
+      "thermoBridge": "Connect accumulation balances to rate equations when the problem needs that model; do not require ODE solving in every answer.",
+      "source": "https://bulletins.psu.edu/university-course-descriptions/undergraduate/math/"
+    },
+    {
+      "category": "typical_prior_exposure",
+      "course": "CMPSC 200 or 201 (suggested ME plan)",
+      "topics": [
+        "scientific programming",
+        "numerical engineering methods",
+        "plots and calculation checks"
+      ],
+      "thermoBridge": "Use numerical calculations or plots as supporting checks when relevant; do not assume a particular programming language or require code.",
+      "source": "https://bulletins.psu.edu/university-course-descriptions/undergraduate/cmpsc/"
+    }
+  ],
+  "qualification": "ME 300 directly requires CHEM 110 and concurrent MATH 141 in the current catalog. PHYS 212 is typical prior program exposure, not a direct ME 300 prerequisite. Campus, entry year and transfer pathways differ. Course exposure is never evidence of individual mastery. Adjust support to the student's request and observed reasoning. EMCH 212/213 and MATH 231 are placed alongside ME 300 in the suggested plan and must not be assumed completed."
+}

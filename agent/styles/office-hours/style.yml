@@ -20,6 +20,7 @@ tools:
   - show_on_board
   - explain_on_whiteboard
   - record_practice_result
+  - record_skill_observation
 skills:
   - property-tables
   - control-volume-energy-balance

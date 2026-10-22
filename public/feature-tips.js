@@ -6,7 +6,7 @@
   const definitions = [
     {
       id: 'equation', target: 'equationToggle', title: 'Type equations faster', action: 'Try it',
-      text: 'Try the equation toolbar to type equations faster. Choose a quantity, preview your equation, and insert it into your message.',
+      text: 'Try the equation toolbar to type equations faster. Tap a symbol to add it directly where you’re typing in your message.',
       minLength: 3,
       matches: (draft) => /[=^\\]|\b(equation|formula|enthalpy|entropy|pressure|temperature|density|heat|work|mass|energy|divided)\b/i.test(draft),
       available: () => $('equationPanel')?.hidden === true,
