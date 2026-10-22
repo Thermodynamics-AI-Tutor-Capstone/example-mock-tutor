@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "dev": "node server.js --dev-login",
+    "dev:test": "node scripts/local-dev-auth.test.mjs",
     "build": "node scripts/copy-vendor.mjs && node scripts/build-knowledge.mjs",
     "knowledge": "node scripts/build-knowledge.mjs",
     "postinstall": "node scripts/copy-vendor.mjs",

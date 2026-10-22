@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local development — Kelvin AI</title>
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/account.css">
+<script src="/account.js"></script>
+</head>
+<body class="account-page">
+<main class="acct-card">
+  <div class="acct-brand">Kelvin AI</div>
+  <h1 class="acct-title">Local development</h1>
+  <p class="acct-sub">Use a test account on this computer. No Neon signup is needed. Chats stay in a separate local test database.</p>
+  <p id="devStatus" role="status">Checking development server…</p>
+  <button id="devEnter" class="acct-btn" type="button" hidden>Enter as Local tester</button>
+  <p><a href="/login">Regular sign in</a></p>
+</main>
+<script>
+(async function () {
+  const status = document.getElementById('devStatus'), button = document.getElementById('devEnter');
+  const available = await KelvinAccount.call('/api/auth/dev-login').catch(() => null);
+  if (!available?.ok || !available.data?.available) {
+    status.textContent = 'Development login is only available on a local development server.';
+    return;
+  }
+  status.textContent = available.data.modelConfigured
+    ? 'Live AI is configured. Test prompts will be sent to the configured model service.'
+    : 'Interface testing is ready. Live AI replies and generated whiteboards need a DeepSeek API key.';
+  button.hidden = false;
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    try {
+      const result = await KelvinAccount.call('/api/auth/dev-login', { method: 'POST', body: '{}' });
+      if (!result.ok) throw new Error(result.data?.error || 'Could not start development session.');
+      location.replace('/');
+    } catch (error) {
+      status.textContent = error.message;
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1141,6 +1141,10 @@
   const me = await window.KelvinAccount.requireSession();
   if (!me) return;
   state.me = me;
+  if (me.user.localDev) {
+    const banner = document.querySelector('.experiment-banner');
+    banner.textContent = 'Local development · Test data only · Live AI requires a configured model key';
+  }
   renderUser();
   window.KelvinVoice.init({ api, apiFetch, onChange: updateSendBtn,
     blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden });

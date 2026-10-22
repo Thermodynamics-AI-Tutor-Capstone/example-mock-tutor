@@ -78,8 +78,8 @@
       return r.data;
     },
     async signOut() {
-      await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => {});
-      location.href = '/login';
+      const result = await call('/api/auth/sign-out', { method: 'POST', body: '{}' }).catch(() => null);
+      location.href = result?.data?.localDev ? '/dev-login' : '/login';
     },
     async saveProfile(fields) {
       const r = await call('/api/me/profile', { method: 'PUT', body: JSON.stringify(fields) });
@@ -91,6 +91,10 @@
       const needProfile = !opts || opts.needProfile !== false;
       const me = await this.me();
       if (!me) {
+        if (['127.0.0.1', 'localhost'].includes(location.hostname)) {
+          const dev = await call('/api/auth/dev-login').catch(() => null);
+          if (dev?.ok && dev.data?.available) { location.replace('/dev-login'); return null; }
+        }
         location.replace('/login?next=' + encodeURIComponent(location.pathname + location.search + location.hash));
         return null;
       }

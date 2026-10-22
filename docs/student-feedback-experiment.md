@@ -59,6 +59,15 @@ The example above is illustrative; it is not a live source. Configure real URLs 
 
 ## Preview deployment
 
+For interface testing without Neon signup, run `npm run dev` locally and open
+`http://127.0.0.1:3300/dev-login`. The loopback server's `--dev-login` flag creates
+an eight-hour, non-admin local test session. It clears remote database/auth/blob settings
+and uses `data/local-dev/database`. Sessions end on sign-out or server restart.
+The hosted API never activates this mode, and production/Vercel startup refuses it.
+Live tutor responses and generated whiteboards still require a model API key; without one,
+use the local version to evaluate the interface, equation editor and course browser.
+`node scripts/local-dev-auth.test.mjs` checks the isolation and session boundaries.
+
 Deploy this branch to the existing Vercel project's **Preview** environment. Keep `main` as the production branch; never use `--prod` or promote this experiment to production.
 
 Before live evaluation, the project owner must provision/confirm Preview-scoped database, authentication and storage, plus the model API keys. Use separate test data and an allowed preview callback/origin for sign-in. A separate Git branch by itself does not isolate those services. No production secrets or student data are included in this branch.

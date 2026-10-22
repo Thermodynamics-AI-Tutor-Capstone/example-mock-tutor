@@ -67,6 +67,8 @@ function resolveKey(dotenvKeys, envVar) {
 }
 
 const dotenvKeys = loadDotenv();
+const { enableLocalDev, localDevEnabled } = await import('./lib/local-dev-auth.js');
+if (process.argv.includes('--dev-login')) enableLocalDev();
 
 const { handle, configure } = await import('./lib/app.js');
 const { llmConfig } = await import('./lib/agent.js');
@@ -175,7 +177,7 @@ server.listen(PORT, HOST, () => {
       : 'Knowledge files: 0 (index failed to load)'
   );
   console.log(`Database: ${dbKind()}`);
-console.log(`Accounts: ${process.env.NEON_AUTH_BASE_URL ? 'Neon Auth' : 'NOT configured (set NEON_AUTH_BASE_URL)'}`);
+  console.log(`Accounts: ${localDevEnabled() ? 'Local development login at /dev-login' : process.env.NEON_AUTH_BASE_URL ? 'Neon Auth' : 'NOT configured (set NEON_AUTH_BASE_URL)'}`);
   ensureSchema().then(
     () => console.log('Database schema ready'),
     (e) => console.error(`Database not ready: ${e.message}`)
