@@ -17,6 +17,7 @@ tools:
   - calculate
   - check_constraints
   - plot_property_diagram
+  - grapher
   - show_on_board
   - explain_on_whiteboard
   - record_practice_result
@@ -24,6 +25,8 @@ tools:
 skills:
   - property-tables
   - control-volume-energy-balance
+  - grapher
+  - check-my-work
 max_tool_rounds: 6
 state:
   help_ladder: true

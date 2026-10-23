@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Grapher · Kelvin AI</title>
+  <link rel="stylesheet" href="/grapher.css">
+  <script src="/grapher.js" defer></script>
+</head>
+<body class="kgr-page">
+  <header class="kgr-page-header"><a href="/">← Kelvin AI</a><span>Experimental</span></header>
+  <main class="kgr-workspace" id="grapher-workspace">
+    <header class="kgr-intro"><p class="kgr-eyebrow">THERMODYNAMICS</p><h1>Draw it. Understand it.</h1><p>Build a property diagram, then follow each drawing step. Start with two independent properties for every state.</p></header>
+    <form id="grapher-form" class="kgr-editor">
+      <div class="kgr-form-top">
+        <label>Diagram<select id="grapher-type" name="diagram"><option value="Pv">P–v · Pressure / specific volume</option><option value="Ts">T–s · Temperature / entropy</option><option value="Ph">P–h · Pressure / enthalpy</option><option value="Hs">h–s · Enthalpy / entropy</option><option value="PT">P–T · Pressure / temperature</option><option value="Tv">T–v · Temperature / specific volume</option></select></label>
+        <label>Fluid<select id="grapher-fluid"><option value="water">Water</option><option value="R-134a">R-134a</option></select></label>
+        <button type="button" id="grapher-sample">Load boiling example</button>
+      </div>
+      <p class="kgr-hint">The example uses water boiling at 100 kPa, from saturated liquid (x = 0) to saturated vapor (x = 1). Loading it replaces the current inputs.</p>
+      <fieldset><legend>States</legend><div id="grapher-states"></div><button type="button" id="grapher-add-state">+ Add state</button></fieldset>
+      <fieldset><legend>Processes</legend><p class="kgr-hint">Connect state labels and choose the physical constraint. “Straight connection” is a visual guide, not a calculated process.</p><div id="grapher-processes"></div><button type="button" id="grapher-add-process">+ Add process</button></fieldset>
+      <div class="kgr-generate-row"><button class="kgr-primary" id="grapher-generate" type="submit">Generate diagram</button><p id="grapher-form-status" role="status" aria-live="polite">Enter your states or load the labeled example.</p></div>
+    </form>
+    <section id="grapher-output" aria-label="Generated diagram"><div class="kgr-empty"><strong>Your diagram will appear here.</strong><p>Play the construction or advance one step at a time. The drawing checklist stays directly below the graph.</p></div></section>
+  </main>
+</body>
+</html>

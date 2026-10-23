@@ -1,0 +1,24 @@
+.property-table-dock[hidden] { display: none; }
+.property-table-dock { flex: 0 0 56%; min-width: 0; height: 100%; display: flex; flex-direction: column; background: var(--bg); border-left: 1px solid var(--border); }
+.property-table-dock iframe { width: 100%; min-height: 0; flex: 1; border: 0; background: var(--bg); }
+.property-dock-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); min-height: 52px; font-size: 12px; }
+.property-dock-toolbar strong { font-size: 14px; }
+.property-dock-toolbar a { color: var(--text2); margin-left: auto; white-space: nowrap; }
+.property-dock-toolbar button { border-radius: 6px; padding: 6px 8px; white-space: nowrap; }
+.property-dock-toolbar button:hover { background: var(--hover); }
+.property-dock-toolbar :focus-visible { outline: 2px solid #2c79bd; outline-offset: 2px; }
+#propertyDockStatus { color: var(--text2); }
+.app.tables-open .sidebar, .app.tables-open .backdrop { display: none; }
+.app.tables-open #openSidebar { visibility: hidden; }
+.app.tables-open .topbar { flex-wrap: wrap; height: auto; min-height: 52px; flex-basis: auto; }
+.app.tables-open .topbar-right { flex-wrap: wrap; }
+@media (max-width: 1050px) {
+  .app.tables-open .main { display: none; }
+  .property-table-dock { flex-basis: 100%; border: 0; }
+}
+@media (max-width: 500px) {
+  #propertyDockStatus { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #propertyTablesBtn { padding-left: 6px; padding-right: 6px; }
+  .topbar-feedback span { display: none; }
+  .topbar-right { gap: 2px; padding-right: 0; }
+}

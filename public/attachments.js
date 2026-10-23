@@ -479,6 +479,13 @@
       // Uploads another tab (or a reload) left mid-read: follow them until they finish.
       for (const a of pending) if (a.status === 'processing' && !a.uploading) watch(a);
     },
+    restorePending(list) {
+      // A rejected message never linked these files. Merge them back without dropping a new
+      // upload, a newer saved review, or an upload still in flight while the request was pending.
+      const ids = new Set(pending.filter((a) => a.id).map((a) => a.id));
+      pending = (list || []).filter((a) => a.id && !ids.has(a.id)).concat(pending);
+      renderTray();
+    },
     clear() {
       pending = [];
       renderTray();

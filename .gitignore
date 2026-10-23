@@ -8,5 +8,11 @@ public/vendor/
 .env*
 build/
 agent/raw-course-files/
+# Original course-table scans and their local interaction map stay with private course assets.
+# Recreate locally with scripts/import-property-tables.py; never publish them via this public repo.
+public/property-tables/
 .claude/worktrees/
 .claude/.github-coordination.json
+.grapher-python/
+.grapher-runtime.json
+__pycache__/

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Property tables · Kelvin</title>
+  <link rel="stylesheet" href="/property-tables.css">
+  <script src="/property-tables.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" target="_top"><span class="brand-mark" aria-hidden="true">K</span><span>Kelvin <span class="brand-divider">/</span> <span class="brand-section">Property tables</span></span></a>
+    <div class="top-actions"><a href="/" target="_top" class="back-link">Back to tutor <span aria-hidden="true">↗</span></a><button id="themeToggle" class="icon-button" type="button" aria-label="Switch to dark appearance" title="Change appearance"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.7 13a8.7 8.7 0 0 1-9.7-9.7A8.7 8.7 0 1 0 20.7 13Z"/></svg></button></div>
+  </header>
+  <main class="workspace">
+    <section class="page-heading"><div><p class="eyebrow">THERMODYNAMICS REFERENCE</p><h1>A closer look at every value.</h1><p class="lede">Find a state, follow its row, and connect the property to your equation.</p></div><span class="reference-tag"><span aria-hidden="true"></span> Source-backed tables</span></section>
+    <div id="loadStatus" class="load-status" role="status">Loading the reference library…</div>
+    <div id="viewer" class="viewer" hidden>
+      <section class="table-workspace" aria-label="Property table explorer">
+        <div class="selectors">
+          <label class="field" for="datasetSelect"><span>REFERENCE</span><select id="datasetSelect"></select></label>
+          <label class="field" for="tableSelect"><span>SOURCE PAGE</span><select id="tableSelect"></select></label>
+          <label id="groupField" class="field" for="groupSelect" hidden><span>TABLE SECTION</span><select id="groupSelect"></select></label>
+        </div>
+        <div class="table-heading"><div><p id="tableKicker" class="eyebrow"></p><h2 id="tableTitle"></h2><p id="tableDescription" class="muted"></p></div><a id="sourceLink" class="source-link" target="_blank" rel="noopener">Original PDF <span aria-hidden="true">↗</span></a></div>
+        <div class="table-actions"><span id="rowCount" class="muted"></span><label class="zoom-control" for="tableZoom">Zoom <select id="tableZoom"><option value="1">Fit</option><option value="1.5">150%</option><option value="2">200%</option><option value="2.5">250%</option></select></label><form id="jumpForm" class="jump-form"><label for="jumpValue" id="jumpLabel">Go to row</label><input id="jumpValue" type="number" step="any" placeholder="Value" inputmode="decimal"><button type="submit">Go <span aria-hidden="true">↓</span></button></form></div>
+        <p id="jumpStatus" class="jump-status" role="status"></p>
+        <p id="scanInstructions" class="sr-only">Original printed values are images. Use arrow keys to navigate cells. Verified example values have text equivalents; other values require reading the magnified source crop. Enter pins a cell; Escape unpins it.</p>
+        <div id="tableScroll" class="table-scroll" tabindex="-1"><div id="propertyTable" class="scan-grid" role="grid" aria-label="Source property table" aria-describedby="scanInstructions"></div></div>
+        <footer class="table-footer"><span><span class="keyboard-key">↑↓←→</span> Navigate values <span class="footer-separator">·</span> Click or Enter to pin</span><span id="tableSource"></span></footer>
+      </section>
+      <aside class="inspector-column" aria-label="Selected value and lookup guide">
+        <section class="inspector" aria-labelledby="inspectorTitle"><div class="card-heading"><h2 id="inspectorTitle">Value inspector</h2><span id="pinStatus" class="pin-status">Hover or focus</span></div><p id="cellProperty" class="property-label">Explore a value</p><div class="value-line"><strong id="cellValue">—</strong><span id="cellUnit"></span></div><div id="cellCrop" class="source-crop" hidden></div><p id="valueVerification" class="verification-note"></p><div id="cellContext" class="context-list"><p class="muted">Point to any numeric cell to see its exact source crop and context.</p></div><div id="rowContext" class="row-context" hidden><span>State coordinate · source crop</span><div id="rowCrop" class="source-crop"></div></div><p id="cellSource" class="source-note"></p><div class="inspector-actions"><button id="backToCell" class="text-button" type="button" hidden>Back to selected cell ↑</button><button id="clearPin" class="text-button" type="button" hidden>Unpin <span aria-hidden="true">×</span></button><button id="useInChat" class="primary-button" type="button" hidden disabled>Use in chat <span aria-hidden="true">↗</span></button></div><p id="selectionStatus" class="sr-only" role="status"></p></section>
+        <section class="guide" aria-labelledby="guideTitle"><div class="guide-overline"><span class="guide-icon" aria-hidden="true">↗</span><span>LEARN THE LOOKUP</span></div><h2 id="guideTitle">Follow the value.</h2><p id="guideDescription">A short, manual walkthrough connects the table, state and property. Pin a value to make it your example.</p><button id="guideStart" class="primary-button guide-start" type="button">Show me how <span aria-hidden="true">→</span></button><div id="guidePlayback" hidden><ol class="guide-stages" aria-label="Lookup stages"><li>Table</li><li>State</li><li>Property</li><li>Value</li></ol><p id="guideInstruction" class="guide-instruction" aria-live="polite"></p><div class="guide-controls"><button id="guidePrevious" type="button" aria-label="Previous lookup step">←</button><span id="guideCount"></span><button id="guideNext" type="button" aria-label="Next lookup step">→</button><button id="guideReplay" class="text-button" type="button">Replay</button><button id="guideClose" class="text-button" type="button">Done</button></div></div><p class="guide-note">Authored walkthrough · you set the pace</p></section>
+        <p class="accuracy-note">Source scans preserve the original printed values. Only labeled examples have verified text equivalents. This viewer does not interpolate or infer a fluid state.</p>
+      </aside>
+    </div>
+  </main>
+  <div id="guidePointer" class="guide-pointer" hidden aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M16 26V9a4 4 0 0 1 8 0v13-3a3.5 3.5 0 0 1 7 0v4-1a3.5 3.5 0 0 1 7 0v5a3 3 0 0 1 6 0v8c0 7-5 11-12 11h-7c-4 0-6-2-8-5L6 28a4 4 0 0 1 6-5l4 3Z"/></svg><span id="pointerNumber">1</span></div>
+</body>
+</html>

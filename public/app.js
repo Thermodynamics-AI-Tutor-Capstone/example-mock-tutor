@@ -10,13 +10,32 @@
   const input = $('input');
   const sendBtn = $('sendBtn');
   const whiteboardBtn = $('whiteboardBtn');
+  const checkWorkBtn = $('checkWorkBtn');
+  const checkWorkHint = $('checkWorkHint');
+  const CHECK_WORK_HINT = 'Type or upload your written solution with the problem and givens. Open each image upload to check or edit the extracted equations before sending.';
+  let requestCheckWork = false;
+  try { requestCheckWork = localStorage.getItem('kelvin-check-work') === 'on'; } catch {}
   let requestWhiteboard = false;
   try { requestWhiteboard = localStorage.getItem('kelvin-experiment-whiteboard') === 'on'; } catch {}
   function renderWhiteboardPreference() {
     whiteboardBtn.setAttribute('aria-checked', String(requestWhiteboard));
     $('whiteboardState').textContent = requestWhiteboard ? 'On' : 'Off';
-    input.placeholder = requestWhiteboard ? 'Work through a problem on the whiteboard…' : 'Ask anything';
+    input.placeholder = requestCheckWork ? 'Add the problem and your attempted steps…' : requestWhiteboard ? 'Work through a problem on the whiteboard…' : 'Ask anything';
   }
+  function renderCheckWorkPreference() {
+    checkWorkBtn.setAttribute('aria-pressed', String(requestCheckWork));
+    $('checkWorkState').textContent = requestCheckWork ? 'On' : 'Off';
+    checkWorkHint.hidden = !requestCheckWork;
+    checkWorkHint.textContent = CHECK_WORK_HINT;
+    renderWhiteboardPreference();
+  }
+  renderCheckWorkPreference();
+  checkWorkBtn.addEventListener('click', () => {
+    requestCheckWork = !requestCheckWork;
+    try { localStorage.setItem('kelvin-check-work', requestCheckWork ? 'on' : 'off'); } catch {}
+    renderCheckWorkPreference();
+    input.focus();
+  });
   renderWhiteboardPreference();
   whiteboardBtn.addEventListener('click', () => {
     requestWhiteboard = !requestWhiteboard;
@@ -103,7 +122,7 @@
   // time a reply contains one.
   let figuresScript = null;
   function renderFigures(el, opts) {
-    if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board')) return;
+    if (!el.querySelector('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board, pre > code.language-kelvin-grapher')) return;
     if (window.KelvinFigures) return window.KelvinFigures.render(el, { api, apiFetch, ...opts });
     if (!figuresScript) {
       figuresScript = new Promise((resolve, reject) => {
@@ -300,7 +319,7 @@
   function goEmpty(pushUrl) {
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
-    renderWhiteboardPreference();
+    renderCheckWorkPreference();
     state.loadToken++;
     state.currentId = null;
     if (window.KelvinAttachments) window.KelvinAttachments.clear();
@@ -317,9 +336,15 @@
     input.focus();
   }
 
-  function addUserMessage(content, attachments) {
+  function addUserMessage(content, attachments, checkWork = false) {
     const row = document.createElement('div');
     row.className = 'msg user';
+    if (checkWork) {
+      const label = document.createElement('div');
+      label.className = 'check-work-label';
+      label.textContent = 'Check my work';
+      row.appendChild(label);
+    }
     if (attachments && attachments.length) row.appendChild(window.KelvinAttachments.chipsFor(attachments));
     const b = document.createElement('div');
     b.className = 'bubble';
@@ -436,7 +461,7 @@
     const msgs = conv.messages || [];
     const replyRows = new Map();
     for (const m of msgs) {
-      if (m.role === 'user') addUserMessage(m.content, m.attachments);
+      if (m.role === 'user') addUserMessage(m.content, m.attachments, m.checkWork === true);
       else replyRows.set(m.id, addAssistantMessage(m.content, true, m.id));
     }
     setThreadMode(msgs.length > 0);
@@ -685,6 +710,7 @@
   function updateSendBtn() {
     window.KelvinVoice?.update();
     whiteboardBtn.disabled = state.streaming;
+    checkWorkBtn.disabled = state.streaming;
     if (state.streaming) {
       sendBtn.classList.add('stop');
       sendBtn.disabled = false;
@@ -716,7 +742,13 @@
     const typed = (text != null ? text : input.value).trim();
     if (state.streaming || files.busy() || window.KelvinVoice?.active()) return;
     const sentFiles = text != null ? [] : files.pendingList();
-    const baseContent = typed || (sentFiles.length ? 'Please take a look at what I attached.' : '');
+    const checkWork = requestCheckWork;
+    if (checkWork && sentFiles.some((file) => file.status === 'needs_review')) {
+      checkWorkHint.hidden = false;
+      checkWorkHint.textContent = 'Open your uploaded work above, check or edit the extracted equations, and save the review before sending.';
+      return;
+    }
+    const baseContent = typed || (sentFiles.length ? (checkWork ? 'Please check the written solution I attached.' : 'Please take a look at what I attached.') : '');
     const content = baseContent;
     const whiteboard = requestWhiteboard;
     if (!content) return;
@@ -725,7 +757,7 @@
     window.KelvinVoice?.cancel();
 
     window.KelvinNarration?.pauseAll();
-    renderWhiteboardPreference();
+    renderCheckWorkPreference();
 
     state.streaming = true;
     input.value = '';
@@ -757,7 +789,7 @@
     }
 
     setThreadMode(true);
-    addUserMessage(content, sentFiles);
+    const userRow = addUserMessage(content, sentFiles, checkWork);
     if (sentFiles.length) window.KelvinAttachments.clear();
     const row = addAssistantMessage('', false);
     const md = row.querySelector('.md');
@@ -820,6 +852,7 @@
     let text2 = '';
     let rafPending = false;
     let gotDelta = false;
+    let restoredDraft = false;
 
     const flush = () => {
       rafPending = false;
@@ -871,13 +904,14 @@
       const res = await apiFetch('/api/conversations/' + convId + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify({ content, whiteboard, attachments: sentFiles.map((a) => a.id) }),
+        body: JSON.stringify({ content, whiteboard, checkWork, attachments: sentFiles.map((a) => a.id) }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
         let msg = 'HTTP ' + res.status;
-        try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
-        throw new Error(msg);
+        let code = null;
+        try { const j = await res.json(); if (j && j.error) msg = j.error; code = j?.code; } catch (e) {}
+        throw Object.assign(new Error(msg), { status: res.status, code });
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -902,7 +936,26 @@
         try { handleEvent(JSON.parse(line.slice(6))); } catch (e) {}
       }
     } catch (e) {
-      if (isPasscodeError(e)) {
+      const rejectedWork = checkWork && [400, 409, 422].includes(e.status) &&
+        ['work_required', 'work_processing', 'work_review_required', 'work_unreadable', 'work_attachment_unavailable'].includes(e.code);
+      if (rejectedWork) {
+        // These responses are issued before the server saves a message. Do not leave an
+        // optimistic conversation entry behind, or discard a student's solution on retry.
+        userRow.remove();
+        row.remove();
+        if (state.currentId === convId) {
+          const newerDraft = input.value;
+          const start = input.selectionStart, end = input.selectionEnd;
+          const prefix = typed && newerDraft ? typed + '\n\n' : typed;
+          input.value = prefix + newerDraft;
+          input.setSelectionRange(prefix.length + start, prefix.length + end);
+          window.KelvinAttachments.restorePending(sentFiles);
+          autoGrow();
+          checkWorkHint.hidden = false;
+          checkWorkHint.textContent = e.message + ' Your draft and files are back in the composer.';
+          restoredDraft = true;
+        }
+      } else if (isPasscodeError(e)) {
         dot.remove();
         showError(row, 'Passcode required. Enter the team passcode and try again.');
       } else if (e.name !== 'AbortError') {
@@ -921,7 +974,7 @@
       updateSendBtn();
       refreshList();
       refreshUsage();
-      if (row.isConnected) input.focus();
+      if (row.isConnected || restoredDraft) input.focus();
     }
   }
 

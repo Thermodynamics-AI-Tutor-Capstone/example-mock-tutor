@@ -1,7 +1,7 @@
 // Draws the figures in Kelvin's replies. Loaded on demand by app.js the first time a reply
 // contains one, so a chat without figures never pays for it.
 //
-// Three kinds of fenced block:
+// Supported kinds of fenced block:
 //   ```mermaid          — a Mermaid diagram (cycle sketches, concept maps), drawn by the Mermaid
 //                         library, which is fetched only when the first one appears.
 //   ```kelvin-diagram   — a property diagram. The block holds only the request (fluid, diagram
@@ -9,6 +9,7 @@
 //                         every curve from the property tables and this file draws the SVG. So a
 //                         saved reply redraws from the same tables rather than from stored pixels.
 //   ```kelvin-board     — a structured teaching sketch or equation board from show_on_board.
+//   ```kelvin-grapher   — an animated, server-calculated thermodynamic drawing with a checklist.
 //
 // Property and Mermaid figures are cached by block text. Boards render per instance so their SVG
 // marker and accessibility ids stay unique; app.js preserves the live figure across stream updates.
@@ -17,6 +18,7 @@
   const pending = new Map();
   let mermaidPromise = null;
   let boardPromise = null;
+  let grapherPromise = null;
   let uid = 0;
 
   const CSS = `
@@ -240,6 +242,18 @@
     return boardPromise;
   }
 
+  function loadGrapher() {
+    if (window.KelvinGrapher) return Promise.resolve(window.KelvinGrapher);
+    if (!grapherPromise) grapherPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/grapher.js';
+      script.onload = () => window.KelvinGrapher ? resolve(window.KelvinGrapher) : reject(new Error('The grapher could not be loaded.'));
+      script.onerror = () => reject(new Error('The grapher could not be loaded.'));
+      document.head.appendChild(script);
+    }).catch(error => { grapherPromise = null; throw error; });
+    return grapherPromise;
+  }
+
   // ---- wiring ----------------------------------------------------------------------------------
 
   function fill(key, html) {
@@ -276,9 +290,9 @@
   function render(root, opts) {
     injectCss();
     const api = opts && opts.api;
-    const blocks = root.querySelectorAll('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board');
+    const blocks = root.querySelectorAll('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board, pre > code.language-kelvin-grapher');
     blocks.forEach((code) => {
-      const kind = code.classList.contains('language-mermaid') ? 'mermaid' : code.classList.contains('language-kelvin-board') ? 'board' : 'diagram';
+      const kind = code.classList.contains('language-mermaid') ? 'mermaid' : code.classList.contains('language-kelvin-board') ? 'board' : code.classList.contains('language-kelvin-grapher') ? 'grapher' : 'diagram';
       const text = code.textContent.trim();
       const key = kind + '\n' + text;
       const pre = code.parentElement;
@@ -292,6 +306,16 @@
       fig.className = 'kfig';
       fig.dataset.kfig = hash(key);
       host.replaceWith(fig);
+      if (kind === 'grapher') {
+        let spec;
+        try { spec = JSON.parse(text); }
+        catch { fig.innerHTML = '<div class="kfig-note">Waiting for the complete diagram request…</div>'; return; }
+        fig.innerHTML = '<div class="kfig-note">Preparing the drawing steps…</div>';
+        loadGrapher().then(grapher => {
+          if (fig.isConnected) return grapher.mount(fig, spec, opts || {});
+        }).catch(error => { if (fig.isConnected) fig.innerHTML = `<div class="kfig-error">${esc(error.message)}</div>`; });
+        return;
+      }
       if (kind === 'board') {
         let spec;
         try { spec = JSON.parse(text); }

@@ -4,7 +4,14 @@ A reply can contain figures. The student sees them drawn in the chat, and everyt
 reply is unchanged. This section is only included for teaching styles whose `ui.figures` or
 `ui.mermaid` is on (see agent/styles/).
 
-**Property diagrams — T-s, P-v, P-h, T-v.** Call `plot_property_diagram` and copy the `figure`
+**Animated Grapher — P-v, T-s, P-h, h-s, P-T, T-v.** Use `grapher` when the student wants to
+learn how to draw a diagram from their problem data. It generates the plot with Python and adds
+playback controls plus an expandable checklist in exam drawing order, synchronized to each line.
+The graph is inserted automatically; do not copy its block or repeat the entire checklist.
+Load the `grapher` skill when you need the construction procedure. Confirm missing givens first.
+This is independent of the Whiteboard toggle. Uploaded graph checking is not implemented.
+
+**Static property diagrams — T-s, P-v, P-h, T-v.** Call `plot_property_diagram` and copy the `figure`
 block from its result into your reply, on its own lines. The saturation dome, the state points and
 every process curve are computed from the property tables, so the drawing is to scale and a state
 sits where its numbers actually put it. Use one when where a state sits matters: inside or outside

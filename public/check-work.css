@@ -1,0 +1,10 @@
+.check-work-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border: 1px solid var(--border); border-radius: 10px; color: var(--text); font: inherit; font-size: 13px; white-space: nowrap; }
+.check-work-btn[aria-pressed="true"] { background: #dcefe6; color: #164b36; border-color: #6ba88b; }
+.check-work-btn:hover { box-shadow: inset 0 0 0 1px var(--text2); }
+.check-work-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.check-work-btn:disabled { opacity: .55; cursor: default; }
+.check-work-hint { flex-basis: 100%; order: 0; margin: 0 4px; padding: 8px 10px; background: var(--sidebar); border-radius: 10px; color: var(--text2); font-size: 12px; line-height: 1.5; text-align: left; }
+.check-work-hint[hidden] { display: none; }
+.check-work-label { align-self: flex-end; color: var(--text2); font-size: 11px; margin: 0 3px 5px; }
+@media (max-width: 480px) { .check-work-btn { min-height: 44px; } .check-work-hint { order: 0; } }
+@media (prefers-color-scheme: dark) { .check-work-btn[aria-pressed="true"] { background: #173a2b; color: #c0f0d7; border-color: #579b78; } }

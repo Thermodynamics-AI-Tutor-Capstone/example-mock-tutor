@@ -1,0 +1,44 @@
+/* Shared fluid candidates. Size to the chat pane, including with the property dock open. */
+.main { container-type: inline-size; container-name: chat; }
+.main .topbar { min-height: 52px; height: auto; flex: 0 0 auto; flex-wrap: wrap; padding-block: 4px; }
+.main .topbar-left { flex-shrink: 0; }
+.main .topbar-right { min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.main .topbar-link, .main .topbar-feedback { white-space: nowrap; min-height: 36px; display: inline-flex; align-items: center; }
+.main .scroller { min-height: 0; }
+.main .thread { width: calc(100% - clamp(24px, 4cqi, 64px)); max-width: 1440px; padding: 16px 0 32px; }
+.main .empty { padding-inline: clamp(12px, 2cqi, 32px); }
+.main .empty .composer-slot { max-width: 1440px; }
+.main .bottom { padding-inline: clamp(12px, 2cqi, 32px); flex-shrink: 0; }
+.main .bottom .composer-slot { width: 100%; max-width: 1440px; }
+.main .msg, .main .md { min-width: 0; max-width: 100%; }
+.main .md pre, .main .md figure { max-width: 100%; }
+.main .composer .whiteboard-preference { gap: 6px; padding-bottom: 5px; }
+.main .composer { min-width: 0; }
+.main .composer > .send-btn { margin-left: auto; }
+.main .equation-panel { max-height: 180px; padding: 7px 8px; border-radius: 12px; overflow: hidden; }
+.main .equation-categories { gap: 4px; padding: 0 0 5px; overscroll-behavior-x: contain; }
+.main .equation-categories button { min-height: 36px; padding: 6px 9px; }
+.main .equation-symbols { display: flex; gap: 6px; overflow-x: auto; padding: 1px 1px 6px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
+.main .equation-symbols button { flex: 0 0 92px; min-height: 60px; padding: 6px; gap: 4px; scroll-snap-align: start; }
+.main .equation-symbols .symbol-name { font-size: 10px; line-height: 1.2; }
+.main .equation-symbols .katex { font-size: 1.1em; }
+@container chat (max-width: 760px) {
+  .main .topbar-right { flex-basis: 100%; justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .main .topbar-link, .main .topbar-feedback { flex: 0 0 auto; min-height: 40px; }
+  .main #whiteboardHint { display: none; }
+  .main .bubble { max-width: 92%; }
+  .main .equation-categories button { min-height: 44px; }
+  .main .equation-symbols button { min-height: 60px; flex-basis: 88px; }
+}
+@container chat (max-width: 480px) {
+  .main .topbar-feedback ~ .topbar-link { display: inline-flex; }
+  .main .composer .whiteboard-preference { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; overscroll-behavior-x: contain; }
+  .main .whiteboard-preference > button { flex: 0 0 auto; min-height: 44px; }
+  .main .composer textarea { flex-basis: 100%; order: 1; }
+  .main .composer > .attach-btn, .main .composer > .mic-btn, .main .composer > .send-btn { order: 2; width: 44px; height: 44px; flex-basis: 44px; }
+  .main .composer > .mic-btn { margin-left: auto; }
+}
+
+/* Candidate C: workspace uses available width; prose has a readable line measure. */
+.main .md > p, .main .md > ul, .main .md > ol, .main .md > blockquote { max-width: 88ch; }
+.main .md > p:has(.katex-display) { max-width: none; }

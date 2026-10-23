@@ -1,0 +1,4 @@
+@import url('/layout-review/common.css');
+/* Candidate C: workspace uses available width; prose has a readable line measure. */
+.main .md > p, .main .md > ul, .main .md > ol, .main .md > blockquote { max-width: 88ch; }
+.main .md > p:has(.katex-display) { max-width: none; }

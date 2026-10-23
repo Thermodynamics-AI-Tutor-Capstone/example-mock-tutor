@@ -19,6 +19,8 @@
     "equation:browser": "node scripts/equation-editor.browser.test.mjs",
     "attachment:browser": "node scripts/attachment-preview.browser.test.mjs",
     "illustrations:browser": "node scripts/illustrations.browser.test.mjs",
+    "tables:test": "node scripts/property-tables-data.test.mjs",
+    "tables:browser": "node scripts/property-tables.browser.test.mjs",
     "skills:test": "node scripts/student-skills.test.mjs",
     "skills:browser": "node scripts/skill-settings.browser.test.mjs",
     "whiteboard:preview": "node scripts/preview-whiteboard.mjs",
@@ -37,7 +39,12 @@
     "usernames:test": "node scripts/usernames.test.mjs",
     "routing:test": "node scripts/routing.test.mjs",
     "launch:test": "node scripts/launch.test.mjs",
-    "feedback:test": "node scripts/feedback.test.mjs"
+    "feedback:test": "node scripts/feedback.test.mjs",
+    "grapher:test": "node scripts/grapher.test.mjs",
+    "grapher:browser": "node scripts/grapher.browser.test.mjs",
+    "check-work:test": "node scripts/check-work.test.mjs",
+    "check-work:browser": "node scripts/check-work.browser.test.mjs",
+    "grapher:api": "node scripts/grapher-api.test.mjs"
   },
   "engines": {
     "node": "24.x"
