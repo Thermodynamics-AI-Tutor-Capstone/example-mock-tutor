@@ -1,0 +1,53 @@
+.kel-companion {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(156px, calc(env(safe-area-inset-bottom) + 156px));
+  z-index: 15;
+  width: 88px;
+  pointer-events: none;
+}
+.kel-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-origin: 50% 90%;
+  -webkit-tap-highlight-color: transparent;
+}
+.kel-button img { display: block; width: 100%; height: auto; user-select: none; }
+.kel-button:focus-visible { outline: 3px solid #2198ed; outline-offset: 5px; border-radius: 18px; }
+.kel-greeting {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  width: 210px;
+  margin: 0 0 12px;
+  padding: 12px 15px;
+  border: 1px solid #c0dff5;
+  border-radius: 16px 16px 4px 16px;
+  background: #f3fbff;
+  color: #102c54;
+  box-shadow: 0 4px 18px #0b2c5412;
+  font: 500 14px/1.45 system-ui, sans-serif;
+  opacity: 0;
+  visibility: hidden;
+}
+.kel-hello .kel-greeting { opacity: 1; visibility: visible; }
+.kel-dancing .kel-button { animation: kel-dance 850ms ease-in-out 5; }
+@keyframes kel-dance {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  15% { transform: translateY(2px) rotate(-8deg) scale(1.04, .95); }
+  35% { transform: translateY(-15px) rotate(8deg) scale(.97, 1.03); }
+  55% { transform: translateY(0) rotate(-6deg); }
+  75% { transform: translateY(-9px) rotate(5deg); }
+}
+@media (max-width: 767px) {
+  .kel-companion { width: 64px; right: max(10px, env(safe-area-inset-right)); bottom: calc(192px + env(safe-area-inset-bottom)); }
+  .kel-greeting { width: min(210px, calc(100vw - 36px)); font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kel-dancing .kel-button { animation: none; }
+}
