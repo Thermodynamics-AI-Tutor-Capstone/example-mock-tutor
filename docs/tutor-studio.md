@@ -1,14 +1,14 @@
 # Tutor Studio and local VS Code workflow
 
-Tutor Studio places the most recent live whiteboard, diagram or graph beside the conversation. The workspace starts closed. Choose **Open workspace** in the left sidebar when you need it, and use **Hide workspace** in its header to return to full-width chat. New explanations respect this choice. On smaller screens, **View this explanation in our workspace** opens the board above the conversation. Prior figures stay available in their messages.
+Tutor Studio uses a full-width conversation with 17px desktop text and 16px phone text. Whiteboards, graphs and diagrams stay directly in their chat messages. The separate workspace and its open/hide controls are deferred to a later iteration.
 
-The workspace header contains **Hide workspace** and tabs for Drawing, Property tables, Important equations and Grapher. Equations come from actual displayed math in the current explanation; pin useful references for the current conversation. Table and Grapher links open standalone browser tabs when the workspace is closed. Important equations can open a read-only snapshot. See `docs/workspace-tools.md`.
+**Property tables**, **Grapher** and **Important equations** open separate browser tabs. Important equations contains a read-only snapshot of the displayed equations in the current conversation, with available labels and assumption notes. Open it again to refresh the snapshot. Workspace equation pins are deferred with the workspace.
 
 **About Me** shows evidence, assistance, uncertainty and four knowledge dimensions rather than a numeric grade. **Check my understanding** offers three concepts with two cases each and uses the existing tutor for feedback. Hint and Explain requests preserve unsent drafts and cannot themselves create independent learning evidence. The offline demo shows these flows with scripted replies and saves no assessment; the full app uses the signed-in student's evidence ledger.
 
-**Play narration**, Previous, Replay and Next step are above the drawing. **Voice & speed** and **Read full transcript** are there too. Controls stay at the top while a long board scrolls; hiding the workspace pauses narration. Narration uses the browser's voices and never autoplays. Captions and manual steps work without speech support.
+**Play narration**, Previous, Replay and Next step are above the drawing. **Voice & speed** and **Read full transcript** are there too. Controls stay at the top while a long board scrolls; navigating away pauses narration. Narration uses the browser's voices and never autoplays. Captions and manual steps work without speech support.
 
-**Learn KELVIN** is separate from chat: an eight-feature tour and a captioned walkthrough explain messages, attachments, whiteboard, voice input, checking work, the course map, About Me and Check My Understanding. The captioned animation runs for 1 minute 20 seconds and has no audio. The timeline, lesson count, progress maximum, chapter timestamps and tour-duration estimate come from the lesson list. Progress is saved per user in this browser; previous completed features remain completed when new features are added. The tour never sends messages. Kel's **Watch a quick example** opens a clearly labelled turbine practice example.
+**Learn KELVIN** is separate from chat: an eight-feature tour and a captioned walkthrough explain messages, attachments, whiteboard, voice input, checking work, the course map, About Me and Check My Understanding. The captioned animation runs for 1 minute 20 seconds and has no audio. The timeline, lesson count, progress maximum, chapter timestamps and tour-duration estimate come from the lesson list. Progress is saved per user in this browser; previous completed features remain completed when new features are added. The tour never sends messages. Kel's **Watch a quick example** opens a clearly labelled turbine practice example in a dismissible dialog, without inserting messages into the student's chat.
 
 ## Preview the UI without credentials
 
@@ -20,7 +20,7 @@ The workspace header contains **Hide workspace** and tabs for Drawing, Property 
    npm run demo
    ```
 
-3. Open `http://127.0.0.1:3301`. Try About Me, Check my understanding, Learn KELVIN, Kel's practice example, workspace tabs, narration and resizing. If port 3301 is already in use, run `$env:PORT='3302'; npm run demo` and open port 3302.
+3. Open `http://127.0.0.1:3301`. Try About Me, Check my understanding, Learn KELVIN, Kel's practice example, reference tabs, narration and resizing. If port 3301 is already in use, run `$env:PORT='3302'; npm run demo` and open port 3302.
 4. Stop the preview with **Ctrl+C**. Reload the page after changing files.
 
 The demo uses scripted replies and in-memory conversations; it makes no AI calls. The numeric property reference works offline for water and R-134a using the installed interpolation tables. When original course-page scans are unavailable, the Property tables tab clearly labels this numeric reference and its source. Uploads, dictation and account services need the full application. Tour progress persists in browser storage; demo chats disappear when the server stops.
@@ -45,7 +45,6 @@ node scripts/learn.browser.test.mjs
 node scripts/narration.browser.test.mjs
 npm run beta:test
 npm run beta:browser
-node scripts/workspace-tools.browser.test.mjs
 node scripts/property-reference.browser.test.mjs
 node scripts/compact-diagrams.browser.test.mjs
 ```

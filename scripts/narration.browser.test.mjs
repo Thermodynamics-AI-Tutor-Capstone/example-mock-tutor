@@ -199,20 +199,21 @@ try {
   await page.getByRole('switch', { name: 'Whiteboard', exact: true }).click();
   await page.locator('#input').fill('Explain a turbine');
   await page.getByRole('button', { name: 'Send', exact: true }).click();
-  await page.locator('#studioBoardContent .knarration').waitFor();
-  await page.locator('#thread .knarration').waitFor();
+  await page.waitForFunction(() => document.querySelectorAll('#thread .knarration').length === 2);
+  await page.locator('#thread .knarration').last().waitFor();
+  await page.locator('#thread .knarration').first().waitFor();
   assert.equal(postedMessage, 'Explain a turbine', 'display preference must not pollute student text');
   assert.equal(postedWhiteboard, true);
-  await page.locator('#studioBoardContent .knarration').getByRole('button', { name: 'Play narration', exact: true }).click();
-  await page.locator('#studioBoardContent .knarration').getByRole('button', { name: 'Pause', exact: true }).waitFor();
+  await page.locator('#thread .knarration').last().getByRole('button', { name: 'Play narration', exact: true }).click();
+  await page.locator('#thread .knarration').last().getByRole('button', { name: 'Pause', exact: true }).waitFor();
   const count = await page.evaluate(() => testSpeech.history.length);
   pendingStream();
   await page.getByRole('button', { name: 'Send', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => testSpeech.history.length), count, 'streaming must preserve player');
   assert.equal(await page.evaluate(() => Boolean(testSpeech.active)), true);
-  await page.locator('#thread .knarration').getByRole('button', { name: 'Play narration', exact: true }).click();
+  await page.locator('#thread .knarration').first().getByRole('button', { name: 'Play narration', exact: true }).click();
   assert.equal(await page.getByRole('button', { name: 'Pause', exact: true }).count(), 1);
-  await page.locator('#studioBoardContent .knarration').getByRole('button', { name: 'Next step', exact: true }).click();
+  await page.locator('#thread .knarration').last().getByRole('button', { name: 'Next step', exact: true }).click();
   assert.equal(await page.evaluate(() => Boolean(testSpeech.active)), true, 'inactive player must not cancel active speech');
   console.log('ok  composer, streaming reuse, one active voice, independent manual controls');
 
@@ -234,7 +235,6 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
   await page.reload();
-  await page.locator('.studio-figure-link').click();
   await page.getByRole('button', { name: 'Play narration', exact: true }).click();
   await page.getByText('Step 1 of 3 · Listening', { exact: true }).waitFor();
   assert.equal(await page.locator('.kboard-marker').evaluate((el) => el.hidden), true);

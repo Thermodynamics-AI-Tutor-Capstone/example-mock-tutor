@@ -10,12 +10,10 @@
 <link rel="stylesheet" href="/equation-editor.css">
 <link rel="stylesheet" href="/check-work.css">
 <link rel="stylesheet" href="/account.css">
-<link rel="stylesheet" href="/property-table-dock.css">
 <link rel="stylesheet" href="/chat-layout.css">
 <link rel="stylesheet" href="/kel.css">
 <link rel="stylesheet" href="/learn.css">
 <link rel="stylesheet" href="/studio.css">
-<link rel="stylesheet" href="/workspace-tools.css">
 <link rel="stylesheet" href="/about-me.css">
 <link rel="stylesheet" href="/self-check.css">
 <link rel="stylesheet" href="/beta-panels.css">
@@ -38,8 +36,7 @@
 <script src="/self-check.js" defer></script>
 <script src="/app.js" defer></script>
 <script src="/narration.js" defer></script>
-<script src="/property-table-dock.js" defer></script>
-<script src="/workspace-tools.js" defer></script>
+<script src="/reference-tools.js" defer></script>
 <script src="/kel.js" defer></script>
 </head>
 <body>
@@ -63,7 +60,6 @@
     <a id="learnLink" class="sb-row learn-nav" href="#/learn"><span aria-hidden="true">▤</span><span>Learn KELVIN</span><span class="learn-nav-tag">TOUR</span></a>
     <a id="aboutMeLink" class="sb-row beta-nav" href="#/about-me"><span aria-hidden="true">◎</span><span>About Me</span></a>
     <a id="selfCheckLink" class="sb-row beta-nav" href="#/self-check"><span aria-hidden="true">✓</span><span>Check my understanding</span></a>
-    <button id="workspaceOpen" class="sb-row" type="button" aria-expanded="false" aria-controls="studioWorkspace"><span aria-hidden="true">▱</span><span>Open workspace</span></button>
     <div class="sb-label">Your conversations</div>
     <nav id="convList" class="conv-list"></nav>
     <section class="studio-companion-card" aria-label="Learn with Kel"><div id="studioCompanion"></div><strong>Your study companion</strong><p>Let’s make the next step clearer.</p><button id="studioDemo" type="button">Watch a quick example ↗</button></section>
@@ -111,8 +107,9 @@
       </div>
       <div class="topbar-right">
         <a class="topbar-link learn-shortcut" href="#/learn">Learn KELVIN</a>
-        <a class="topbar-link" href="/grapher.html" title="Open the thermodynamics graph workspace">Grapher</a>
-        <button id="propertyTablesBtn" class="topbar-link" type="button" aria-expanded="false" aria-controls="propertyTableDock" title="Consult interactive thermodynamics property tables">Property tables</button>
+        <a class="topbar-link" href="/grapher.html" target="_blank" rel="noopener" title="Open Grapher in a separate tab">Grapher ↗</a>
+        <a id="propertyTablesBtn" class="topbar-link" href="/property-tables.html" target="_blank" rel="noopener" title="Open property tables in a separate tab">Property tables ↗</a>
+        <button id="importantEquationsBtn" class="topbar-link" type="button">Important equations ↗</button>
         <button id="feedbackBtn" class="topbar-feedback" type="button" title="Tell the capstone team how Kelvin did">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/></svg>
           <span>Feedback</span>
@@ -122,20 +119,13 @@
     </header>
 
     <div id="studioLayout" class="studio-layout">
-      <section id="studioWorkspace" class="studio-workspace" aria-labelledby="workspaceTitle" hidden>
-        <header class="studio-workspace-heading"><div><span class="studio-eyebrow">THINK IT THROUGH</span><h2 id="workspaceTitle">Our workspace</h2></div><span id="workspaceStatus" role="status">Ready when you are</span><button id="workspaceToggle" class="topbar-link" type="button" aria-expanded="false" aria-controls="studioWorkspace">Hide workspace</button></header>
-        <div id="studioBoardScroll" class="studio-board-scroll" tabindex="0" aria-label="Whiteboard workspace">
-          <div id="studioBoardContent"></div>
-          <div id="studioWelcome" class="studio-welcome"><span class="studio-paper-icon" aria-hidden="true">↗</span><h3>A little space to see the idea.</h3><p>Diagrams, graphs, and narrated explanations from your conversation appear here. Keep your reasoning alongside the steps.</p><button id="workspaceDemo" type="button">Try a 30-second example</button><p class="studio-welcome-hint">Turn on Whiteboard below your message for a visual walkthrough.</p></div>
-        </div>
-      </section>
       <section class="studio-chat" aria-label="Conversation with Kelvin">
         <div class="studio-chat-heading"><span class="studio-presence" aria-hidden="true"></span><strong>KELVIN</strong><span>Your thermodynamics tutor</span></div>
         <aside id="selfCheckSession" hidden aria-label="Current self-check"></aside>
     <div id="scroller" class="scroller">
       <div id="empty" class="empty">
         <h1 class="empty-title">Let’s work through it together.</h1><p class="empty-subtitle">Share what you’ve tried, or show me where you’re stuck.</p>
-        <aside id="learnWelcome" class="learn-welcome" hidden><div><strong>New here? Meet your tools.</strong><span>Take a quick tour of your workspace.</span></div><button id="welcomeTour" type="button">Show me</button><button id="dismissWelcome" type="button" aria-label="Dismiss introduction">×</button></aside>
+        <aside id="learnWelcome" class="learn-welcome" hidden><div><strong>New here? Meet your tools.</strong><span>Take a quick tour of KELVIN.</span></div><button id="welcomeTour" type="button">Show me</button><button id="dismissWelcome" type="button" aria-label="Dismiss introduction">×</button></aside>
         <div id="emptyComposerSlot" class="composer-slot"></div>
         <div id="chips" class="chips">
           <button class="chip">Explain the first law for an open system</button>
@@ -209,15 +199,6 @@
     <section id="aboutMePanel" hidden aria-label="About Me"></section>
     <section id="selfCheckPanel" hidden aria-label="Check my understanding"></section>
   </main>
-  <aside id="propertyTableDock" class="property-table-dock" aria-label="Property tables workspace" hidden>
-    <div class="property-dock-toolbar">
-      <strong>Property tables</strong>
-      <span id="propertyDockStatus" role="status"></span>
-      <a href="/property-tables.html" target="_blank" rel="noopener" title="Open property tables in a new tab">Full view ↗</a>
-      <button id="closePropertyTables" type="button" aria-label="Close property tables">Close ×</button>
-    </div>
-    <iframe id="propertyTableFrame" title="Interactive thermodynamics property tables" data-src="/property-tables.html?embedded=1"></iframe>
-  </aside>
 </div>
 <div id="gate" class="gate" hidden>
   <form id="gateForm" class="gate-card" autocomplete="off" novalidate>

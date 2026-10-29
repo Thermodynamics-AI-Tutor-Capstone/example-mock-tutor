@@ -8,7 +8,7 @@
   const css = `
 .kboard { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bubble); }
 .kboard-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.kboard-hint { color: var(--text2); font-size: 11px; margin-top: 7px; }
+.kboard-hint { color: var(--text2); font-size: 13px; margin-top: 7px; }
 .kboard { container-type: inline-size; }
 @media (min-width: 1100px) { .thread:has(.kboard-illustrated) { max-width: 1160px; } }
 .kboard-layout { display: grid; gap: 12px; min-width: 0; }
@@ -16,12 +16,8 @@
 .kboard-canvas { overflow:hidden; background:#fbfdff; border-radius:9px; --bg:#fbfdff; --bubble:#eaf2fc; --text:#001e44; --text2:#526782; --border:#d1dfef; }
 .kboard-illustrated .kboard-canvas { background:#fbfdff; }
 .kboard-illustrated .kboard-hint { line-height: 1.5; }
-@container (min-width: 840px) {
-  .kboard-layout.kboard-paired { grid-template-columns: minmax(0, 1.55fr) minmax(250px, 1fr); align-items: start; }
-  .kboard-paired .kboard-steps { margin-top: 0; }
-  .kboard-paired svg { min-width: 0; }
-}
-.kboard svg { display:block; width:100%; min-width:0; max-width:680px; max-height:min(38dvh,310px,var(--diagram-fit-height,310px)); height:auto; margin:0 auto; }
+.kboard-layout.kboard-paired { grid-template-columns:minmax(0,1fr); }
+.kboard svg { display:block; width:100%; min-width:0; max-width:1000px; max-height:min(70dvh,560px); height:auto; margin:0 auto; }
 .kboard-steps { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
 .kboard-step { border-top: 1px solid var(--border); padding-top: 8px; color: var(--text); font-size: 13px; }
 .kboard-step strong { display: block; margin-bottom: 3px; }

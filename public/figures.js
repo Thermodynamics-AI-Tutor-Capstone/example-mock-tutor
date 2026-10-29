@@ -24,8 +24,8 @@
   const CSS = `
 .kfig { margin: 14px 0; }
 .kfig svg { display:block; width:100%; height:auto; }
-.kfig-diagram > svg,.kfig-mermaid > svg { max-width:680px; max-height:min(48dvh,380px,var(--diagram-fit-height,380px)); margin:0 auto; background:#fbfdff; --bg:#fbfdff; --bubble:#eaf2fc; --text:#001e44; --text2:#526782; --border:#d1dfef; }
-.kfig figcaption { color: var(--text2); font-size: 12px; line-height: 1.5; margin-top: 8px; }
+.kfig-diagram > svg,.kfig-mermaid > svg { max-width:1000px!important; max-height:min(70dvh,560px); margin:0 auto; background:#fbfdff; --bg:#fbfdff; --bubble:#eaf2fc; --text:#001e44; --text2:#526782; --border:#d1dfef; }
+.kfig figcaption { color: var(--text2); font-size: 14px; line-height: 1.5; margin-top: 8px; }
 .kfig figcaption b { font-weight: 600; color: var(--text); }
 .kfig-note { color: var(--text2); font-size: 13px; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
 .kfig-error { color: var(--error-text); background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; }

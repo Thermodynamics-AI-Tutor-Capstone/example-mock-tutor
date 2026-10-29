@@ -42,7 +42,7 @@ try {
   const first = page.locator('.kboard').first();
   const diagram = await first.locator('.kboard-diagram').boundingBox();
   const equations = await first.locator('.kboard-steps').boundingBox();
-  assert.ok(equations.x >= diagram.x + diagram.width, 'actual chat shows diagram and equations side by side');
+  assert.ok(equations.y >= diagram.y + diagram.height, 'actual chat gives the diagram full width and places equations below');
   const cropped = await page.locator('.kboard:not(.kboard-narrated) svg').evaluateAll((svgs) => svgs.flatMap((svg) => {
     const frame = svg.getBoundingClientRect();
     return [...svg.querySelectorAll('.kboard-node')].filter((node) => {
@@ -57,7 +57,7 @@ try {
   await page.locator('.kboard').nth(1).screenshot({ path: path.join(output, 'hose-nozzle.png') });
   await page.locator('.kboard').nth(2).screenshot({ path: path.join(output, 'submerged-solid.png') });
   await page.locator('.kboard').nth(3).screenshot({ path: path.join(output, 'refrigerator.png') });
-  const narrated = page.locator('.kboard-narrated');
+  const narrated = page.locator('figure').filter({has:page.locator('.kboard-narrated')});
   for (let i = 0; i < lesson.segments.length; i++) await narrated.getByRole('button', { name: 'Next step', exact: true }).click();
   assert.equal(await narrated.locator('[data-board-target]').evaluateAll((els) => els.every((el) => el.style.opacity === '1')), true);
   await narrated.screenshot({ path: path.join(output, 'narrated-piston.png') });
@@ -78,12 +78,12 @@ try {
       item.querySelector('svg').style.minWidth = '0';
       gallery.append(item);
     }
-    document.body.replaceChildren(gallery);
+    document.getElementById('app').style.display = 'none'; document.body.append(gallery);
   }, ILLUSTRATIONS);
-  assert.equal(await page.locator('[data-illustration]').count(), ILLUSTRATIONS.length);
+  assert.equal(await page.locator('#apparatus-gallery [data-illustration]').count(), ILLUSTRATIONS.length);
   await page.screenshot({ path: path.join(output, 'apparatus-gallery.png'), fullPage: true });
   assert.deepEqual(errors, []);
-  console.log('ok  actual chat paired layout, unclipped apparatus, manual narration, mobile, and all apparatus variants');
+  console.log('ok  actual chat full-width layout, unclipped apparatus, manual narration, mobile, and all apparatus variants');
 } finally {
   await browser?.close();
   server.closeAllConnections();

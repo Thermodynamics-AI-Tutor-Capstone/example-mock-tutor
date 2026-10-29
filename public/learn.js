@@ -12,9 +12,9 @@
       task: 'Try attaching a photo of one calculation and explain which step you want to check.', action: 'Find the attachment button',
       demo: 'energy-balance.jpg\nReview the extracted text → check symbols and units → send with your question.', label: 'Attach • review • ask' },
     { id: 'whiteboard', target: 'whiteboardBtn', title: 'See the explanation', short: 'Follow a narrated whiteboard.',
-      text: 'Turn on Whiteboard before sending. Choose Open workspace in the left sidebar when you need it. Play narration, Voice & speed, and Read full transcript sit above the drawing. Workspace tabs keep drawings, property tables, and Important equations beside chat. Pin useful equations, or expand a diagram for detail. Hide workspace is inside its header.',
+      text: 'Turn on Whiteboard before sending. The explanation appears directly in your conversation. Play narration, Voice & speed, and Read full transcript sit above the drawing. Expand a diagram for detail. Property tables and Important equations open in separate tabs so you can keep a reference nearby.',
       task: 'Try asking for an energy balance on a turbine. Select the whiteboard, then send when you are ready.', action: 'Find the whiteboard button',
-      demo: 'Whiteboard → Open workspace in the sidebar → Play narration above the drawing. Switch workspace tabs for Property tables or Important equations; pin a reference to keep it nearby.', label: 'Explain on whiteboard' },
+      demo: 'Whiteboard → Play narration above the drawing in chat. Open Property tables or Important equations in a separate tab to keep a reference nearby.', label: 'Explain on whiteboard' },
     { id: 'voice', target: 'micBtn', title: 'Talk it through', short: 'Turn spoken reasoning into an editable draft.',
       text: 'Select the microphone, explain your thinking, and select it again to stop. Check the transcript’s numbers, units, and symbols before you send it. Audio is sent for transcription when you stop.',
       task: 'Try explaining your assumption aloud. You decide when the reviewed text is ready to send.', action: 'Find the microphone',
@@ -108,7 +108,6 @@
     if (!$('learnPanel').hidden) return;
     window.KelvinVoice?.cancel(); window.KelvinTips?.hide(); window.KelvinNarration?.pauseAll();
     $('app').classList.remove('mobile-open'); $('app').classList.add('learning');
-    if (!$('propertyTableDock').hidden) $('closePropertyTables').click();
     $('chatMain').hidden = true; $('learnPanel').hidden = false;
     $('learnLink').setAttribute('aria-current', 'page');
     $('learnReturn').href = hooks.chatHash();
@@ -201,7 +200,7 @@
       <header class="learn-topbar"><span class="learn-breadcrumb">KELVIN / GETTING STARTED</span><a id="learnReturn" href="#/">← Back to chat</a></header>
       <div class="learn-content">
         <div class="learn-hero"><div><span class="learn-eyebrow">YOUR FIRST FEW MINUTES</span><h1 id="learnTitle" tabindex="-1">A little tour.<br>A lot more possibility.</h1><p>Meet the tools that help you show your thinking,<br class="learn-wide"> see the steps, and find your way forward.</p></div><div class="learn-orbit" aria-hidden="true"><span>K</span><i>Speak</i><i>Sketch</i><i>Explore</i></div></div>
-        <div class="learn-path"><div><strong>Get to know your workspace</strong><span id="learnProgressText"></span><progress id="learnProgress" max="${lessons.length}" value="0" aria-label="Features explored"></progress></div><button id="startTour" class="learn-primary" type="button">Start the guided tour</button><span class="learn-duration">${lessons.length} features · about ${Math.ceil(lessons.length * 20 / 60)} min</span></div>
+        <div class="learn-path"><div><strong>Get to know KELVIN</strong><span id="learnProgressText"></span><progress id="learnProgress" max="${lessons.length}" value="0" aria-label="Features explored"></progress></div><button id="startTour" class="learn-primary" type="button">Start the guided tour</button><span class="learn-duration">${lessons.length} features · about ${Math.ceil(lessons.length * 20 / 60)} min</span></div>
         <p id="learnNotice" class="learn-notice" role="status"></p>
         <div class="learn-section-heading"><h2>Watch it. Then try it.</h2><span>${timeLabel(duration)} to get oriented</span></div>
         <div class="learn-video-layout"><div class="learn-player">

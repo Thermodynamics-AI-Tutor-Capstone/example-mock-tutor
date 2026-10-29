@@ -1,15 +1,14 @@
-// Compact diagrams with an optional larger view. Move the original SVG so live
+// Readable inline diagrams with an optional larger view. Move the original SVG so live
 // reveal state, marker references, IDs and event handlers are never duplicated.
 (() => {
   'use strict';
   if (window.KelvinDiagramView) return;
   const seen = new WeakSet();
-  let queued = false, active = null, scrollHost = null;
-  const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => requestAnimationFrame(fitDiagrams)) : {observe(){},unobserve(){}};
+  let queued = false, active = null;
   const css = document.createElement('style');
   css.textContent = `
 .kdiagram-actions { display:flex; justify-content:flex-end; margin:0 0 5px; }
-.kdiagram-expand { font:inherit; font-size:11px; padding:5px 9px; min-height:30px; color:#1e407c; background:#eef5fd; border:1px solid #c7d8ed; border-radius:7px; cursor:pointer; }
+.kdiagram-expand { font:inherit; font-size:13px; padding:7px 11px; min-height:36px; color:#1e407c; background:#eef5fd; border:1px solid #c7d8ed; border-radius:7px; cursor:pointer; }
 .kdiagram-dialog { box-sizing:border-box; width:min(1120px,calc(100vw - 28px)); max-height:calc(100dvh - 28px); padding:0; border:1px solid #b9cde6; border-radius:14px; background:#fbfdff; color:#001e44; box-shadow:0 18px 70px #001e4440; }
 .kdiagram-dialog::backdrop { background:#001e4480; }
 .kdiagram-dialog header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:12px 16px; border-bottom:1px solid #d1dfef; }
@@ -23,23 +22,6 @@
 @media(max-width:480px) { .kdiagram-dialog header { padding:10px; gap:7px; } .kdiagram-dialog h2 { flex-basis:100%; } .kdiagram-expand { min-height:36px; } }
 `;
   document.head.append(css);
-
-  function fitDiagrams() {
-    const host = document.getElementById('studioBoardScroll');
-    if (!host || host.clientHeight < 1) return;
-    if (scrollHost !== host) { if (scrollHost) resize.unobserve(scrollHost); scrollHost = host; resize.observe(host); }
-    const top = host.getBoundingClientRect().top;
-    host.querySelectorAll('.kboard-canvas > svg,.kfig-mermaid > svg,.kfig-diagram > svg,.kgr-plot > svg').forEach(svg => {
-      // Account for the controls, title and optional equation panel above the
-      // drawing, instead of assuming every student's viewport has the same room.
-      const before = svg.getBoundingClientRect().top - top + host.scrollTop;
-      // In a crowded pane retain a complete overview; Expand diagram supplies
-      // readable detail instead of letting a minimum height clip the drawing.
-      const available = Math.max(64, Math.floor(host.clientHeight - before - 52));
-      const value = available + 'px';
-      if (svg.style.getPropertyValue('--diagram-fit-height') !== value) svg.style.setProperty('--diagram-fit-height', value);
-    });
-  }
 
   function expand(svg, trigger) {
     if (typeof HTMLDialogElement === 'undefined' || typeof HTMLDialogElement.prototype.showModal !== 'function') {
@@ -88,10 +70,8 @@
       const button = document.createElement('button'); button.type = 'button'; button.className = 'kdiagram-expand'; button.textContent = 'Expand diagram';
       button.onclick = () => expand(svg, button); actions.append(button); svg.before(actions);
     });
-    fitDiagrams();
   }
   new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(scan); } }).observe(document.body, { childList:true, subtree:true });
   window.KelvinDiagramView = { scan };
-  window.addEventListener('resize', fitDiagrams);
   scan();
 })();

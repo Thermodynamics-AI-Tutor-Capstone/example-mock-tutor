@@ -160,7 +160,6 @@
   }
 
   function setMarkdown(el, text, { live = false } = {}) {
-    window.KelvinStudio?.reclaim(el);
     const reuse = new Map([...el.querySelectorAll('figure[data-kfig]')].map((fig) => [fig.dataset.kfig, fig]));
     el.innerHTML = renderMarkdown(text);
     renderFigures(el, { live, reuse });
@@ -334,7 +333,6 @@
 
   function goEmpty(pushUrl) {
     hideBetaPanels();
-    window.KelvinWorkspaceTools?.setConversation(null);
     window.KelvinSelfCheck?.setConversation(null);
     window.KelvinLearn?.hide();
     window.KelvinVoice?.cancel();
@@ -444,7 +442,6 @@
   }
 
   async function openConversation(id) {
-    window.KelvinWorkspaceTools?.setConversation(id);
     window.KelvinSelfCheck?.setConversation(null);
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
@@ -721,7 +718,6 @@
     window.KelvinAboutMe?.hide(); window.KelvinSelfCheck?.hide();
     window.KelvinVoice?.cancel(); window.KelvinTips?.hide(); window.KelvinNarration?.pauseAll();
     closeMobileSidebar();
-    if (!$('propertyTableDock').hidden) $('closePropertyTables').click();
     $('chatMain').hidden = true; $('betaPanels').hidden = false;
     app.classList.add('beta-section');
     $('betaBackToChat').href = state.currentId ? '#/c/' + state.currentId : '#/';
@@ -783,7 +779,6 @@
     const conv = await api('POST', '/api/conversations', state.activeStyle ? { style: state.activeStyle } : {});
     state.loadToken++;
     state.currentId = conv.id;
-    window.KelvinWorkspaceTools?.setConversation(conv.id);
     state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
       .concat(state.conversations.filter((c) => c.id !== conv.id));
     renderSidebar();
@@ -825,7 +820,6 @@
         convId = conv.id;
         state.loadToken++;
         state.currentId = convId;
-        window.KelvinWorkspaceTools?.setConversation(convId);
         state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
           .concat(state.conversations.filter((c) => c.id !== conv.id));
         renderSidebar();

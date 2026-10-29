@@ -1,4 +1,4 @@
-// Real property-table viewer and chat dock against installed course scans and stubbed chat APIs.
+// Real property-table viewer and standalone tab against installed course scans and stubbed chat APIs.
 // This test does not OCR, transcribe, infer, or regenerate any source-table number.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -242,84 +242,80 @@ async function checkMobile() {
     const r = el.getBoundingClientRect(); return r.width > 0 && (r.left < -1 || r.right > innerWidth + 1);
   }).map((el) => el.id || el.textContent));
   assert.deepEqual(clipped, [], 'mobile topbar controls remain visible before opening tables');
-  await page.locator('#propertyTablesBtn').tap();
-  const frame = page.frameLocator('#propertyTableFrame');
-  await frame.locator('#viewer').waitFor({ state: 'visible' });
-  const cell = frame.locator('#propertyTable button.scan-cell').first();
+  const chatUrl = page.url();
+  const [tables] = await Promise.all([context.waitForEvent('page'), page.locator('#propertyTablesBtn').tap()]);
+  await tables.locator('#viewer').waitFor({ state: 'visible' });
+  await tables.locator('#propertyTable[data-image-status="loaded"]').waitFor();
+  assert.equal(new URL(tables.url()).pathname, '/property-tables.html');
+  assert.equal(await tables.evaluate(() => window.opener), null, 'standalone tab has no opener access');
+  const cell = tables.locator('#propertyTable button.scan-cell').first();
   await cell.tap();
-  assert.match(await frame.locator('#pinStatus').textContent(), /pinned/i, 'one touch pins a numeric crop without relying on hover');
-  assert.equal(await frame.locator('#cellCrop').evaluate((el) => { const b = el.getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight; }), true, 'touch selection brings the magnified number into view');
-  assert.equal(await frame.locator('body').evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'scan overflow is contained inside its scroller');
-  await frame.locator('#backToCell').tap();
+  assert.match(await tables.locator('#pinStatus').textContent(), /pinned/i, 'one touch pins a numeric crop without relying on hover');
+  assert.equal(await tables.locator('#cellCrop').evaluate((el) => { const b = el.getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight; }), true, 'touch selection brings the magnified number into view');
+  assert.equal(await tables.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'scan overflow is contained inside its scroller');
+  await tables.locator('#backToCell').tap();
   assert.equal(await cell.evaluate((el) => el === document.activeElement), true, 'return from magnifier restores the selected cell focus');
-  assert.match(await frame.locator('#pinStatus').textContent(), /pinned/i, 'return to source keeps the pinned selection');
+  assert.match(await tables.locator('#pinStatus').textContent(), /pinned/i, 'return to source keeps the pinned selection');
   await cell.tap();
-  await page.screenshot({ path: path.join(output, 'mobile-workspace.png'), fullPage: true });
-  await frame.locator('#useInChat').tap();
-  await page.locator('#propertyTableDock').waitFor({ state: 'hidden' });
-  const inserted = await input.inputValue();
-  assert.ok(inserted.startsWith(draft) && inserted.length > draft.length, 'touch selection appends a source reference while preserving the draft');
+  assert.equal(await tables.locator('#useInChat').isVisible(), false, 'standalone tab has no embedded chat insertion control');
+  await tables.screenshot({ path: path.join(output, 'mobile-property-tab.png'), fullPage: true });
+  await tables.close();
+  await page.bringToFront();
+  assert.equal(page.url(), chatUrl, 'opening and closing the reference tab keeps the chat route');
+  assert.equal(await input.inputValue(), draft, 'source selection in another tab preserves the original draft');
   assert.equal(sentMessages, 0);
+  await input.focus();
   assert.equal(await input.evaluate((el) => el === document.activeElement), true);
   await page.screenshot({ path: path.join(output, 'mobile-return-to-chat.png'), fullPage: true });
-  await page.locator('#propertyTablesBtn').tap();
-  await page.locator('#closePropertyTables').tap();
-  assert.equal(await input.inputValue(), inserted, 'closing and reopening preserves the updated draft');
+  const [reopened] = await Promise.all([context.waitForEvent('page'), page.locator('#propertyTablesBtn').tap()]);
+  await reopened.locator('#viewer').waitFor({ state: 'visible' });
+  await reopened.close();
+  assert.equal(await input.inputValue(), draft, 'reopening the standalone reference preserves the draft');
   await context.close();
-  console.log('ok  mobile topbar, first-touch selection, contained scan scrolling and return-to-chat with preserved draft');
+  console.log('ok  mobile standalone tab, first-touch selection, contained scan scrolling and preserved chat route/draft');
 }
 
-async function checkDock(page) {
+async function checkStandaloneTab(page) {
   await page.goto(origin + '/#/c/chat');
   const input = page.locator('#input');
   await input.fill('Before SELECT after');
   await input.evaluate((el) => { el.focus(); el.setSelectionRange(7, 13); });
-  const toggle = page.locator('#propertyTablesBtn'), dock = page.locator('#propertyTableDock');
-  await toggle.click();
-  assert.equal(await dock.isVisible(), true);
-  assert.equal(await input.inputValue(), 'Before SELECT after', 'opening the table workspace preserves the draft');
-  const frame = page.frameLocator('#propertyTableFrame');
-  await frame.locator('#viewer').waitFor({ state: 'visible' });
+  const link = page.locator('#propertyTablesBtn');
+  assert.equal(await link.evaluate((el) => el.tagName), 'A');
+  assert.equal(await link.getAttribute('href'), '/property-tables.html');
+  assert.equal(await link.getAttribute('target'), '_blank');
+  assert.match(await link.getAttribute('rel'), /\bnoopener\b/);
+  const chatUrl = page.url();
+  const [tables] = await Promise.all([page.context().waitForEvent('page'), link.click()]);
+  await tables.locator('#viewer').waitFor({ state: 'visible' });
+  await tables.locator('#propertyTable[data-image-status="loaded"]').waitFor();
+  assert.equal(new URL(tables.url()).pathname, '/property-tables.html');
+  assert.equal(await tables.evaluate(() => window.opener), null);
+  assert.equal(await page.locator('#propertyTableDock, #propertyTableFrame').count(), 0, 'chat has no table dock or embedded table frame');
+  assert.equal(page.url(), chatUrl, 'reference navigation does not replace the original chat');
+  assert.equal(await input.inputValue(), 'Before SELECT after', 'opening a reference tab preserves the draft');
   const draft = await input.inputValue();
   await page.evaluate(() => {
-    const frame = document.querySelector('#propertyTableFrame');
     const data = { type: 'kelvin:property-table-selection', text: 'UNTRUSTED' };
-    dispatchEvent(new MessageEvent('message', { origin: 'https://untrusted.invalid', source: frame.contentWindow, data }));
+    dispatchEvent(new MessageEvent('message', { origin: 'https://untrusted.invalid', source: window, data }));
     dispatchEvent(new MessageEvent('message', { origin: location.origin, source: window, data }));
-    dispatchEvent(new MessageEvent('message', { origin: location.origin, source: frame.contentWindow, data: { ...data, text: 'x'.repeat(2001) } }));
-    dispatchEvent(new MessageEvent('message', { origin: location.origin, source: frame.contentWindow, data: { ...data, text: 'hidden\u0000content' } }));
   });
-  assert.equal(await input.inputValue(), draft, 'wrong origin/source and invalid selection messages are rejected');
-  await page.locator('#closePropertyTables').click();
-  assert.equal(await dock.isVisible(), false);
-  assert.equal(await toggle.evaluate((el) => el === document.activeElement), true, 'closing returns focus to the opener');
-  await page.evaluate(() => {
-    const frame = document.querySelector('#propertyTableFrame');
-    dispatchEvent(new MessageEvent('message', { origin: location.origin, source: frame.contentWindow, data: { type: 'kelvin:property-table-selection', text: 'HIDDEN' } }));
-  });
-  assert.equal(await input.inputValue(), draft, 'hidden workspace cannot change a draft');
-  await toggle.click();
-  await frame.locator('#viewer').waitFor({ state: 'visible' });
-  await page.evaluate(() => {
-    const input = document.querySelector('#input'); input.setSelectionRange(7, 13);
-  });
-  await frame.locator('body').evaluate(() => parent.postMessage({ type: 'kelvin:property-table-selection', text: 'Verified table reference' }, location.origin));
-  await page.waitForFunction(() => document.querySelector('#input').value.includes('Verified table reference'));
-  assert.equal(await input.inputValue(), 'Before \nVerified table reference\n after');
-  assert.equal(sentMessages, 0, 'table reference insertion never sends the chat');
-  assert.equal(await input.evaluate((el) => el === document.activeElement), true);
-  await input.fill('Use this verified reference:');
-  await frame.locator('#propertyTable button[data-row="27"][data-column="6"]').click();
-  assert.equal(await frame.locator('#cellValue').textContent(), '112.56');
-  await frame.locator('#useInChat').click();
-  await page.waitForFunction(() => document.querySelector('#input').value.includes('112.56'));
-  assert.match(await input.inputValue(), /^Use this verified reference:\n/);
-  assert.match(await input.inputValue(), /T = 300 K.*saturated liquid.*112\.56 kJ\/kg.*SaturationTables\.pdf/);
-  assert.equal(sentMessages, 0, 'the real verified-value button only inserts into the draft');
-  const chatBounds = await page.locator('.main').boundingBox(), tableBounds = await dock.boundingBox();
-  assert.ok(chatBounds && tableBounds && tableBounds.x >= chatBounds.x + chatBounds.width - 1, 'desktop keeps tutor and table alongside each other');
-  await page.screenshot({ path: path.join(output, 'chat-workspace.png'), fullPage: true });
-  console.log('ok  integrated drawer, preserved draft, source/origin/message guards, insertion without send, desktop pairing');
+  assert.equal(await input.inputValue(), draft, 'standalone reference messages cannot mutate the chat draft');
+  await tables.locator('#propertyTable button[data-row="27"][data-column="6"]').click();
+  assert.equal(await tables.locator('#cellValue').textContent(), '112.56');
+  assert.equal(await tables.locator('#cellUnit').textContent(), 'kJ/kg');
+  assert.equal(await tables.locator('#useInChat').isVisible(), false);
+  assert.equal(await input.inputValue(), draft, 'reading a verified value in another tab does not change the draft');
+  assert.equal(sentMessages, 0, 'opening and reading the reference never submits a chat message');
+  await tables.screenshot({ path: path.join(output, 'standalone-property-tab.png'), fullPage: true });
+  await tables.close();
+  await page.bringToFront();
+  assert.equal(page.url(), chatUrl);
+  assert.equal(await input.inputValue(), draft);
+  await input.focus();
+  assert.equal(await input.evaluate((el) => el === document.activeElement), true, 'the preserved chat composer remains usable after returning');
+  await page.screenshot({ path: path.join(output, 'chat-after-property-tab.png'), fullPage: true });
+  console.log('ok  standalone property tab, verified source lookup, noopener, no embedded workspace, preserved draft/route and no automatic send');
 }
 
 try {
@@ -329,7 +325,7 @@ try {
   await checkViewer(page);
   await checkVerifiedGuide(page);
   await checkLibrary(page);
-  await checkDock(page);
+  await checkStandaloneTab(page);
   await checkMobile();
   await checkMissingData();
   await checkMissingImage();
