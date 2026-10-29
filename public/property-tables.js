@@ -248,6 +248,7 @@
     ++imageGeneration; closeGuide(); state.selected = null; state.pinned = false; state.manifest = null;
     $('backToCell').hidden = true;
     $('viewer').hidden = true; $('loadStatus').hidden = false; $('loadStatus').classList.remove('error'); $('loadStatus').textContent = 'Loading the reference library…';
+    window.KelvinPropertyReference?.hide();
     try {
       const response = await fetch('/property-tables/manifest.json', { cache: 'no-store' });
       if (!response.ok) throw new Error(response.status === 404 ? 'These course tables have not been installed on this deployment.' : 'The course-table library could not be loaded.');
@@ -259,6 +260,7 @@
       if (token !== loadGeneration) return;
       $('loadStatus').classList.add('error'); $('loadStatus').replaceChildren(element('div', '', error.message || 'The course tables could not be loaded.'));
       const retry = element('button', 'primary-button', 'Try again'); retry.type = 'button'; retry.id = 'retryLoad'; retry.addEventListener('click', load); $('loadStatus').append(retry);
+      window.KelvinPropertyReference?.show($('numericReference'));
     }
   }
   $('datasetSelect').addEventListener('change', () => chooseDataset($('datasetSelect').value));
