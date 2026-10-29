@@ -15,6 +15,10 @@
 <link rel="stylesheet" href="/kel.css">
 <link rel="stylesheet" href="/learn.css">
 <link rel="stylesheet" href="/studio.css">
+<link rel="stylesheet" href="/workspace-tools.css">
+<link rel="stylesheet" href="/about-me.css">
+<link rel="stylesheet" href="/self-check.css">
+<link rel="stylesheet" href="/beta-panels.css">
 <script src="/vendor/marked.umd.js"></script>
 <script src="/vendor/purify.min.js"></script>
 <script src="/vendor/katex/katex.min.js"></script>
@@ -30,9 +34,12 @@
 <script src="/equation-editor.js" defer></script>
 <script src="/learn.js" defer></script>
 <script src="/studio.js" defer></script>
+<script src="/about-me.js" defer></script>
+<script src="/self-check.js" defer></script>
 <script src="/app.js" defer></script>
 <script src="/narration.js" defer></script>
 <script src="/property-table-dock.js" defer></script>
+<script src="/workspace-tools.js" defer></script>
 <script src="/kel.js" defer></script>
 </head>
 <body>
@@ -54,6 +61,8 @@
       <span>Admin</span>
     </a>
     <a id="learnLink" class="sb-row learn-nav" href="#/learn"><span aria-hidden="true">▤</span><span>Learn KELVIN</span><span class="learn-nav-tag">TOUR</span></a>
+    <a id="aboutMeLink" class="sb-row beta-nav" href="#/about-me"><span aria-hidden="true">◎</span><span>About Me</span></a>
+    <a id="selfCheckLink" class="sb-row beta-nav" href="#/self-check"><span aria-hidden="true">✓</span><span>Check my understanding</span></a>
     <div class="sb-label">Your conversations</div>
     <nav id="convList" class="conv-list"></nav>
     <section class="studio-companion-card" aria-label="Learn with Kel"><div id="studioCompanion"></div><strong>Your study companion</strong><p>Let’s make the next step clearer.</p><button id="studioDemo" type="button">Watch a quick example ↗</button></section>
@@ -122,6 +131,7 @@
       </section>
       <section class="studio-chat" aria-label="Conversation with Kelvin">
         <div class="studio-chat-heading"><span class="studio-presence" aria-hidden="true"></span><strong>KELVIN</strong><span>Your thermodynamics tutor</span></div>
+        <aside id="selfCheckSession" hidden aria-label="Current self-check"></aside>
     <div id="scroller" class="scroller">
       <div id="empty" class="empty">
         <h1 class="empty-title">Let’s work through it together.</h1><p class="empty-subtitle">Share what you’ve tried, or show me where you’re stuck.</p>
@@ -194,6 +204,11 @@
     </div>
   </main>
   <main id="learnPanel" class="learn-panel" hidden aria-label="Learn KELVIN"></main>
+  <main id="betaPanels" class="beta-panels" hidden aria-label="Your learning">
+    <header class="beta-section-toolbar"><button id="betaSidebarButton" class="icon-btn" type="button" aria-label="Open navigation">☰</button><a id="betaBackToChat" href="#/">← Back to chat</a><a href="#/learn">Learn KELVIN</a></header>
+    <section id="aboutMePanel" hidden aria-label="About Me"></section>
+    <section id="selfCheckPanel" hidden aria-label="Check my understanding"></section>
+  </main>
   <aside id="propertyTableDock" class="property-table-dock" aria-label="Property tables workspace" hidden>
     <div class="property-dock-toolbar">
       <strong>Property tables</strong>

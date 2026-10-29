@@ -33,7 +33,9 @@
       // Account for the controls, title and optional equation panel above the
       // drawing, instead of assuming every student's viewport has the same room.
       const before = svg.getBoundingClientRect().top - top + host.scrollTop;
-      const available = Math.max(140, Math.floor(host.clientHeight - before - 52));
+      // In a crowded pane retain a complete overview; Expand diagram supplies
+      // readable detail instead of letting a minimum height clip the drawing.
+      const available = Math.max(64, Math.floor(host.clientHeight - before - 52));
       const value = available + 'px';
       if (svg.style.getPropertyValue('--diagram-fit-height') !== value) svg.style.setProperty('--diagram-fit-height', value);
     });

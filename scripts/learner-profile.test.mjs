@@ -46,6 +46,9 @@ const dimensionAge = learnerProfile(foldStudentModel(evidence), {}, evidence, {n
 assert.equal(dimensionAge.topics[0].dimensions.find((d)=>d.id==='conceptual').statusLabel,'Older evidence—check again');
 const repaired = [{kind:'misconception_repaired', ref:'adiabatic', source:'student',created_at:stamp,data:{by:'student'}}];
 assert.equal(learnerProfile(foldStudentModel(repaired),{},repaired).misconceptions[0].statusLabel,'You marked this resolved');
+const weakAfterRepair = [...repaired, {kind:'misconception_signal', ref:'adiabatic', source:'jev', probability:0.2, created_at:stamp, data:{quote:'A weak later signal'}}];
+assert.equal(learnerProfile(foldStudentModel(weakAfterRepair),{},weakAfterRepair).misconceptions[0].statusLabel,'You marked this resolved','a weak signal cannot turn self-report into a tutor assessment');
+assert.equal(learnerProfile(foldStudentModel(weakAfterRepair),{},weakAfterRepair).misconceptions[0].sourceLabel,'Your correction');
 console.log('ok  explicit dimensions, assistance, unknown legacy data, conflicting/old evidence and self-report provenance');
 
 const server = http.createServer((req,res)=>handle(req,res));

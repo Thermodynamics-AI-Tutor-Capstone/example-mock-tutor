@@ -74,7 +74,13 @@
     },
   };
   async function demo() {
-    if (location.hash === '#/learn') { location.hash = '#/'; window.KelvinLearn?.hide(); }
+    if (/^#\/(?:learn|about-me|self-check)(?:\?|$)/.test(location.hash)) {
+      const back = location.hash === '#/learn' ? $('learnReturn') : $('betaBackToChat');
+      await new Promise(resolve => {
+        window.addEventListener('hashchange', resolve, { once: true });
+        location.hash = back?.getAttribute('href') || '#/';
+      });
+    }
     app.classList.remove('mobile-open');
     setExpanded(true); window.KelvinNarration?.pauseAll();
     restore();

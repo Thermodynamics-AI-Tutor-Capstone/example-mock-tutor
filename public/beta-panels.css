@@ -1,0 +1,11 @@
+.beta-panels { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); }
+.beta-panels[hidden] { display: none; }
+.beta-section-toolbar { display: flex; flex: 0 0 auto; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.beta-section-toolbar a { color: var(--text); font-size: 14px; text-decoration: none; }
+.beta-section-toolbar a:last-child { margin-left: auto; }
+.beta-section-toolbar a:hover { text-decoration: underline; }
+.beta-nav { font-size: 13px; min-height: 42px; text-decoration: none; }
+.beta-nav[aria-current="page"] { background: var(--active); }
+.beta-section .conv-item.active { background: none; }
+.beta-panels > section { min-height: 0; }
+@media (max-width: 440px) { .beta-section-toolbar { padding: 8px 10px; gap: 10px; } .beta-section-toolbar a { font-size: 13px; } }

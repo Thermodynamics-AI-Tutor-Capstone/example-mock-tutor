@@ -282,7 +282,7 @@
       });
       item.addEventListener('click', () => {
         closeMobileSidebar();
-        if (c.id !== state.currentId || window.KelvinLearn?.active()) location.hash = '#/c/' + c.id;
+        if (c.id !== state.currentId || learningSectionActive()) location.hash = '#/c/' + c.id;
       });
       item.append(t, del);
       convListEl.appendChild(item);
@@ -333,6 +333,9 @@
   }
 
   function goEmpty(pushUrl) {
+    hideBetaPanels();
+    window.KelvinWorkspaceTools?.setConversation(null);
+    window.KelvinSelfCheck?.setConversation(null);
     window.KelvinLearn?.hide();
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
@@ -441,6 +444,8 @@
   }
 
   async function openConversation(id) {
+    window.KelvinWorkspaceTools?.setConversation(id);
+    window.KelvinSelfCheck?.setConversation(null);
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
     const token = ++state.loadToken;
@@ -468,6 +473,7 @@
       return;
     }
     if (token !== state.loadToken) return;
+    window.KelvinSelfCheck?.setConversation(conv);
     window.KelvinAttachments.setPending(conv.pendingAttachments || []);
     state.routedStyle = conv.routedStyle || null;
     if (state.styles.length) {
@@ -700,7 +706,35 @@
     return m ? decodeURIComponent(m[1]) : null;
   }
 
+  function learningSectionActive() {
+    return /^#\/(?:learn|about-me|self-check)(?:\?|$)/.test(location.hash);
+  }
+  function hideBetaPanels() {
+    window.KelvinAboutMe?.hide(); window.KelvinSelfCheck?.hide();
+    $('betaPanels').hidden = true;
+    $('aboutMeLink').removeAttribute('aria-current'); $('selfCheckLink').removeAttribute('aria-current');
+    app.classList.remove('beta-section');
+    if (!window.KelvinLearn?.active()) $('chatMain').hidden = false;
+  }
+  function showBetaPanel(kind) {
+    window.KelvinLearn?.hide();
+    window.KelvinAboutMe?.hide(); window.KelvinSelfCheck?.hide();
+    window.KelvinVoice?.cancel(); window.KelvinTips?.hide(); window.KelvinNarration?.pauseAll();
+    closeMobileSidebar();
+    if (!$('propertyTableDock').hidden) $('closePropertyTables').click();
+    $('chatMain').hidden = true; $('betaPanels').hidden = false;
+    app.classList.add('beta-section');
+    $('betaBackToChat').href = state.currentId ? '#/c/' + state.currentId : '#/';
+    $('aboutMeLink').removeAttribute('aria-current'); $('selfCheckLink').removeAttribute('aria-current');
+    $(kind === 'about-me' ? 'aboutMeLink' : 'selfCheckLink').setAttribute('aria-current', 'page');
+    if (kind === 'about-me') window.KelvinAboutMe.show();
+    else window.KelvinSelfCheck.route();
+  }
+
   function route() {
+    if (/^#\/about-me(?:\?|$)/.test(location.hash)) { showBetaPanel('about-me'); return; }
+    if (/^#\/self-check(?:\?|$)/.test(location.hash)) { showBetaPanel('self-check'); return; }
+    hideBetaPanels();
     if (window.KelvinLearn?.route()) return;
     const id = parseHash();
     if (id === state.currentId) return;
@@ -726,6 +760,7 @@
   }
 
   function updateSendBtn() {
+    window.KelvinSelfCheck?.setBusy(state.streaming);
     window.KelvinVoice?.update();
     whiteboardBtn.disabled = state.streaming;
     checkWorkBtn.disabled = state.streaming;
@@ -748,6 +783,7 @@
     const conv = await api('POST', '/api/conversations', state.activeStyle ? { style: state.activeStyle } : {});
     state.loadToken++;
     state.currentId = conv.id;
+    window.KelvinWorkspaceTools?.setConversation(conv.id);
     state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
       .concat(state.conversations.filter((c) => c.id !== conv.id));
     renderSidebar();
@@ -755,12 +791,12 @@
     return conv.id;
   }
 
-  async function send(text) {
+  async function send(text, options = {}) {
     const files = window.KelvinAttachments;
     const typed = (text != null ? text : input.value).trim();
     if (state.streaming || files.busy() || window.KelvinVoice?.active()) return;
     const sentFiles = text != null ? [] : files.pendingList();
-    const checkWork = requestCheckWork;
+    const checkWork = options.selfCheckAction ? false : requestCheckWork;
     if (checkWork && sentFiles.some((file) => file.status === 'needs_review')) {
       checkWorkHint.hidden = false;
       checkWorkHint.textContent = 'Open your uploaded work above, check or edit the extracted equations, and save the review before sending.';
@@ -778,7 +814,7 @@
     renderCheckWorkPreference();
 
     state.streaming = true;
-    input.value = '';
+    if (!options.preserveDraft) input.value = '';
     autoGrow();
     updateSendBtn();
 
@@ -789,13 +825,14 @@
         convId = conv.id;
         state.loadToken++;
         state.currentId = convId;
+        window.KelvinWorkspaceTools?.setConversation(convId);
         state.conversations = [{ id: conv.id, title: conv.title, style: conv.style, createdAt: conv.createdAt, updatedAt: conv.updatedAt }]
           .concat(state.conversations.filter((c) => c.id !== conv.id));
         renderSidebar();
         location.hash = '#/c/' + convId;
       } catch (e) {
         state.streaming = false;
-        input.value = content;
+        if (!options.preserveDraft) input.value = content;
         autoGrow();
         updateSendBtn();
         if (isPasscodeError(e)) return;
@@ -888,6 +925,7 @@
     };
 
     const handleEvent = (ev) => {
+      if (ev.type === 'self_check') { if (state.currentId === convId) window.KelvinSelfCheck?.handleEvent(ev); return; }
       if (ev.type === 'title') {
         const c = state.conversations.find((x) => x.id === convId);
         if (c) c.title = ev.title;
@@ -922,7 +960,7 @@
       const res = await apiFetch('/api/conversations/' + convId + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify({ content, whiteboard, checkWork, attachments: sentFiles.map((a) => a.id) }),
+        body: JSON.stringify({ content, whiteboard, checkWork, attachments: sentFiles.map((a) => a.id), ...(options.selfCheckAction ? { selfCheckAction: options.selfCheckAction } : {}) }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
@@ -992,7 +1030,7 @@
       updateSendBtn();
       refreshList();
       refreshUsage();
-      if (row.isConnected || restoredDraft) input.focus();
+      if (!learningSectionActive() && (row.isConnected || restoredDraft)) input.focus();
     }
   }
 
@@ -1028,6 +1066,7 @@
     if (isMobile()) openMobileSidebar();
     else app.classList.remove('collapsed');
   });
+  $('betaSidebarButton').addEventListener('click', () => $('openSidebar').click());
   $('backdrop').addEventListener('click', closeMobileSidebar);
 
   const newChat = () => {
@@ -1225,7 +1264,13 @@
     chatHash: () => state.currentId ? '#/c/' + state.currentId : '#/',
     blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden,
     onReturn: () => { autoGrow(); updateScrollBtn(); } });
-  window.KelvinLearn.route();
+  window.KelvinAboutMe.init({ panel: $('aboutMePanel'),
+    onPractice: (topic) => { location.hash = '#/self-check' + (topic ? '?topic=' + encodeURIComponent(topic) : ''); } });
+  window.KelvinSelfCheck.init({ panel: $('selfCheckPanel'), sessionHost: $('selfCheckSession'), api,
+    blocked: () => state.streaming || window.KelvinAttachments.busy() || Boolean(window.KelvinVoice?.active()),
+    onOpenConversation: async (conversation) => { await refreshList(); location.hash = '#/c/' + conversation.id; },
+    onSend: (content, options) => send(content, options) });
+  route();
   await loadStyles();
   // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings;
   // /?settings=learning opens it on "What Kelvin knows".
@@ -1244,6 +1289,6 @@
     // Only reopen the chat the page was loaded with. If the student has already started a new
     // one (e.g. by dropping a file before this list finished loading), reopening would reset it.
     if (hashAtLoad && state.currentId === null) openConversation(hashAtLoad);
-    else if (!hashAtLoad && !window.KelvinLearn?.active()) input.focus();
+    else if (!hashAtLoad && !learningSectionActive()) input.focus();
   });
 })();

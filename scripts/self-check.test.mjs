@@ -15,6 +15,8 @@ const { handle } = await import('../lib/app.js');
 const { query, ensureSchema, closeDb } = await import('../lib/db.js');
 const { selfCheckCatalog, createSelfCheck, selfCheckView, prepareSelfCheckMessage, selfCheckSection } = await import('../lib/self-check.js');
 const { default: recordPractice } = await import('../lib/tools/record_practice_result.js');
+const { default: updateTutoringState } = await import('../lib/tools/update_tutoring_state.js');
+const { default: noteStudentAssumption } = await import('../lib/tools/note_student_assumption.js');
 const realFetch = globalThis.fetch;
 let activeUser = 'self-check-student';
 const calls = [], requests = new Set();
@@ -93,6 +95,21 @@ try {
   const afterHelp = await prepareSelfCheckMessage(helpOnly.id, activeUser, 'Pressure and temperature are dependent along saturation; I need quality.');
   assert.equal(afterHelp.turn.independence, 'assisted');
   const args = { target: 'self-check-test', correct: true, independent: true };
+  const evidenceBefore = (await query('SELECT count(*)::int AS n FROM student_evidence')).rows[0].n;
+  for (const action of ['hint', 'explain', 'finish', 'answer']) {
+    let recordedState;
+    const ctx = { userId: activeUser, conversationId: helpOnly.id, state: {},
+      turn: { guidedWorkflow: true, selfCheck: { ...help.turn, action, recordable: false } },
+      saveState: async value => { recordedState = value; } };
+    const update = await updateTutoringState({ problem: 'Keep problem bookkeeping', diagnosed_misconception: 'misc:test', resolved_misconception: 'misc:test' }, ctx);
+    assert.equal(update.ok, true);
+    assert.equal(recordedState.problem, 'Keep problem bookkeeping');
+    assert.equal(recordedState.misconceptions, undefined);
+    assert.equal(recordedState.resolved, undefined, 'a tutor explanation must not mark a misconception repaired');
+    assert.match((await noteStudentAssumption({ about: 'entropy', belief: 'solid', note: 'The tutor explained it.' }, ctx)).error, /not new learner evidence/);
+    assert.match((await noteStudentAssumption({ about: 'entropy', retire: true }, ctx)).error, /not new learner evidence/);
+  }
+  assert.equal((await query('SELECT count(*)::int AS n FROM student_evidence')).rows[0].n, evidenceBefore, 'every learner-assessment tool honors non-recordable turns');
   assert.match((await recordPractice(args, { userId: activeUser, conversationId: helpOnly.id, turn: { selfCheck: help.turn } })).error, /not new practice evidence/);
   assert.equal((await recordPractice(args, { userId: activeUser, conversationId: helpOnly.id, turn: { selfCheck: afterHelp.turn } })).ok, true);
   const saved = (await query("SELECT data FROM student_evidence WHERE kind='practice_result' AND ref='self-check-test'")).rows[0].data;

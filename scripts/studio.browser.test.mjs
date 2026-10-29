@@ -76,7 +76,9 @@ try {
   await page.locator('#input').fill('Keep my table lookup draft.');
   await page.locator('#propertyTablesBtn').click();
   await page.locator('#propertyTableDock').waitFor();
-  assert.equal(await page.locator('#studioWorkspace').isVisible(),false,'property tables use the workspace space');
+  assert.equal(await page.locator('#studioWorkspace').isVisible(),true,'property tables stay inside the shared workspace');
+  assert.equal(await page.locator('#studioBoardScroll').isVisible(),false,'the table tab replaces the drawing within the workspace');
+  assert.equal(await page.locator('#studioWorkspace #propertyTableDock').isVisible(),true);
   assert.equal(await page.locator('#input').isVisible(),true,'desktop keeps chat beside tables');
   await page.locator('#closePropertyTables').click();
   assert.equal(await page.locator('#input').inputValue(),'Keep my table lookup draft.');

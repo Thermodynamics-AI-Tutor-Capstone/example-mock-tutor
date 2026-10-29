@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { copyVendor, vendorReady } from './copy-vendor.mjs';
+import { selfCheckCatalog, selfCheckCase } from '../lib/self-check-cases.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.svg': 'image/svg+xml', '.png': 'image/png' };
@@ -27,7 +28,12 @@ export function createDemoServer() {
         const data = body ? JSON.parse(body) : {};
         if (route === '/api/me' && req.method === 'GET') return json({ user: { id: 'local-demo', name: 'Demo student', email: 'demo@localhost' }, profile });
         if (route === '/api/me/profile' && req.method === 'PUT') { Object.assign(profile, data); return json(profile); }
-        if (route === '/api/me/learning') return json({ markdown: 'Local preview. No student learning data is stored.' });
+        if (route === '/api/me/learning') {
+          if (req.method !== 'GET') return json({ error: 'Learning notes and evidence need the full app. This offline preview does not save a student profile.' }, 503);
+          return json({ markdown: 'Local preview. No student learning data is stored.',
+            profile: { version: 1, topics: [], misconceptions: [], notes: [], practice: [], strengths: [], nextPractice: [], evidenceCount: 0, latestDate: null } });
+        }
+        if (route === '/api/self-check' && req.method === 'GET') return json({ topics: selfCheckCatalog() });
         if (route === '/api/me/usage') return json({ percent: 0, state: 'normal' });
         if (route === '/api/health') return json({ demo: true, externalCalls: false });
         if (route === '/api/dictation' && req.method === 'GET') return json({ available: false });
@@ -39,6 +45,12 @@ export function createDemoServer() {
         if (route === '/api/conversations' && req.method === 'GET') return json([...conversations.values()].map(({ messages, ...conversation }) => conversation));
         if (route === '/api/conversations' && req.method === 'POST') {
           const conversation = { id: 'demo-' + ++counter, title: 'Practice conversation', style: data.style || 'office-hours', createdAt: new Date().toISOString(), messages: [] };
+          if (data.selfCheck) {
+            const { topic, item } = selfCheckCase(data.selfCheck, data.selfCheckCase);
+            conversation.title = 'Self-check · ' + topic.title;
+            conversation.selfCheck = { topicId: topic.id, caseId: item.id, title: topic.title, question: item.question, active: true, assisted: false, attempted: false };
+            conversation.messages.push({ role: 'assistant', content: `**Check my understanding: ${topic.title}**\n\n${item.question}\n\nLocal preview: replies are scripted and no learning evidence is saved.` });
+          }
           conversations.set(conversation.id, conversation); return json(conversation);
         }
         const match = route.match(/^\/api\/conversations\/([^/]+)(\/messages)?$/);
@@ -46,9 +58,24 @@ export function createDemoServer() {
           const conversation = conversations.get(match[1]);
           if (!conversation) return json({ error: 'This preview conversation no longer exists. Start a new chat.' }, 404);
           if (match[2] && req.method === 'POST') {
-            conversation.messages.push({ role: 'user', content: String(data.content || '') }, { role: 'assistant', content: sample });
+            let reply = sample;
+            if (conversation.selfCheck?.active) {
+              const session = conversation.selfCheck;
+              const { item } = selfCheckCase(session.topicId, session.caseId);
+              const action = data.selfCheckAction;
+              if (action && !['answer', 'hint', 'explain', 'finish'].includes(action)) return json({ error: 'Unknown self-check action.' }, 400);
+              if (action === 'hint' || action === 'explain') session.assisted = true;
+              else if (action === 'finish') session.active = false;
+              else session.attempted = true;
+              const feedback = action === 'hint' ? item.hint : action === 'explain' ? item.focus
+                : action === 'finish' ? 'This preview self-check is finished. No assessment or mastery was recorded.'
+                : 'Your response is visible in the conversation. The full app uses the configured tutor to assess your reasoning; this preview does not grade it.';
+              reply = '**Local preview — scripted response.**\n\n' + feedback;
+            }
+            conversation.messages.push({ role: 'user', content: String(data.content || '') }, { role: 'assistant', content: reply });
             res.writeHead(200, { 'Content-Type': 'text/event-stream' });
-            return res.end('data: ' + JSON.stringify({ type: 'delta', content: sample }) + '\n\ndata: {"type":"done"}\n\n');
+            const event = conversation.selfCheck ? 'data: ' + JSON.stringify({ type: 'self_check', selfCheck: conversation.selfCheck }) + '\n\n' : '';
+            return res.end(event + 'data: ' + JSON.stringify({ type: 'delta', content: reply }) + '\n\ndata: {"type":"done"}\n\n');
           }
           if (req.method === 'DELETE') { conversations.delete(conversation.id); return json({ ok: true }); }
           if (req.method === 'PATCH') { conversation.style = data.style || conversation.style; return json(conversation); }
