@@ -27,6 +27,14 @@ parameters:
     evidence_kind:
       type: string
       enum: [reasoning, calculation, model_choice]
+    knowledge_type:
+      type: string
+      enum: [situational, conceptual, procedural, strategic]
+      description: >-
+        Optional lens explicitly supported by this quote: situational recognizes relevant conditions;
+        conceptual explains meaning or connections; procedural executes a valid method;
+        strategic plans, monitors or checks a solution. Omit when unclear. These are complementary
+        knowledge dimensions, not student types, ability grades or learning-style labels.
     quote:
       type: string
       minLength: 8
