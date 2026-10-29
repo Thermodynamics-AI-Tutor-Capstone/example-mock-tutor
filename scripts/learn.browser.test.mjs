@@ -94,6 +94,7 @@ try {
   assert.equal(posts,beforeFeatureTours,'new beta tour steps do not submit profile or answers');
   const width = await page.locator('#thread').evaluate(el => el.getBoundingClientRect().width);
   assert.ok(width > 500, 'messages fill their conversation pane');
+  await page.locator('#workspaceOpen').click();
   await page.locator('#workspaceToggle').click();
   assert.ok(await page.locator('#thread').evaluate(el => el.clientWidth) > 1100, 'hiding the workspace expands chat');
   await page.locator('#learnLink').click();
@@ -151,6 +152,7 @@ try {
   await page.route('**/vendor/mermaid.min.js', route => { if (failLibrary) { failLibrary = false; return route.abort(); } return route.continue(); });
   await page.goto(origin + '/#/c/graph');
   await page.getByRole('button', { name: 'Retry diagram', exact: true }).click();
+  await page.locator('.studio-figure-link').click();
   await page.locator('.kfig-retry').waitFor();
   assert.equal(await page.locator('.kfig pre').isVisible(), false, 'raw code is collapsed on failure');
   await page.locator('.kfig-retry').click();
@@ -170,6 +172,7 @@ try {
     } });
   });
   await page.goto(origin + '/#/c/property');
+  await page.locator('.studio-figure-link').click();
   await page.locator('.kfig-retry').click();
   await page.locator('.kfig svg').waitFor();
   assert.equal(diagramAttempts, 2);
