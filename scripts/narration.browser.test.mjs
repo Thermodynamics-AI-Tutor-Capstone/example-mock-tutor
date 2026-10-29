@@ -58,13 +58,17 @@ try {
     const history = [];
     const local = { voiceURI: 'local-en', name: 'Local English', lang: 'en-US', localService: true };
     const remote = { voiceURI: 'remote-en', name: 'Browser English', lang: 'en-US', localService: false };
+    const mark = { voiceURI: 'mark-en', name: 'Microsoft Mark - English (United States)', lang: 'en-US', localService: true };
+    const markOther = { voiceURI: 'mark-de', name: 'Mark German', lang: 'de-DE', localService: true };
+    const nearMatch = { voiceURI: 'remark-en', name: 'Remark Voice', lang: 'en-US', localService: false };
     const synth = new EventTarget();
-    synth.getVoices = () => window.testSpeech.delayedVoices ? [] : [remote, local];
+    synth.getVoices = () => window.testSpeech.delayedVoices ? [] : window.testSpeech.voices;
     synth.speak = (utterance) => { active = utterance; history.push(utterance); if (!window.testSpeech.holdStart) setTimeout(() => { if (active === utterance) utterance.onstart?.(); }, 0); };
     synth.cancel = () => { const old = active; active = null; setTimeout(() => old?.onerror?.({ error: 'canceled' }), 0); };
     Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
     Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: class { constructor(text) { this.text = text; } } });
-    window.testSpeech = { history, delayedVoices: false, holdStart: false,
+    window.testSpeech = { history, delayedVoices: false, holdStart: false, mark, markOther,
+      voices: new URLSearchParams(location.search).get('voices') === 'mark' ? [markOther, remote, local, mark] : [nearMatch, remote, local],
       boundary(charIndex, name = 'word') { active?.onboundary?.({ charIndex, name }); },
       start() { active?.onstart?.(); },
       finish() { const old = active; active = null; old?.onend?.(); },
@@ -84,6 +88,39 @@ try {
   await page.getByText('Read full transcript', { exact: true }).click();
   assert.equal(await page.locator('.knarration-transcript li').count(), 3);
   console.log('ok  no autoplay, local voice preferred, manual reveal, transcript');
+
+  await page.evaluate(() => { testSpeech.voices.push(testSpeech.markOther, testSpeech.mark); testSpeech.voicesChanged(); });
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'mark-en', 'English Mark arriving late replaces an automatic fallback');
+  await page.getByText('Voice & speed', { exact: true }).click();
+  await page.getByLabel('Narration voice').selectOption('remote-en');
+  await page.evaluate(() => testSpeech.voicesChanged());
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'remote-en', 'explicit non-Mark choice survives voiceschanged');
+  await page.evaluate(() => { testSpeech.delayedVoices = true; testSpeech.voicesChanged(); });
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), '', 'temporarily unavailable choice uses device default');
+  await page.evaluate(() => { testSpeech.delayedVoices = false; testSpeech.voicesChanged(); });
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'remote-en', 'explicit voice is restored after the list returns');
+  await page.evaluate(() => { testSpeech.voices = testSpeech.voices.filter(v => !/^mark-/.test(v.voiceURI)); testSpeech.voicesChanged(); });
+  await page.getByLabel('Narration voice').selectOption('');
+  await page.evaluate(() => { testSpeech.voices.push(testSpeech.mark); testSpeech.voicesChanged(); });
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), '', 'explicit Device default is not replaced by late Mark');
+  await page.goto(origin + '/?voices=mark#/c/chat');
+  await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'mark-en', 'Mark is preferred on first mount, with English ahead of other languages');
+  assert.equal(await page.evaluate(() => testSpeech.history.length), 0, 'voice discovery does not autoplay');
+  assert.equal(await page.evaluate((spec) => {
+    const host = document.createElement('figure'); document.body.append(host);
+    host.innerHTML = KelvinBoard.render(spec);
+    const root = host.querySelector('.kboard'), embed = document.createElement('div'), viewport = document.createElement('div');
+    embed.className = 'kboard-embed'; viewport.className = 'kboard-scroll'; root.before(embed); embed.append(viewport); viewport.append(root);
+    const player = KelvinNarration.mount(host, spec);
+    const controls = host.querySelector('.knarration');
+    const outside = controls.parentElement === host && controls.nextElementSibling === embed;
+    player.dispose(); host.remove(); return outside;
+  }, board), true, 'controls mount outside an already wrapped board viewport');
+  await page.goto(origin + '/#/c/chat');
+  await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Narration voice').inputValue(), 'local-en', 'absent Mark falls back; a substring such as Remark does not match');
+  console.log('ok  Mark present/late/absent, whole-word match, explicit/default overrides and prewrapped control insertion');
 
   await page.reload();
   await page.getByRole('button', { name: 'Play narration', exact: true }).waitFor();

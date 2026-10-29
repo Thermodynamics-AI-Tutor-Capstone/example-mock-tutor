@@ -6,7 +6,7 @@ Tutor Studio uses a full-width conversation with 17px desktop text and 16px phon
 
 **About Me** shows evidence, assistance, uncertainty and four knowledge dimensions rather than a numeric grade. **Check my understanding** offers three concepts with two cases each and uses the existing tutor for feedback. Hint and Explain requests preserve unsent drafts and cannot themselves create independent learning evidence. The offline demo shows these flows with scripted replies and saves no assessment; the full app uses the signed-in student's evidence ledger.
 
-**Play narration**, Previous, Replay and Next step are above the drawing. **Voice & speed** and **Read full transcript** are there too. Controls stay at the top while a long board scrolls; navigating away pauses narration. Narration uses the browser's voices and never autoplays. Captions and manual steps work without speech support.
+**Play narration**, Previous, Replay and Next step are above the drawing. **Voice & speed** and **Read full transcript** are there too. Controls scroll normally with the conversation. The drawing and steps sit in a bounded embedded frame: page scrolling is the default; **Scroll board** enables scrolling inside it, and **Scroll page** or Escape returns to the conversation without reaching the bottom. Navigating away pauses narration. Narration prefers a Mark voice when the browser provides it, otherwise a local English voice or device fallback. An explicit voice selection is respected. Narration never autoplays. Captions and manual steps work without speech support.
 
 **Learn KELVIN** is separate from chat: an eight-feature tour and a captioned walkthrough explain messages, attachments, whiteboard, voice input, checking work, the course map, About Me and Check My Understanding. The captioned animation runs for 1 minute 20 seconds and has no audio. The timeline, lesson count, progress maximum, chapter timestamps and tour-duration estimate come from the lesson list. Progress is saved per user in this browser; previous completed features remain completed when new features are added. The tour never sends messages. Kel's **Watch a quick example** opens a clearly labelled turbine practice example in a dismissible dialog, without inserting messages into the student's chat.
 
@@ -41,6 +41,7 @@ Install Playwright locally (`npm install --no-save --package-lock=false playwrig
 
 ```powershell
 npm run studio:browser
+node scripts/whiteboard-scroll.browser.test.mjs
 node scripts/learn.browser.test.mjs
 node scripts/narration.browser.test.mjs
 npm run beta:test

@@ -34,7 +34,7 @@ Coordinates remain 10–90 percent across/down. Illustrated nodes require separa
 29 x units **or** 36 y units; plain nodes need 23 x or 22 y. Prefer two to four apparatus per board.
 The server rejects overlapping nodes. Boards show the drawing at full available width, with equations below.
 Drawings can use up to 1000px in width and 560px (70% of viewport height) in height.
-The removed workspace no longer shrinks them to fit a narrow pane. **Expand diagram** opens the original SVG in a larger view; **Enlarge labels**
+The removed workspace no longer shrinks them to fit a narrow pane. The drawing and steps have a bounded embedded viewport. Page scrolling is the default; Scroll board enables internal scrolling, and Scroll page or Escape exits before reaching the bottom. Narration controls sit above this frame and scroll normally with the conversation. **Expand diagram** opens the original SVG in a larger view; **Enlarge labels**
 allows close inspection without stretching the default conversation. Escape or Close restores
 the drawing and keyboard focus. Opening the larger view pauses narration or graph playback.
 Diagrams use a light paper surface with navy labels in both app themes.

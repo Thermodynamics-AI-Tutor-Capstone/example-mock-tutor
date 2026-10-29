@@ -114,7 +114,7 @@
     };
     let index = -1, phrase = 0, running = false, speaking = false, disposed = false;
     let utterance = null, generation = 0, frame = null, watchdog = null, clock = null;
-    let player, voices = [], paused = false;
+    let player, voices = [], paused = false, voiceChoice = null;
     const previous = button('Previous', () => manual(index - 1));
     const play = button('Play narration', toggle);
     play.classList.add('knarration-play');
@@ -139,11 +139,11 @@
     const options = element('div', 'knarration-options'); options.append(settings, transcript);
     controls.append(header, toolbar, options, caption, status);
     // Keep controls outside the board so marker coordinates and clipping remain unchanged.
-    host.insertBefore(controls, root);
+    const visual = root.closest('.kboard-embed') || root;
+    visual.before(controls);
 
     function refreshVoices() {
-      const chosen = voice.value;
-      voices = supported ? synth.getVoices() : [];
+      voices = supported ? [...synth.getVoices()] : [];
       voices.sort((a, b) => Number(b.localService) - Number(a.localService) || Number(/^en\b/i.test(b.lang)) - Number(/^en\b/i.test(a.lang)));
       voice.replaceChildren();
       const fallback = element('option', '', 'Device default'); fallback.value = ''; voice.append(fallback);
@@ -151,8 +151,15 @@
         const option = element('option', '', entry.name + (entry.localService ? ' · on device' : ' · browser service'));
         option.value = entry.voiceURI; voice.append(option);
       }
-      const preferred = voices.find((v) => v.localService && /^en\b/i.test(v.lang)) || voices.find((v) => /^en\b/i.test(v.lang)) || voices[0];
-      voice.value = voices.some((v) => v.voiceURI === chosen) ? chosen : preferred?.voiceURI || '';
+      const mark = (v) => /\bMark\b/i.test(v.name);
+      const english = (v) => /^en\b/i.test(v.lang);
+      const preferred = voices.find((v) => mark(v) && english(v)) || voices.find(mark)
+        || voices.find((v) => v.localService && english(v)) || voices.find(english) || voices[0];
+      // Until the student chooses, a late-installed Mark voice can replace the provisional
+      // default. An explicit choice (including the empty Device default value) stays theirs.
+      // If that voice temporarily disappears, retain the choice and restore it when it returns.
+      voice.value = voiceChoice === null ? preferred?.voiceURI || ''
+        : voiceChoice === '' || voices.some((v) => v.voiceURI === voiceChoice) ? voiceChoice : '';
       const selected = voices.find((v) => v.voiceURI === voice.value);
       disclosure.textContent = selected?.localService ? 'Device voice' : 'Browser voice';
     }
@@ -306,6 +313,7 @@
     // Voice/rate changes restart just the current phrase; browser voices have no audio seek API.
     rate.addEventListener('change', () => { if (running) start(index, true); });
     voice.addEventListener('change', () => {
+      voiceChoice = voice.value;
       const selected = voices.find((v) => v.voiceURI === voice.value);
       disclosure.textContent = selected?.localService ? 'Device voice' : 'Browser voice';
       if (running) start(index, true);

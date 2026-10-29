@@ -12,7 +12,7 @@
       task: 'Try attaching a photo of one calculation and explain which step you want to check.', action: 'Find the attachment button',
       demo: 'energy-balance.jpg\nReview the extracted text → check symbols and units → send with your question.', label: 'Attach • review • ask' },
     { id: 'whiteboard', target: 'whiteboardBtn', title: 'See the explanation', short: 'Follow a narrated whiteboard.',
-      text: 'Turn on Whiteboard before sending. The explanation appears directly in your conversation. Play narration, Voice & speed, and Read full transcript sit above the drawing. Expand a diagram for detail. Property tables and Important equations open in separate tabs so you can keep a reference nearby.',
+      text: 'Turn on Whiteboard before sending. The explanation appears directly in your conversation. Use Scroll board to explore inside it, then Scroll page or Escape to continue chatting. Play narration, Voice & speed, and Read full transcript sit above the drawing. Expand a diagram for detail. Property tables and Important equations open in separate tabs so you can keep a reference nearby.',
       task: 'Try asking for an energy balance on a turbine. Select the whiteboard, then send when you are ready.', action: 'Find the whiteboard button',
       demo: 'Whiteboard → Play narration above the drawing in chat. Open Property tables or Important equations in a separate tab to keep a reference nearby.', label: 'Explain on whiteboard' },
     { id: 'voice', target: 'micBtn', title: 'Talk it through', short: 'Turn spoken reasoning into an editable draft.',

@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createDemoServer} from './demo-server.mjs';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE?pathToFileURL(process.env.PLAYWRIGHT_MODULE).href:'playwright');
+const server=createDemoServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin='http://127.0.0.1:'+server.address().port;
+const spec=JSON.parse(fs.readFileSync('public/studio-demo.json','utf8'));
+for(let i=2;i<6;i++){
+ spec.steps.push({label:'Check assumption '+i,latex:'\\dot m_{in}=\\dot m_{out}',note:'Track what crosses the boundary. State the steady-state assumption and verify the units in each term. Check that the chosen control volume includes the complete turbine.'});
+ spec.lesson.segments[2].cues.push({target:'step:'+i,at:(i-1)*.18});
+}
+const content='Start by identifying the system.\n\n'+String.fromCharCode(96).repeat(3)+'kelvin-board\n'+JSON.stringify(spec)+'\n'+String.fromCharCode(96).repeat(3)+'\n\n'+Array.from({length:12},(_,i)=>'Continue the conversation, step '+(i+1)+'. Check the assumptions before calculating.').join('\n\n');
+let browser;
+try{
+ browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.route('**/api/conversations/scroll',route=>route.fulfill({json:{id:'scroll',title:'Whiteboard scroll',messages:[{role:'assistant',content}]}}));
+ await page.goto(origin+'/#/c/scroll');await page.locator('.kboard-scroll').waitFor();
+ const outer=page.locator('#scroller'),inner=page.locator('.kboard-scroll'),controls=page.locator('.knarration');
+ assert.equal(await controls.evaluate(el=>getComputedStyle(el).position),'relative','controls are not sticky or fixed');
+ assert.equal(await page.locator('.kboard-embed .knarration').count(),0,'narration controls sit outside the embedded scroll window');
+ const geometry=await inner.evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,overflow:getComputedStyle(el).overflowY}));
+ assert.ok(geometry.height<=560 && geometry.scroll>geometry.height+100,'long whiteboard has a bounded internal viewport');
+ assert.equal(geometry.overflow,'hidden','default wheel/touch goes to the conversation');
+ await outer.evaluate(el=>el.scrollTop=0);
+ const controlsBefore=await controls.boundingBox();
+ await page.mouse.move(controlsBefore.x+100,controlsBefore.y+50);await page.mouse.wheel(0,100);
+ await page.waitForFunction(()=>document.getElementById('scroller').scrollTop>=80);
+ const controlsAfter=await controls.boundingBox();assert.ok(controlsAfter.y<controlsBefore.y-70,'toolbar scrolls away with the page');
+ // Wheel directly over the board still scrolls the conversation by default.
+ const box=await inner.boundingBox();const outerBox=await outer.boundingBox();
+ await page.mouse.move(box.x+box.width/2,Math.max(box.y+50,outerBox.y+50));
+ const before=await outer.evaluate(el=>el.scrollTop);await page.mouse.wheel(0,100);
+ await page.waitForFunction(value=>document.getElementById('scroller').scrollTop>value+50,before);
+ assert.equal(await inner.evaluate(el=>el.scrollTop),0,'page scrolling does not consume the full whiteboard first');
+ await page.getByRole('button',{name:'Scroll board',exact:true}).click();
+ assert.equal(await inner.getAttribute('data-scroll-mode'),'board');
+ assert.equal(await inner.evaluate(el=>document.activeElement===el),true,'keyboard users enter the board region');
+ const activeBox=await inner.boundingBox();const pageAt=await outer.evaluate(el=>el.scrollTop);
+ await page.mouse.move(activeBox.x+100,activeBox.y+70);await page.mouse.wheel(0,120);
+ await page.waitForFunction(()=>document.querySelector('.kboard-scroll').scrollTop>50);
+ assert.ok(Math.abs(await outer.evaluate(el=>el.scrollTop)-pageAt)<2,'explicit board mode scrolls the embedded content');
+ const partial=await inner.evaluate(el=>({top:el.scrollTop,max:el.scrollHeight-el.clientHeight}));assert.ok(partial.top<partial.max-20,'not yet at board bottom');
+ await page.keyboard.press('Escape');assert.equal(await inner.getAttribute('data-scroll-mode'),'page');
+ assert.equal(await page.getByRole('button',{name:'Scroll board',exact:true}).evaluate(el=>document.activeElement===el),true);
+ const pageResume=await outer.evaluate(el=>el.scrollTop);const resumedBox=await inner.boundingBox();
+ await page.mouse.move(resumedBox.x+100,resumedBox.y+70);await page.mouse.wheel(0,100);
+ await page.waitForFunction(value=>document.getElementById('scroller').scrollTop>value+50,pageResume);
+ assert.equal(await inner.evaluate(el=>el.scrollTop),partial.top,'can resume page scrolling before reaching board bottom');
+ await page.getByRole('button',{name:'Scroll board',exact:true}).click();await page.locator('#input').click();
+ assert.equal(await inner.getAttribute('data-scroll-mode'),'page','leaving the board returns to normal scrolling');
+ await page.getByRole('button',{name:'Scroll board',exact:true}).click();await page.keyboard.press('PageDown');
+ await page.waitForFunction(top=>document.querySelector('.kboard-scroll').scrollTop>top,partial.top);
+ await page.getByRole('button',{name:'Scroll page',exact:true}).click();assert.equal(await inner.getAttribute('data-scroll-mode'),'page');
+ for(let i=0;i<3;i++)await page.getByRole('button',{name:'Next step',exact:true}).click();
+ await inner.evaluate(el=>el.scrollTop=0);await page.locator('.kboard-scroll-heading').scrollIntoViewIfNeeded();
+ const out=path.resolve('data/whiteboard-scroll');fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,'desktop.png')});
+ await page.setViewportSize({width:390,height:844});await outer.evaluate(el=>el.scrollTop=0);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ assert.ok(await inner.evaluate(el=>el.clientHeight)<=844*.55+1);
+ const mobileBox=await controls.boundingBox();await page.mouse.move(mobileBox.x+30,mobileBox.y+30);await page.mouse.wheel(0,120);
+ await page.waitForFunction(()=>document.getElementById('scroller').scrollTop>50);
+ assert.equal(await inner.evaluate(el=>el.scrollTop),0);
+ await page.screenshot({path:path.join(out,'mobile.png')});assert.deepEqual(errors,[]);
+ console.log('ok normal-flow toolbar, bounded board, default page wheel, explicit internal wheel/keyboard, Escape and button exit before bottom, blur exit and mobile sizing');
+}finally{await browser?.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

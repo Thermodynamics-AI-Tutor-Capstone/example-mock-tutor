@@ -50,7 +50,7 @@
   .knarration-button { padding: 8px 9px; font-size: 12px; }
 }
 /* Narration controls are the first item above the drawing, with short settings disclosures. */
-.knarration { position:sticky; top:0; z-index:5; margin:0 0 12px; padding:12px 14px 9px; border:1px solid var(--border); border-radius:12px; background:var(--composer,var(--bg)); color:var(--text); box-shadow:0 5px 12px #001e4408; }
+.knarration { position:relative; margin:0 0 12px; padding:12px 14px 9px; border:1px solid var(--border); border-radius:12px; background:var(--composer,var(--bg)); color:var(--text); box-shadow:0 5px 12px #001e4408; }
 .knarration-heading { font-size:11px; margin-bottom:9px; }
 .knarration-toolbar { gap:5px; }
 .knarration-button { min-height:36px; padding:7px 10px; font-size:11px; }
