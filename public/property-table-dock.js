@@ -10,13 +10,14 @@
   const status = document.getElementById('propertyDockStatus');
   if (!app || !button || !dock || !close || !frame || !input) return;
   function setOpen(open) {
+    if (window.KelvinWorkspaceTools) return window.KelvinWorkspaceTools.showTables(open);
     if (open && !frame.hasAttribute('src')) frame.src = frame.dataset.src;
     dock.hidden = !open;
     app.classList.toggle('tables-open', open);
     button.setAttribute('aria-expanded', String(open));
     (open ? close : button).focus();
   }
-  button.addEventListener('click', () => setOpen(dock.hidden));
+  button.addEventListener('click', () => setOpen(window.KelvinWorkspaceTools ? true : dock.hidden));
   close.addEventListener('click', () => setOpen(false));
   dock.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') { event.preventDefault(); setOpen(false); }
