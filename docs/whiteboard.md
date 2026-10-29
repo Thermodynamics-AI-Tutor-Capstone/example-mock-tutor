@@ -32,14 +32,23 @@ Optional descriptors are based only on the problem statement:
 
 Coordinates remain 10–90 percent across/down. Illustrated nodes require separation of at least
 29 x units **or** 36 y units; plain nodes need 23 x or 22 y. Prefer two to four apparatus per board.
-The server rejects overlapping nodes. Large boards show diagrams beside equations; smaller boards
-stack them and allow horizontal scrolling to keep labels readable. On desktop, a conversation
-containing an illustrated board widens to accommodate that pairing.
+The server rejects overlapping nodes. Large boards can show diagrams beside equations; smaller
+boards stack them. Drawings fit their available width and use a compact height that adapts to the
+Studio workspace. **Expand diagram** opens the original SVG in a larger view; **Enlarge labels**
+allows close inspection without stretching the default conversation. Escape or Close restores
+the drawing and keyboard focus. Opening the larger view pauses narration or graph playback.
+Diagrams use a light paper surface with navy labels in both app themes.
 
 Every apparatus stays inside its existing `node:ID` narration target. Nodes, arrows, and equation
 steps therefore retain their saved cue IDs. SVG title/description includes the apparatus, medium,
 contents, and system boundary. Motion and audio remain optional; the final diagram is readable
 without them. Geometry and colors are illustrative, not quantitative simulation results.
+
+Run `node scripts/compact-diagrams.browser.test.mjs` with the same Playwright setup as the other
+browser suites. It checks compact full-drawing visibility at 1366×768, extra workspace controls,
+light/dark Mermaid palettes, expansion without duplicate SVG IDs, keyboard restoration, and
+mobile fit. Expanded voice settings or very small screens can still require scrolling surrounding
+explanation text; the diagram itself remains available in the larger view.
 
 ## Link the picture to the reasoning
 

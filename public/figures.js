@@ -23,18 +23,23 @@
 
   const CSS = `
 .kfig { margin: 14px 0; }
-.kfig svg { display: block; width: 100%; height: auto; }
+.kfig svg { display:block; width:100%; height:auto; }
+.kfig-diagram > svg,.kfig-mermaid > svg { max-width:680px; max-height:min(48dvh,380px,var(--diagram-fit-height,380px)); margin:0 auto; background:#fbfdff; --bg:#fbfdff; --bubble:#eaf2fc; --text:#001e44; --text2:#526782; --border:#d1dfef; }
 .kfig figcaption { color: var(--text2); font-size: 12px; line-height: 1.5; margin-top: 8px; }
 .kfig figcaption b { font-weight: 600; color: var(--text); }
 .kfig-note { color: var(--text2); font-size: 13px; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
 .kfig-error { color: var(--error-text); background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; }
-.kfig-mermaid { text-align: center; }
+.kfig-mermaid { text-align:center; background:#fbfdff; border:1px solid #d1dfef; border-radius:10px; padding:10px; color:#001e44; }
 .kfig-mermaid svg { margin: 0 auto; }
 .kfig-retry { display:block; padding:10px 14px; margin-top:8px; border:1px solid var(--border); border-radius:8px; font-size:13px; }
 .kfig details { font-size:12px; margin-top:8px; }
 `;
 
   function injectCss() {
+    if (!window.KelvinDiagramView && !document.querySelector('script[data-diagram-view]')) {
+      const viewer = document.createElement('script'); viewer.src = '/diagram-view.js'; viewer.dataset.diagramView = 'true';
+      viewer.onerror = () => viewer.remove(); document.head.append(viewer);
+    }
     if (document.getElementById('kelvin-figure-css')) return;
     const el = document.createElement('style');
     el.id = 'kelvin-figure-css';
@@ -208,11 +213,12 @@
       s.onload = () => {
         try {
           if (!window.mermaid) throw new Error('The diagram library did not initialize.');
-          const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
           window.mermaid.initialize({
             startOnLoad: false,
             securityLevel: 'strict',
-            theme: dark ? 'dark' : 'default',
+            theme: 'base',
+            secure: ['secure', 'securityLevel', 'startOnLoad', 'maxTextSize', 'suppressErrorRendering', 'theme', 'themeVariables'],
+            themeVariables: { background:'#fbfdff', primaryColor:'#eaf2fc', primaryTextColor:'#001e44', primaryBorderColor:'#1e407c', lineColor:'#1e407c', secondaryColor:'#dceafa', tertiaryColor:'#f7faff', mainBkg:'#eaf2fc', textColor:'#001e44', edgeLabelBackground:'#fbfdff', nodeBorder:'#1e407c', clusterBkg:'#f1f6fd', clusterBorder:'#96bee6', titleColor:'#001e44' },
             fontFamily: getComputedStyle(document.body).fontFamily,
           });
           resolve(window.mermaid);
@@ -313,7 +319,7 @@
         return;
       }
       const fig = document.createElement('figure');
-      fig.className = 'kfig';
+      fig.className = 'kfig' + (kind === 'diagram' ? ' kfig-diagram' : '');
       fig.dataset.kfig = hash(key);
       host.replaceWith(fig);
       if (kind === 'grapher') {

@@ -10,6 +10,10 @@
   function node(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function button(text, action) { const b = node('button', '', text); b.type = 'button'; b.addEventListener('click', action); return b; }
   function css() {
+    if (!window.KelvinDiagramView && !document.querySelector('script[data-diagram-view]')) {
+      const viewer = document.createElement('script'); viewer.src = '/diagram-view.js'; viewer.dataset.diagramView = 'true';
+      viewer.onerror = () => viewer.remove(); document.head.append(viewer);
+    }
     if (document.querySelector('link[href="/grapher.css"]')) return;
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/grapher.css'; document.head.append(l);
   }
@@ -131,8 +135,8 @@
       speedSelect.value = '1'; speedSelect.addEventListener('change', () => { speed = Number(speedSelect.value); }); speedLabel.append(speedSelect);
       controls.append(play, back, next, restart, speedLabel); player.append(controls);
       const motion = node('p', 'kgr-motion-note'); player.append(motion);
-      player.append(node('p', 'kgr-scroll-hint', 'Swipe across the graph to read the complete diagram and labels.'));
-      const plot = node('div', 'kgr-plot'); plot.tabIndex = 0; plot.setAttribute('aria-label', 'Thermodynamic diagram; scroll horizontally on a narrow screen'); plot.append(svg); player.append(plot);
+      player.append(node('p', 'kgr-scroll-hint', 'Expand the diagram for larger labels.'));
+      const plot = node('div', 'kgr-plot'); plot.setAttribute('aria-label', 'Thermodynamic diagram'); plot.append(svg); player.append(plot);
       const details = node('details', 'kgr-details'); details.open = opts.detailsOpen !== false;
       const summary = node('summary', '', 'Drawing checklist'), count = node('span', 'kgr-step-count'); summary.append(count); details.append(summary);
       const current = node('div', 'kgr-current'); current.setAttribute('role', 'status'); current.setAttribute('aria-live', 'polite');

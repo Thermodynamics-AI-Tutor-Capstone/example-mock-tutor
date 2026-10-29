@@ -13,15 +13,15 @@
 @media (min-width: 1100px) { .thread:has(.kboard-illustrated) { max-width: 1160px; } }
 .kboard-layout { display: grid; gap: 12px; min-width: 0; }
 .kboard-diagram, .kboard-steps { min-width: 0; }
-.kboard-canvas { overflow-x: auto; }
-.kboard-illustrated .kboard-canvas { background: #fffef9; border-radius: 9px; }
+.kboard-canvas { overflow:hidden; background:#fbfdff; border-radius:9px; --bg:#fbfdff; --bubble:#eaf2fc; --text:#001e44; --text2:#526782; --border:#d1dfef; }
+.kboard-illustrated .kboard-canvas { background:#fbfdff; }
 .kboard-illustrated .kboard-hint { line-height: 1.5; }
 @container (min-width: 840px) {
   .kboard-layout.kboard-paired { grid-template-columns: minmax(0, 1.55fr) minmax(250px, 1fr); align-items: start; }
   .kboard-paired .kboard-steps { margin-top: 0; }
   .kboard-paired svg { min-width: 0; }
 }
-.kboard svg { display: block; width: 100%; min-width: 580px; height: auto; }
+.kboard svg { display:block; width:100%; min-width:0; max-width:680px; max-height:min(38dvh,310px,var(--diagram-fit-height,310px)); height:auto; margin:0 auto; }
 .kboard-steps { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
 .kboard-step { border-top: 1px solid var(--border); padding-top: 8px; color: var(--text); font-size: 13px; }
 .kboard-step strong { display: block; margin-bottom: 3px; }
@@ -38,6 +38,10 @@
 `;
 
   function injectCss() {
+    if (typeof document.querySelector === 'function' && !window.KelvinDiagramView && !document.querySelector('script[data-diagram-view]')) {
+      const viewer = document.createElement('script'); viewer.src = '/diagram-view.js'; viewer.dataset.diagramView = 'true';
+      viewer.onerror = () => viewer.remove(); document.head.append(viewer);
+    }
     if (document.getElementById('kelvin-board-css')) return;
     const style = document.createElement('style');
     style.id = 'kelvin-board-css';
@@ -238,7 +242,7 @@
         lines.forEach((line, index) => out.push(`<tspan x="${node.px.toFixed(1)}" dy="${index ? 16 : 0}">${esc(line)}</tspan>`));
         out.push('</text></g>');
       }
-      out.push('</svg></div><div class="kboard-hint">Schematic — positions are not to scale. Swipe sideways on a narrow screen. Colors identify features, not measured temperature or phase.</div></div>');
+      out.push('</svg></div><div class="kboard-hint">Schematic — not to scale. Expand for larger labels. Colors identify features, not temperature or phase.</div></div>');
     }
     if (spec.steps.length) {
       out.push('<ol class="kboard-steps">');

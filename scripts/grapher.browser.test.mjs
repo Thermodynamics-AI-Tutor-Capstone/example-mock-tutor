@@ -146,7 +146,12 @@ try {
   await mobile.locator('.kgr-player').waitFor();
   await mobile.locator('button[data-step="3"]').click();
   assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'no page overflow on mobile');
-  assert.ok(await mobile.locator('.kgr-plot').evaluate(el => el.scrollWidth > el.clientWidth), 'graph stays readable through local horizontal scrolling');
+  assert.ok(await mobile.locator('.kgr-plot').evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'the complete default graph fits without horizontal hunting');
+  await mobile.getByRole('button', { name:'Expand diagram', exact:true }).click();
+  await mobile.getByRole('button', { name:'Enlarge labels', exact:true }).click();
+  assert.ok(await mobile.locator('.kdiagram-view').evaluate(el => el.scrollWidth > el.clientWidth), 'large labels remain inspectable in the optional expanded view');
+  await mobile.keyboard.press('Escape');
+  assert.equal(await mobile.locator('.kgr-player').getAttribute('data-step'), '3', 'expanding preserves the drawing step');
   await mobile.screenshot({ path: path.join(output, 'mobile-complete.png'), fullPage: true });
   console.log('ok reduced-motion manual controls and mobile layout');
   for (const type of ['Pv', 'PT', 'Hs']) {
