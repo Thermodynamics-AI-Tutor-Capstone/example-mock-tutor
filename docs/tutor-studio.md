@@ -4,7 +4,7 @@ Tutor Studio places the most recent live whiteboard, diagram or graph beside the
 
 **Play narration**, Previous, Replay and Next step are above the drawing. **Voice & speed** and **Read full transcript** are there too. Controls stay at the top while a long board scrolls; hiding the workspace pauses narration. Narration uses the browser's voices and never autoplays. Captions and manual steps work without speech support.
 
-**Learn KELVIN** is separate from chat: a six-feature tour and a captioned walkthrough explain messages, attachments, whiteboard, voice input, checking work and the course map. Progress is saved per user in this browser. The tour never sends messages. Kel's **Watch a quick example** opens a clearly labelled turbine practice example.
+**Learn KELVIN** is separate from chat: an eight-feature tour and a captioned walkthrough explain messages, attachments, whiteboard, voice input, checking work, the course map, About Me and Check My Understanding. The captioned animation runs for 1 minute 20 seconds and has no audio. The timeline, lesson count, progress maximum, chapter timestamps and tour-duration estimate come from the lesson list. Progress is saved per user in this browser; previous completed features remain completed when new features are added. The tour never sends messages. Kel's **Watch a quick example** opens a clearly labelled turbine practice example.
 
 ## Preview the UI without credentials
 
@@ -42,3 +42,5 @@ node scripts/narration.browser.test.mjs
 ```
 
 These use local fake API responses and a controlled browser speech stub. They exercise layout, navigation, draft preservation, playback state, streaming figure reuse, keyboard transcript access, mobile sizing and recovery after library/API failures. Screenshots are written under the ignored `data/ui-review/` folder. Actual voice sound varies with voices installed on each device.
+
+The About Me and Check My Understanding tour steps highlight their real sidebar links, including when the sidebar is collapsed or on a phone. “Find” closes the tour and focuses the link; it does not open, save, submit or answer anything automatically. Closing the tour returns to Learn KELVIN or the original conversation with its draft intact.

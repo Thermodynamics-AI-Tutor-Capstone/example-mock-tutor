@@ -13,6 +13,16 @@ let browser;
 try {
   browser = await chromium.launch({ headless: true, ...(process.env.CHROME_EXECUTABLE ? { executablePath: process.env.CHROME_EXECUTABLE } : {}) });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, colorScheme: 'light' });
+  // A focused tutorial test can run before the root integrates the beta shell.
+  // Existing real navigation is used unchanged when present.
+  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('learnLink')) return;
+    for (const [id, label, hash] of [['aboutMeLink','About Me','#/about-me'],['selfCheckLink','Check My Understanding','#/self-check']]) {
+      if (document.getElementById(id)) continue;
+      const link = document.createElement('a'); link.id=id; link.className='sb-row'; link.href=hash; link.textContent=label;
+      document.getElementById('learnLink').after(link);
+    }
+  }));
   const errors = []; let posts = 0;
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', req => { if (req.method() === 'POST') posts++; });
@@ -22,6 +32,18 @@ try {
   await page.locator('#input').fill('Keep my draft and my assumptions.');
   await page.locator('#learnLink').click();
   await page.locator('#learnPanel').waitFor();
+  assert.equal(await page.locator('[data-lesson]').count(),8);
+  assert.equal(await page.locator('#learnProgress').getAttribute('max'),'8');
+  assert.equal(await page.locator('#demoSeek').getAttribute('max'),'80');
+  assert.equal(await page.locator('#demoTime').textContent(),'0:00 / 1:20');
+  assert.equal(await page.locator('[data-chapter="7"] small').textContent(),'1:10');
+  await page.locator('[data-chapter="7"]').click();
+  assert.equal(await page.locator('#demoChapter').textContent(),'08 / 08');
+  assert.equal(await page.locator('#demoTime').textContent(),'1:10 / 1:20');
+  await page.locator('#demoSeek').fill('80');
+  assert.equal(await page.locator('#demoTime').textContent(),'1:20 / 1:20');
+  assert.equal(await page.locator('#demoPlay').getAttribute('aria-label'),'Replay walkthrough');
+  await page.locator('[data-chapter="0"]').click();
   await page.screenshot({ path: path.join(output, 'learn-desktop.png') });
   assert.equal(await page.locator('#chatMain').isVisible(), false);
   await page.locator('#demoPlay').click();
@@ -39,7 +61,7 @@ try {
   await page.locator('#tourBack').click();
   await page.keyboard.press('Escape');
   await page.locator('#learnPanel').waitFor();
-  assert.match(await page.locator('#learnProgressText').textContent(), /1 of 6/);
+  assert.match(await page.locator('#learnProgressText').textContent(), /1 of 8/);
   await page.locator('#learnReturn').click();
   await page.locator('#input').waitFor();
   assert.equal(await page.locator('#input').inputValue(), 'Keep my draft and my assumptions.');
@@ -54,6 +76,22 @@ try {
   await page.locator('#input').waitFor();
   assert.equal(new URL(page.url()).hash, chatHash);
   assert.equal(await page.locator('#input').inputValue(), 'My follow-up stays here.');
+  const beforeFeatureTours = posts;
+  for (const [index, id, hash] of [[6,'aboutMeLink','#/about-me'],[7,'selfCheckLink','#/self-check']]) {
+    await page.goto(origin + '/#/learn');
+    await page.locator('#learnPanel').waitFor();
+    await page.evaluate(() => document.getElementById('app').classList.add('collapsed'));
+    await page.locator(`[data-lesson="${index}"]`).click();
+    assert.equal(await page.locator('#'+id).isVisible(),true);
+    const target = await page.locator('#'+id).boundingBox();
+    assert.ok(target.x>=0 && target.x+target.width<=1440,'collapsed desktop sidebar opens for feature target');
+    await page.locator('#tourTry').click();
+    assert.equal(await page.evaluate(() => document.activeElement.id),id);
+    assert.equal(await page.locator('#'+id).getAttribute('href'),hash);
+    assert.equal(new URL(page.url()).hash,chatHash,'tour Find preserves the conversation route');
+    assert.equal(await page.locator('#input').inputValue(),'My follow-up stays here.');
+  }
+  assert.equal(posts,beforeFeatureTours,'new beta tour steps do not submit profile or answers');
   const width = await page.locator('#thread').evaluate(el => el.getBoundingClientRect().width);
   assert.ok(width > 500, 'messages fill their conversation pane');
   await page.locator('#workspaceToggle').click();
@@ -61,12 +99,12 @@ try {
   await page.locator('#learnLink').click();
   await page.reload();
   await page.locator('#learnPanel').waitFor();
-  assert.match(await page.locator('#learnProgressText').textContent(), /1 of 6/);
+  assert.match(await page.locator('#learnProgressText').textContent(), /3 of 8/);
   await page.locator('#startTour').click();
   assert.match(await page.locator('#tourTitle').textContent(), /Show your work/);
-  for (let i = 1; i < 6; i++) await page.locator('#tourNext').click();
+  for (let i = 1; i < 8; i++) await page.locator('#tourNext').click();
   await page.locator('#learnPanel').waitFor();
-  assert.match(await page.locator('#learnProgressText').textContent(), /6 of 6/);
+  assert.match(await page.locator('#learnProgressText').textContent(), /8 of 8/);
   await page.locator('[data-lesson="3"]').click();
   assert.equal(await page.locator('#tourAvailability').isVisible(), true);
   await page.locator('#tourTry').click();
@@ -89,6 +127,18 @@ try {
   assert.ok(card.y + card.height <= ring.y || ring.y + ring.height <= card.y, 'mobile card does not cover highlighted control');
   await page.screenshot({ path: path.join(output, 'tour-mobile.png') });
   await page.keyboard.press('Escape');
+  for (const [index,id] of [[6,'aboutMeLink'],[7,'selfCheckLink']]) {
+    await page.locator(`[data-lesson="${index}"]`).click();
+    const target = await page.locator('#'+id).boundingBox();
+    const ring = await page.locator('#tourSpotlight').boundingBox();
+    const card = await page.locator('#tourCard').boundingBox();
+    assert.ok(target.x>=0 && target.x+target.width<=390 && target.y>=0 && target.y+target.height<=844,'mobile sidebar target is on screen');
+    assert.ok(card.y+card.height<=ring.y || ring.y+ring.height<=card.y,'sidebar tour card leaves highlighted navigation visible');
+    await page.screenshot({path:path.join(output,`tour-mobile-${id}.png`)});
+    await page.keyboard.press('Escape');
+    await page.locator('#learnPanel').waitFor();
+    assert.equal(await page.locator('#app').evaluate(el=>el.classList.contains('mobile-open')),false);
+  }
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
   await page.screenshot({ path: path.join(output, 'learn-dark.png') });
   console.log('ok: mobile layout, spotlight clearance, dark appearance, reduced motion');

@@ -152,3 +152,6 @@ body:has(.demo-mode-banner) .learn-panel { height: 100%; }
   body:has(.demo-mode-banner) .app { height: calc(100dvh - 44px); }
 }
 @media (prefers-reduced-motion: reduce) { .learn-panel *, .learn-tour * { scroll-behavior: auto; transition: none; animation: none; } }
+
+/* Keep real sidebar controls stationary while the tour highlights them. */
+.app.tour-active .sidebar { transition: none; }
