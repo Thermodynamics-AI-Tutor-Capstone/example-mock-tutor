@@ -10,7 +10,7 @@ globalThis.fetch = async (url) => { assert.ok(String(url).startsWith(process.env
 for (const [fluid, properties] of [['water',{P:1000,T:300}],['r134a',{P:500,x:.5}],['water',{T:100,x:0}]]) {
   const found = propertyReference({fluid,properties}); assert.deepEqual(found.state,state(fluid,properties)); assert.match(found.source,/CoolProp/); assert.equal(found.units.P,'kPa'); assert.equal(found.units.T,'°C');
 }
-for (const body of [null,{}, {fluid:'air',properties:{P:100,T:20}}, {fluid:'water',properties:{P:'100',T:20}}, {fluid:'water',properties:{P:NaN,T:20}}, {fluid:'water',properties:{P:100,T:20,x:1}}, {fluid:'water',properties:{P:100,secret:20}}, {fluid:'water',properties:{P:-10,T:20}}, {fluid:'water',properties:{P:100,T:100000}}, {fluid:'water',properties:{P:100,x:2}}, {fluid:'water',properties:{h:100,s:1}}]) assert.ok(propertyReference(body).error,JSON.stringify(body));
+for (const body of [null,{}, {fluid:'constructor',properties:{P:100,T:20}}, {fluid:'__proto__',properties:{P:100,T:20}}, {fluid:'air',properties:{P:100,T:20}}, {fluid:'water',properties:{P:'100',T:20}}, {fluid:'water',properties:{P:NaN,T:20}}, {fluid:'water',properties:{P:100,T:20,x:1}}, {fluid:'water',properties:{P:100,secret:20}}, {fluid:'water',properties:{P:-10,T:20}}, {fluid:'water',properties:{P:100,T:100000}}, {fluid:'water',properties:{P:100,x:2}}, {fluid:'water',properties:{h:100,s:1}}]) assert.ok(propertyReference(body).error,JSON.stringify(body));
 const sat = state('water',{P:100,x:0}); assert.match(propertyReference({fluid:'water',properties:{P:100,T:sat.T}}).error,/don't fix the state/);
 const server = http.createServer(handle); await new Promise((resolve)=>server.listen(0,'127.0.0.1',resolve));
 try {

@@ -34,6 +34,8 @@ try {
   const logo = await page.locator('.brand img').evaluate(el => ({ natural:el.naturalWidth/el.naturalHeight, shown:el.width/el.height, fit:getComputedStyle(el).objectFit }));
   assert.equal(logo.fit, 'contain'); assert.ok(Math.abs(logo.natural-logo.shown)<.01);
   await page.screenshot({ path:path.join(output,'studio-desktop.png') });
+  assert.equal(await page.locator('#studioWorkspace').isVisible(),false,'workspace starts closed');
+  await page.locator('#workspaceOpen').click();
   await page.locator('#workspaceDemo').click();
   await page.locator('#studioBoardContent .knarration').waitFor();
   assert.match(await page.locator('#workspaceStatus').textContent(), /Practice example/);
@@ -42,7 +44,11 @@ try {
   await page.getByRole('button',{name:'Next step',exact:true}).click();
   await page.getByRole('button',{name:'Next step',exact:true}).click();
   await page.screenshot({ path:path.join(output,'studio-example.png') });
+  await page.locator('#workspaceToggle').click();
   await page.goto(origin+'/#/c/long');
+  await page.locator('.studio-figure-link').waitFor();
+  assert.equal(await page.locator('#studioWorkspace').isVisible(),false,'a loaded diagram respects closed workspace');
+  await page.locator('#workspaceOpen').click();
   await page.locator('#studioBoardContent figure[data-kfig] .knarration').waitFor();
   assert.equal(await page.locator('#thread .kboard').count(),0,'original figure moves into workspace');
   const controls = await page.locator('.knarration').boundingBox(), board = await page.locator('.kboard').boundingBox();

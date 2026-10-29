@@ -58,7 +58,7 @@ jobs:
         run: npm run agent:test
       - name: Guided workflow and reference links
         run: npm run guided:test
-      - name: Learner profile and self-check boundaries
+      - name: Learner profile, self-check boundaries and numeric property reference
         run: npm run beta:test
       - name: Individual skill evidence and adaptation
         run: npm run skills:test

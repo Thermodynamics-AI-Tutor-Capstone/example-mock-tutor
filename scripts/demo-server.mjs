@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { copyVendor, vendorReady } from './copy-vendor.mjs';
 import { selfCheckCatalog, selfCheckCase } from '../lib/self-check-cases.js';
+import { propertyReference } from '../lib/property-reference.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.svg': 'image/svg+xml', '.png': 'image/png' };
@@ -32,6 +33,11 @@ export function createDemoServer() {
           if (req.method !== 'GET') return json({ error: 'Learning notes and evidence need the full app. This offline preview does not save a student profile.' }, 503);
           return json({ markdown: 'Local preview. No student learning data is stored.',
             profile: { version: 1, topics: [], misconceptions: [], notes: [], practice: [], strengths: [], nextPractice: [], evidenceCount: 0, latestDate: null } });
+        }
+        if (route === '/api/properties/lookup') {
+          if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+          const result = propertyReference(data);
+          return json(result, result.error ? 400 : 200);
         }
         if (route === '/api/self-check' && req.method === 'GET') return json({ topics: selfCheckCatalog() });
         if (route === '/api/me/usage') return json({ percent: 0, state: 'normal' });

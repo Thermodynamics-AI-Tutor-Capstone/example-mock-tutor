@@ -63,6 +63,7 @@
     <a id="learnLink" class="sb-row learn-nav" href="#/learn"><span aria-hidden="true">▤</span><span>Learn KELVIN</span><span class="learn-nav-tag">TOUR</span></a>
     <a id="aboutMeLink" class="sb-row beta-nav" href="#/about-me"><span aria-hidden="true">◎</span><span>About Me</span></a>
     <a id="selfCheckLink" class="sb-row beta-nav" href="#/self-check"><span aria-hidden="true">✓</span><span>Check my understanding</span></a>
+    <button id="workspaceOpen" class="sb-row" type="button" aria-expanded="false" aria-controls="studioWorkspace"><span aria-hidden="true">▱</span><span>Open workspace</span></button>
     <div class="sb-label">Your conversations</div>
     <nav id="convList" class="conv-list"></nav>
     <section class="studio-companion-card" aria-label="Learn with Kel"><div id="studioCompanion"></div><strong>Your study companion</strong><p>Let’s make the next step clearer.</p><button id="studioDemo" type="button">Watch a quick example ↗</button></section>
@@ -109,7 +110,6 @@
         </div>
       </div>
       <div class="topbar-right">
-        <button id="workspaceToggle" class="topbar-link" type="button" aria-expanded="true" aria-controls="studioWorkspace">Hide workspace</button>
         <a class="topbar-link learn-shortcut" href="#/learn">Learn KELVIN</a>
         <a class="topbar-link" href="/grapher.html" title="Open the thermodynamics graph workspace">Grapher</a>
         <button id="propertyTablesBtn" class="topbar-link" type="button" aria-expanded="false" aria-controls="propertyTableDock" title="Consult interactive thermodynamics property tables">Property tables</button>
@@ -122,8 +122,8 @@
     </header>
 
     <div id="studioLayout" class="studio-layout">
-      <section id="studioWorkspace" class="studio-workspace" aria-labelledby="workspaceTitle">
-        <header class="studio-workspace-heading"><div><span class="studio-eyebrow">THINK IT THROUGH</span><h2 id="workspaceTitle">Our workspace</h2></div><span id="workspaceStatus" role="status">Ready when you are</span></header>
+      <section id="studioWorkspace" class="studio-workspace" aria-labelledby="workspaceTitle" hidden>
+        <header class="studio-workspace-heading"><div><span class="studio-eyebrow">THINK IT THROUGH</span><h2 id="workspaceTitle">Our workspace</h2></div><span id="workspaceStatus" role="status">Ready when you are</span><button id="workspaceToggle" class="topbar-link" type="button" aria-expanded="false" aria-controls="studioWorkspace">Hide workspace</button></header>
         <div id="studioBoardScroll" class="studio-board-scroll" tabindex="0" aria-label="Whiteboard workspace">
           <div id="studioBoardContent"></div>
           <div id="studioWelcome" class="studio-welcome"><span class="studio-paper-icon" aria-hidden="true">↗</span><h3>A little space to see the idea.</h3><p>Diagrams, graphs, and narrated explanations from your conversation appear here. Keep your reasoning alongside the steps.</p><button id="workspaceDemo" type="button">Try a 30-second example</button><p class="studio-welcome-hint">Turn on Whiteboard below your message for a visual walkthrough.</p></div>

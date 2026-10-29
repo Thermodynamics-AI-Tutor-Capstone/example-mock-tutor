@@ -6,7 +6,6 @@
   const thread=$('thread'), dock=$('propertyTableDock'), toggle=$('workspaceToggle');
   if (!workspace || !board || !content || !thread || !dock || !toggle) return;
   const header=workspace.querySelector('.studio-workspace-heading');
-  const toggleHome=document.createComment('Workspace toggle home'); toggle.before(toggleHome);
   const toolbar=document.createElement('div'); toolbar.className='workspace-tools-toolbar';
   const tablist=document.createElement('div'); tablist.className='workspace-tabs'; tablist.setAttribute('role','tablist'); tablist.setAttribute('aria-label','Workspace references');
   toolbar.append(tablist); header.after(toolbar);
@@ -43,7 +42,6 @@
     };
   }
   function syncVisibility() {
-    if (workspace.hidden) toggleHome.after(toggle); else header.append(toggle);
     $('propertyTablesBtn').setAttribute('aria-expanded',String(selected==='tables' && !workspace.hidden));
   }
   new MutationObserver(syncVisibility).observe(workspace,{attributes:true,attributeFilter:['hidden']});
@@ -63,8 +61,8 @@
   function collect() {
     const roots=[]; const latest=thread.querySelector('.msg.assistant:last-of-type .md') || [...thread.querySelectorAll('.msg.assistant .md')].at(-1);
     if (latest) roots.push([latest,'Latest explanation']);
-    const current=content.querySelector('figure[data-kfig]');
-    if (current) roots.push([current,current.querySelector('.kboard-title')?.textContent || 'Current workspace explanation']);
+    const current=content.querySelector('figure[data-kfig],figure.studio-demo-figure');
+    if (current) roots.push([current,(current.classList.contains('studio-demo-figure')?'Practice example · ':'')+(current.querySelector('.kboard-title')?.textContent || 'Current workspace explanation')]);
     const found=new Map();
     for (const [root,source] of roots) for (const annotation of root.querySelectorAll('.katex-display annotation[encoding="application/x-tex"]')) {
       const tex=annotation.textContent.trim(); if (!tex || tex.length>3000) continue;
@@ -125,14 +123,14 @@
     if(!display.length) {const empty=doc.createElement('p');empty.textContent='No displayed equations are available in the current explanation yet.';doc.body.append(empty);}
     for(const item of display){const card=doc.createElement('article');const label=doc.createElement('strong');label.textContent=item.label;const source=doc.createElement('p');source.textContent=item.source;card.append(label,equationNode(item,doc),source);if(item.note){const n=doc.createElement('p');n.textContent=item.note;card.append(n);}doc.body.append(card);}
   }
-  function setConversation(id) {
-    const key=id || null;if(key===conversation)return;conversation=key;pins.clear();items=[];signature='';equations.replaceChildren();select('drawing');schedule();
+  function setConversation(id,{reset=false}={}) {
+    const key=id || null;if(key===conversation&&!reset)return;conversation=key;pins.clear();items=[];signature='';equations.replaceChildren();select('drawing');schedule();
   }
   function schedule() {if(!queued){queued=true;requestAnimationFrame(refresh);}}
   const observer=new MutationObserver(schedule);observer.observe(thread,{childList:true,subtree:true});observer.observe(content,{childList:true,subtree:true});
   function routeConversation(){const match=location.hash.match(/^#\/c\/([^/?#]+)/);if(match)setConversation(decodeURIComponent(match[1]));else if(!location.hash || location.hash==='#/')setConversation(null);}
   window.addEventListener('hashchange',routeConversation);
-  $('newChatBtn').addEventListener('click',()=>setConversation(null));$('topNewChat').addEventListener('click',()=>setConversation(null));
+  $('newChatBtn').addEventListener('click',()=>setConversation(null,{reset:true}));$('topNewChat').addEventListener('click',()=>setConversation(null,{reset:true}));
   window.KelvinWorkspaceTools={refresh:schedule,setConversation,showTables(open){if(!open){select('drawing');$('propertyTablesBtn').focus();return;}if(workspace.hidden)standalone('/property-tables.html');else select('tables',{focus:true});}};
   select('drawing');routeConversation();refresh();
 })();

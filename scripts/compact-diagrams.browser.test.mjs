@@ -28,6 +28,7 @@ try {
   await page.route('**/api/properties/diagram',route=>route.fulfill({json:diagram}));
   for (const kind of Object.keys(examples)) {
     await page.goto(origin+'/#/c/check-'+kind);
+    await page.locator('#workspaceOpen').click();
     await page.locator('#studioBoardContent svg').waitFor();
     await page.locator('#studioBoardContent .kdiagram-expand').waitFor();
     if(kind==='board') for(let i=0;i<3;i++) await page.getByRole('button',{name:'Next step',exact:true}).click();
@@ -60,6 +61,7 @@ try {
   }
   await page.emulateMedia({colorScheme:'dark'});
   await page.reload();
+  await page.locator('#workspaceOpen').click();
   await page.locator('.kfig-mermaid svg').waitFor();
   const palette=await page.locator('.kfig-mermaid').evaluate(el=>({paper:getComputedStyle(el).backgroundColor,node:getComputedStyle(el.querySelector('.node rect')).fill,label:getComputedStyle(el.querySelector('.nodeLabel')).color}));
   assert.equal(palette.paper,'rgb(251, 253, 255)');

@@ -6,15 +6,30 @@
   const thread = $('thread'), scroll = $('studioBoardScroll'), toggle = $('workspaceToggle');
   const seen = new WeakSet();
   let active = null, queued = false, demoVersion = 0, boardLoader;
-  let expanded = !matchMedia('(max-width: 1100px)').matches;
+  let expanded = false;
   function setExpanded(value) {
     expanded = value; workspace.hidden = !value;
     app.classList.toggle('workspace-open', value);
-    toggle.textContent = value ? 'Hide workspace' : 'Show workspace';
+    $('workspaceOpen').setAttribute('aria-expanded', String(value));
     toggle.setAttribute('aria-expanded', String(value));
     if (!value) window.KelvinNarration?.pauseAll();
   }
-  toggle.onclick = () => setExpanded(!expanded);
+  async function returnToChat() {
+    if (/^#\/(?:learn|about-me|self-check)(?:\?|$)/.test(location.hash)) {
+      const back = location.hash === '#/learn' ? $('learnReturn') : $('betaBackToChat');
+      await new Promise(resolve => {
+        window.addEventListener('hashchange', resolve, { once: true });
+        location.hash = back?.getAttribute('href') || '#/';
+      });
+    }
+  }
+  toggle.onclick = () => { setExpanded(false); $('workspaceOpen').focus(); };
+  $('workspaceOpen').onclick = async () => {
+    await returnToChat();
+    app.classList.remove('mobile-open');
+    setExpanded(true);
+    (workspace.querySelector('[role="tab"][aria-selected="true"]') || scroll).focus();
+  };
   setExpanded(expanded);
   function restore() {
     if (!active) return;
@@ -45,8 +60,8 @@
     $('studioWelcome').hidden = true;
     $('workspaceStatus').textContent = 'From your conversation';
     scroll.scrollTop = 0;
-    // On narrow screens, preserve reading position; the chat link opens the workspace.
-    if (!matchMedia('(max-width: 1100px)').matches || focus) setExpanded(true);
+    // New explanations respect the student's choice to keep the workspace closed.
+    if (focus) setExpanded(true);
     if (focus) scroll.focus();
   }
   function sync() {

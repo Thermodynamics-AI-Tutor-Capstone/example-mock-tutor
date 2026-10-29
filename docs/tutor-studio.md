@@ -1,6 +1,6 @@
 # Tutor Studio and local VS Code workflow
 
-Tutor Studio places the most recent live whiteboard, diagram or graph beside the conversation. Use **Hide workspace** for full-width chat. On smaller screens, **View this explanation in our workspace** opens the board above the conversation. Prior figures stay available in their messages.
+Tutor Studio places the most recent live whiteboard, diagram or graph beside the conversation. The workspace starts closed. Choose **Open workspace** in the left sidebar when you need it, and use **Hide workspace** in its header to return to full-width chat. New explanations respect this choice. On smaller screens, **View this explanation in our workspace** opens the board above the conversation. Prior figures stay available in their messages.
 
 The workspace header contains **Hide workspace** and tabs for Drawing, Property tables, Important equations and Grapher. Equations come from actual displayed math in the current explanation; pin useful references for the current conversation. Table and Grapher links open standalone browser tabs when the workspace is closed. Important equations can open a read-only snapshot. See `docs/workspace-tools.md`.
 
@@ -23,7 +23,7 @@ The workspace header contains **Hide workspace** and tabs for Drawing, Property 
 3. Open `http://127.0.0.1:3301`. Try About Me, Check my understanding, Learn KELVIN, Kel's practice example, workspace tabs, narration and resizing. If port 3301 is already in use, run `$env:PORT='3302'; npm run demo` and open port 3302.
 4. Stop the preview with **Ctrl+C**. Reload the page after changing files.
 
-The demo uses scripted replies and in-memory conversations; it makes no AI calls. Uploads, dictation, live property calculations and account services need the full application. Tour progress persists in browser storage; demo chats disappear when the server stops.
+The demo uses scripted replies and in-memory conversations; it makes no AI calls. The numeric property reference works offline for water and R-134a using the installed interpolation tables. When original course-page scans are unavailable, the Property tables tab clearly labels this numeric reference and its source. Uploads, dictation and account services need the full application. Tour progress persists in browser storage; demo chats disappear when the server stops.
 
 ## Run the full app with a local test account
 
@@ -46,6 +46,7 @@ node scripts/narration.browser.test.mjs
 npm run beta:test
 npm run beta:browser
 node scripts/workspace-tools.browser.test.mjs
+node scripts/property-reference.browser.test.mjs
 node scripts/compact-diagrams.browser.test.mjs
 ```
 

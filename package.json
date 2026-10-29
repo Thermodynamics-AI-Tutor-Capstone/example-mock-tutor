@@ -16,7 +16,7 @@
     "agent:validate": "node scripts/validate-agent.mjs",
     "agent:test": "node scripts/tutor.test.mjs && node scripts/agent-loop.test.mjs",
     "guided:test": "node scripts/guided-workflow.test.mjs && node scripts/tutor-moves.test.mjs",
-    "beta:test": "node scripts/learner-profile.test.mjs && node scripts/self-check.test.mjs",
+    "beta:test": "node scripts/learner-profile.test.mjs && node scripts/self-check.test.mjs && node scripts/property-reference.test.mjs",
     "beta:browser": "node scripts/beta.browser.test.mjs",
     "equation:browser": "node scripts/equation-editor.browser.test.mjs",
     "attachment:browser": "node scripts/attachment-preview.browser.test.mjs",
