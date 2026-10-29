@@ -128,8 +128,12 @@
       figuresScript = new Promise((resolve, reject) => {
         const s = document.createElement('script');
         s.src = '/figures.js';
-        s.onload = resolve;
+        s.onload = () => {
+          if (window.KelvinFigures) resolve();
+          else { figuresScript = null; s.remove(); reject(new Error('Figure renderer unavailable')); }
+        };
         s.onerror = () => {
+          s.remove();
           figuresScript = null;
           reject(new Error('figures.js'));
         };
@@ -140,11 +144,23 @@
       () => {
         if (el.isConnected && window.KelvinFigures) window.KelvinFigures.render(el, { api, apiFetch, ...opts });
       },
-      () => {}
+      () => {
+        if (!el.isConnected) return;
+        el.querySelectorAll('pre > code.language-mermaid, pre > code.language-kelvin-diagram, pre > code.language-kelvin-board, pre > code.language-kelvin-grapher').forEach(code => {
+          const pre = code.parentElement;
+          const host = pre.parentElement.classList.contains('code-wrap') ? pre.parentElement : pre;
+          const notice = document.createElement('div'); notice.className = 'err';
+          const message = document.createElement('p'); message.textContent = 'The diagram renderer could not load. Retry to draw it without resending your question.';
+          const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Retry diagram';
+          retry.onclick = () => { notice.replaceWith(host); renderFigures(el, opts); };
+          notice.append(message, retry); host.replaceWith(notice);
+        });
+      }
     );
   }
 
   function setMarkdown(el, text, { live = false } = {}) {
+    window.KelvinStudio?.reclaim(el);
     const reuse = new Map([...el.querySelectorAll('figure[data-kfig]')].map((fig) => [fig.dataset.kfig, fig]));
     el.innerHTML = renderMarkdown(text);
     renderFigures(el, { live, reuse });
@@ -266,7 +282,7 @@
       });
       item.addEventListener('click', () => {
         closeMobileSidebar();
-        if (c.id !== state.currentId) location.hash = '#/c/' + c.id;
+        if (c.id !== state.currentId || window.KelvinLearn?.active()) location.hash = '#/c/' + c.id;
       });
       item.append(t, del);
       convListEl.appendChild(item);
@@ -317,6 +333,7 @@
   }
 
   function goEmpty(pushUrl) {
+    window.KelvinLearn?.hide();
     window.KelvinVoice?.cancel();
     window.KelvinTips?.hide();
     renderCheckWorkPreference();
@@ -684,6 +701,7 @@
   }
 
   function route() {
+    if (window.KelvinLearn?.route()) return;
     const id = parseHash();
     if (id === state.currentId) return;
     if (state.streaming && state.controller) state.controller.abort();
@@ -1203,6 +1221,11 @@
     blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden });
   window.KelvinTips.init({ userId: me.user.id,
     blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden });
+  window.KelvinLearn.init({ userId: me.user.id,
+    chatHash: () => state.currentId ? '#/c/' + state.currentId : '#/',
+    blocked: () => state.streaming || window.KelvinAttachments.busy() || !gate.hidden,
+    onReturn: () => { autoGrow(); updateScrollBtn(); } });
+  window.KelvinLearn.route();
   await loadStyles();
   // /settings redirects here as /?settings=1, so old links and bookmarks still open Settings;
   // /?settings=learning opens it on "What Kelvin knows".
@@ -1221,6 +1244,6 @@
     // Only reopen the chat the page was loaded with. If the student has already started a new
     // one (e.g. by dropping a file before this list finished loading), reopening would reset it.
     if (hashAtLoad && state.currentId === null) openConversation(hashAtLoad);
-    else if (!hashAtLoad) input.focus();
+    else if (!hashAtLoad && !window.KelvinLearn?.active()) input.focus();
   });
 })();

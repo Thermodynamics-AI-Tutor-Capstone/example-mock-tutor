@@ -125,16 +125,21 @@
     for (const value of [.75, .9, 1, 1.25, 1.5, 2]) {
       const option = element('option', '', value + '×'); option.value = String(value); option.selected = value === .9; rate.append(option);
     }
-    rateLabel.append(rate); toolbar.append(rateLabel);
+    rateLabel.append(rate);
     const voiceLabel = element('label', 'knarration-rate knarration-voice', 'Voice ');
     const voice = element('select'); voice.setAttribute('aria-label', 'Narration voice');
-    voiceLabel.append(voice); toolbar.append(voiceLabel);
+    voiceLabel.append(voice);
     const transcript = element('details', 'knarration-transcript');
     transcript.append(element('summary', '', 'Read full transcript'));
     const list = element('ol');
     for (const segment of lesson.segments) list.append(element('li', '', segment.speech));
     transcript.append(list);
-    controls.append(header, caption, toolbar, status, transcript); root.append(controls);
+    const settings = element('details', 'knarration-settings');
+    settings.append(element('summary', '', 'Voice & speed'), rateLabel, voiceLabel);
+    const options = element('div', 'knarration-options'); options.append(settings, transcript);
+    controls.append(header, toolbar, options, caption, status);
+    // Keep controls outside the board so marker coordinates and clipping remain unchanged.
+    host.insertBefore(controls, root);
 
     function refreshVoices() {
       const chosen = voice.value;

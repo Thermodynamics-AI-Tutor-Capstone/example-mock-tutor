@@ -56,6 +56,10 @@ the draft before sending it to Kelvin. Voice input uses `gpt-4o-mini-transcribe`
 `OPENAI_API_KEY` on the server. Contextual, dismissible tips introduce voice input, attachments,
 and the narrated whiteboard. See [setup, limits, and verification](docs/voice-input.md).
 
+## Tutor Studio
+
+The Penn State blue Studio places narrated whiteboards beside IM-style conversations. Learn KELVIN has a separate guided tour; Kel offers a local practice example. See [the VS Code preview workflow and controls](docs/tutor-studio.md).
+
 ## Run locally
 
 ```sh

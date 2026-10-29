@@ -30,6 +30,8 @@
 .kfig-error { color: var(--error-text); background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; }
 .kfig-mermaid { text-align: center; }
 .kfig-mermaid svg { margin: 0 auto; }
+.kfig-retry { display:block; padding:10px 14px; margin-top:8px; border:1px solid var(--border); border-radius:8px; font-size:13px; }
+.kfig details { font-size:12px; margin-top:8px; }
 `;
 
   function injectCss() {
@@ -204,21 +206,24 @@
       const s = document.createElement('script');
       s.src = '/vendor/mermaid.min.js';
       s.onload = () => {
-        const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        window.mermaid.initialize({
-          startOnLoad: false,
-          securityLevel: 'strict',
-          theme: dark ? 'dark' : 'default',
-          fontFamily: getComputedStyle(document.body).fontFamily,
-        });
-        resolve(window.mermaid);
+        try {
+          if (!window.mermaid) throw new Error('The diagram library did not initialize.');
+          const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          window.mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'strict',
+            theme: dark ? 'dark' : 'default',
+            fontFamily: getComputedStyle(document.body).fontFamily,
+          });
+          resolve(window.mermaid);
+        } catch (error) { s.remove(); reject(error); }
       };
       s.onerror = () => {
-        mermaidPromise = null;
+        s.remove();
         reject(new Error('The diagram library could not be loaded.'));
       };
       document.head.appendChild(s);
-    });
+    }).catch(error => { mermaidPromise = null; throw error; });
     return mermaidPromise;
   }
 
@@ -260,12 +265,13 @@
     const id = hash(key);
     document.querySelectorAll(`[data-kfig="${id}"]`).forEach((el) => {
       el.innerHTML = html;
+      el.dataset.renderState = 'ready';
     });
   }
 
   function start(kind, text, key, api) {
     if (pending.has(key)) return;
-    const job = kind === 'mermaid' ? renderMermaid(text) : renderDiagram(JSON.parse(text), api);
+    const job = Promise.resolve().then(() => kind === 'mermaid' ? renderMermaid(text) : renderDiagram(JSON.parse(text), api));
     pending.set(
       key,
       job.then(
@@ -276,12 +282,16 @@
         },
         (err) => {
           pending.delete(key);
-          // A reply is still streaming in, so half-written diagram code is normal: show the code
-          // itself rather than an error, and let the finished block replace it. Cached under this
-          // text, so a re-render does not ask again; the completed block has a different key.
-          const html = `<div class="kfig-note">${esc(err && err.message ? err.message : 'This diagram could not be drawn.')}</div><pre><code>${esc(text)}</code></pre>`;
-          cache.set(key, html);
-          fill(key, html);
+          // A transient library/network failure must not become permanently cached source code.
+          document.querySelectorAll(`[data-kfig="${hash(key)}"]`).forEach(fig => {
+            fig.dataset.renderState = 'error';
+            fig.innerHTML = `<div class="kfig-note" role="status">This diagram could not be drawn. You can retry without sending your question again.</div><button type="button" class="kfig-retry">Retry diagram</button><details><summary>Technical details</summary><p>${esc(err?.message || 'Rendering failed.')}</p><pre><code>${esc(text)}</code></pre></details>`;
+            fig.querySelector('button').onclick = () => {
+              fig.dataset.renderState = 'pending';
+              fig.innerHTML = '<div class="kfig-note" role="status">Drawing the diagram…</div>';
+              start(kind, text, key, api);
+            };
+          });
         }
       )
     );
@@ -298,7 +308,7 @@
       const pre = code.parentElement;
       const host = pre.parentElement && pre.parentElement.classList.contains('code-wrap') ? pre.parentElement : pre;
       const previous = opts?.reuse?.get(hash(key));
-      if (previous) {
+      if (previous && !(previous.dataset.renderState === 'error' && !opts?.live)) {
         host.replaceWith(previous);
         return;
       }

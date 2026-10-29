@@ -32,7 +32,7 @@
   }
   button.addEventListener('click', dance);
   image.addEventListener('load', () => {
-    document.body.append(companion);
+    (document.getElementById('studioCompanion') || document.body).append(companion);
     dance();
   }, { once: true });
 })();

@@ -18,6 +18,8 @@ const COPIES = [
 
 export function vendorReady() {
   return [
+    path.join(VENDOR_DIR, 'mermaid.min.js'),
+    path.join(VENDOR_DIR, 'chart.umd.min.js'),
     path.join(VENDOR_DIR, 'marked.umd.js'),
     path.join(VENDOR_DIR, 'purify.min.js'),
     path.join(VENDOR_DIR, 'katex', 'katex.min.js'),

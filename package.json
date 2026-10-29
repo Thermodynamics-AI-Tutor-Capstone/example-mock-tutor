@@ -44,7 +44,9 @@
     "grapher:browser": "node scripts/grapher.browser.test.mjs",
     "check-work:test": "node scripts/check-work.test.mjs",
     "check-work:browser": "node scripts/check-work.browser.test.mjs",
-    "grapher:api": "node scripts/grapher-api.test.mjs"
+    "grapher:api": "node scripts/grapher-api.test.mjs",
+    "demo": "node scripts/demo-server.mjs",
+    "studio:browser": "node scripts/studio.browser.test.mjs"
   },
   "engines": {
     "node": "24.x"
