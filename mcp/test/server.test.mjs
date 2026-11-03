@@ -15,7 +15,7 @@ async function ready(url) {
 }
 async function call(base, token, name, args = {}) {
   const client = new Client({ name: 'kelvin-test', version: '1.0.0' });
-  const transport = new StreamableHTTPClientTransport(new URL(`${base}/mcp`), { requestInit: { headers: { Authorization: `Bearer ${token}` } } });
+  const transport = new StreamableHTTPClientTransport(new URL(`${base}/mcp`), { requestInit: { headers: token ? { Authorization: `Bearer ${token}` } : {} } });
   await client.connect(transport);
   try { return await client.callTool({ name, arguments: args }); }
   finally { await client.close(); }
@@ -48,9 +48,18 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
   const child = spawn(process.execPath, ['server.mjs'], { cwd: import.meta.dirname + '/..', env });
   try {
     await ready(`http://127.0.0.1:${port}/health`);
-    const denied = await fetch(`http://127.0.0.1:${port}/mcp`, { method: 'POST' });
-    assert.equal(denied.status, 401);
     const base=`http://127.0.0.1:${port}`;
+    const publicMap=parse(await call(base, null, 'course_map'));
+    assert.equal(publicMap.units.length, 9);
+    const publicClient = new Client({ name: 'public-test', version: '1.0.0' });
+    await publicClient.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
+    const publicTools = (await publicClient.listTools()).tools.map(x => x.name);
+    assert.ok(publicTools.includes('search_course'));
+    assert.ok(!publicTools.includes('record_learning'));
+    assert.ok(!publicTools.includes('course_trends'));
+    await publicClient.close();
+    const denied = await fetch(`${base}/mcp`, { method: 'POST', headers: { Authorization: 'Bearer wrong' } });
+    assert.equal(denied.status, 401);
     const map=parse(await call(base, student.token, 'course_map'));
     assert.equal(map.units.length, 9);
     const matches=parse(await call(base, student.token, 'search_course', { query: 'entropy', kind: 'topic' }));

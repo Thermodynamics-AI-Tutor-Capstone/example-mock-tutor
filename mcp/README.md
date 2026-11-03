@@ -1,8 +1,8 @@
 # Kelvin MCP pilot
 
-Claude Free can connect to this hosted Streamable HTTP MCP server as its one custom connector. Each user needs an individual bearer token. In Claude's connector setup, set the URL to the deployed `/mcp` endpoint, choose **No sign in**, then add request header `Authorization: Bearer <your token>`. Do not share a class-wide token.
+Claude Free can connect to this hosted Streamable HTTP MCP server as its one custom connector. For public course help, set the URL to the deployed `/mcp` endpoint and choose **No sign in**; no token or request header is needed. For personal learning records or instructor trends, obtain an individual token and add request header `Authorization: Bearer <your token>`. Do not share a class-wide token.
 
-The server offers course cards, misconception cards, and selected teaching skills from `../agent/`. The student can explicitly save a learning reflection; a direct DeepSeek API call classifies it. The server never sees ordinary Claude messages unless Claude invokes a tool with that text. Instructors receive only aggregates from at least five students.
+The server offers course cards, misconception cards, and selected teaching skills from `../agent/` to everyone. An authenticated student can explicitly save a learning reflection; a direct DeepSeek API call classifies it when configured. The server never sees ordinary Claude messages unless Claude invokes a tool with that text. Instructors receive only aggregates from at least five students.
 
 ## Local run
 

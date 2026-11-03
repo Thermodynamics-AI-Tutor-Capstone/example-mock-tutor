@@ -69,11 +69,12 @@ const server = createServer(async (req, res) => {
   if (path !== '/mcp' || !['POST', 'GET', 'DELETE'].includes(req.method)) {
     res.writeHead(404); res.end('Not found'); return;
   }
-  const token = /^Bearer (.+)$/i.exec(req.headers.authorization || '')?.[1];
-  const user = authenticate(token);
-  if (!user) {
+  const authorization = req.headers.authorization || '';
+  const token = /^Bearer (.+)$/i.exec(authorization)?.[1];
+  const user = token ? authenticate(token) : { role: 'anonymous' };
+  if (authorization && (!token || !user)) {
     res.writeHead(401, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ error: 'A valid student or instructor token is required' }));
+    res.end(JSON.stringify({ error: 'Invalid bearer token' }));
     return;
   }
   if (Number(req.headers['content-length'] || 0) > 32768) {

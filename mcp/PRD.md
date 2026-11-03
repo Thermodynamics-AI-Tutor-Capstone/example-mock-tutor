@@ -2,12 +2,12 @@
 
 ## Goal
 
-Give ME 300 students on Claude Free a remote MCP connector that supplies course-specific context and teaching moves from Kelvin's existing, reviewable knowledge cards. Let a student explicitly save learning evidence and see their own summary. Give instructors only cohort trends, not student chat transcripts.
+Give anyone with a Claude Free account a remote MCP connector that supplies course-specific context and teaching moves from Kelvin's existing, reviewable knowledge cards, without registration. Let a student with an individual token explicitly save learning evidence and see their own summary. Give instructors only cohort trends, not student chat transcripts.
 
 ## Pilot scope
 
 - One HTTPS Streamable HTTP endpoint at `/mcp`, hosted on Lance's Mac mini and reachable by Claude's cloud service.
-- Per-person bearer tokens in Claude custom connector request headers. Tokens map to student or instructor roles; they are stored only as hashes. No shared class token.
+- Public read-only course and teaching tools need no token. Optional per-person bearer tokens in Claude custom connector request headers unlock student or instructor tools. Tokens are stored only as hashes. No shared class token.
 - Deterministic discovery: search card metadata, then fetch a specific course, unit, topic, or misconception card. Expose selected teaching skills on demand. No Jev, calculator, answer bank, or general chat model in the MCP.
 - Explicit `record_learning` tool: only when the student asks to save a short account of what they worked on. DeepSeek classifies it against known topics and misconceptions; the server stores the student's original statement, model labels, and timestamp. The model receives no student identifier.
 - `my_learning` shows only the authenticated student's records and counts. `course_trends` is instructor-only, reports aggregates for at least five distinct students, and never returns names or original statements.
@@ -22,7 +22,7 @@ Give ME 300 students on Claude Free a remote MCP connector that supplies course-
 
 ## Acceptance checks
 
-1. Anonymous requests to `/mcp` fail; valid student token connects with Claude-compatible MCP tools.
+1. Anonymous requests to `/mcp` can connect and use only public read-only tools. Invalid tokens fail, while valid student and instructor tokens expose their respective private tools.
 2. Search returns metadata only; `get_card` loads a named card. Hidden audiences and assessment items are never returned.
 3. A student can save a learning statement and retrieve only their own history. DeepSeek failure saves the statement as pending without fabricating a classification.
 4. Instructor trends suppress cohorts with fewer than five students and contain no statements or identities.
