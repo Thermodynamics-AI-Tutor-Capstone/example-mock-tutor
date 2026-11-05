@@ -60,6 +60,7 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     assert.match(publicClient.getServerVersion().title, /Engineering Thermodynamics/);
     assert.match(publicClient.getInstructions(), /thermodynamics questions.*course_map.*search_course.*get_card/i);
     const listedTools = (await publicClient.listTools()).tools;
+    assert.ok(listedTools.every(tool => tool._meta?.securitySchemes?.[0]?.type === 'noauth'));
     const publicTools = listedTools.map(x => x.name);
     for (const name of ['course_map', 'search_course', 'get_card']) {
       assert.match(listedTools.find(tool => tool.name === name).description, /thermodynamics/i);
