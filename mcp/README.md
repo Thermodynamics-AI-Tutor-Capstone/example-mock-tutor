@@ -8,7 +8,7 @@ The server offers course cards, misconception cards, and selected teaching skill
 
 ## How Claude discovers thermodynamics content
 
-The MCP handshake identifies the server as **Kelvin: Penn State ME 300 Engineering Thermodynamics** and explains the workflow: use `course_map` once to orient, then `search_course` and `get_card` for the relevant thermodynamics concept or misconception. The five public tool descriptions also name thermodynamics and state when to call each tool. The course map repeats the subject and marks the cards as an unverified Summer 2023 section. Tool descriptions and server instructions can guide Claude's selection, but Claude controls whether it calls a tool in a given conversation.
+The MCP handshake identifies the server as **Kelvin: Penn State ME 300 Engineering Thermodynamics** and explains the workflow: use `course_map` once to orient, then `search_course` and `get_card` for the relevant thermodynamics concept or misconception. The five public tool descriptions also name thermodynamics and state when to call each tool. The course map identifies the actual Summer 2023 Penn State course source. Topic cards draw on the course files; misconception cards draw on cited education research. `studyCardStatus` records how a derived study note was prepared, not whether the underlying course is real. Tool descriptions and server instructions can guide Claude's selection, but Claude controls whether it calls a tool in a given conversation.
 
 ## Local run
 

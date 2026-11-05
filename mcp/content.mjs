@@ -5,7 +5,7 @@ import YAML from 'yaml';
 const root = resolve(import.meta.dirname, '..', 'agent');
 const allowedKinds = ['course', 'units', 'topics', 'misconceptions'];
 const selectedSkills = ['answer-requests', 'what-next', 'misconception-repair', 'property-tables', 'control-volume-energy-balance'];
-export const provenance = "Sample ME 300 material from Dr. O'Connor's Summer 2023 section. Dates, grading, and policies may differ in your section; check your Canvas. No card is instructor-verified.";
+export const provenance = "Course and topic cards draw on real Penn State ME 300 Engineering Thermodynamics materials from Dr. Jacqueline O'Connor's Summer 2023 Canvas section. Misconception cards draw on cited thermodynamics education research. Dates, grading, and policies are specific to that course term; check your current Canvas section for current logistics.";
 
 function parseCard(path) {
   const text = readFileSync(path, 'utf8');
@@ -34,7 +34,10 @@ export function loadContent() {
 
 export function metadata(card) {
   return { id: card.id, kind: card.kind, title: card.title, description: card.description,
-    status: card.status, unit: card.unit, parent: card.parent };
+    sourceCourse: 'Penn State ME 300 Engineering Thermodynamics',
+    sourceTerm: card.kind === 'misconception' ? undefined : 'Summer 2023',
+    sourceMaterial: card.kind === 'misconception' ? 'cited thermodynamics education research' : 'actual Penn State course files',
+    studyCardStatus: card.status, unit: card.unit, parent: card.parent };
 }
 
 export function searchCards(cards, query, kind, limit = 8) {

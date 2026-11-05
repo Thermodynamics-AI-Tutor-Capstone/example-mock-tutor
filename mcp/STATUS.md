@@ -4,6 +4,8 @@ Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign
 
 Discovery update: the live MCP handshake now names Penn State ME 300 Engineering Thermodynamics, provides server instructions for using the course map, topic search, and card reader, and all five public tool descriptions explicitly identify thermodynamics. The live gateway returned the new metadata and course map in an MCP SDK check. Claude's own tool-use choice in a fresh chat still needs Lance's observation.
 
+Course-source correction: Lance confirmed this is real, verified course material. Public MCP wording now identifies the actual Penn State ME 300 Summer 2023 Canvas source and removes the earlier "sample" and "unverified course" framing. Topic cards come from course files; misconception cards cite education research. The `studyCardStatus` field describes preparation of a derived note. Current section dates and policies still require that section's Canvas.
+
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
 - Public, read-only student MCP URL: `https://kelvin-mcp.vercel.app/mcp`.
 - Signed-in student MCP URL: `https://kelvin-mcp.vercel.app/mcp/account`.

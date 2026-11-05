@@ -51,6 +51,8 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     const base=`http://127.0.0.1:${port}`;
     const publicMap=parse(await call(base, null, 'course_map'));
     assert.equal(publicMap.units.length, 9);
+    assert.match(publicMap.provenance, /real Penn State ME 300 Engineering Thermodynamics materials/);
+    assert.equal(publicMap.course.sourceMaterial, 'actual Penn State course files');
     const publicClient = new Client({ name: 'public-test', version: '1.0.0' });
     await publicClient.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
     assert.match(publicClient.getServerVersion().title, /Engineering Thermodynamics/);
@@ -60,6 +62,8 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     for (const name of ['course_map', 'search_course', 'get_card']) {
       assert.match(listedTools.find(tool => tool.name === name).description, /thermodynamics/i);
     }
+    assert.doesNotMatch(publicClient.getInstructions(), /sample|placeholder|unverified/i);
+    assert.doesNotMatch(listedTools.map(tool => tool.description).join(' '), /sample|placeholder|unverified/i);
     assert.ok(publicTools.includes('search_course'));
     assert.ok(!publicTools.includes('record_learning'));
     assert.ok(!publicTools.includes('course_trends'));
@@ -73,6 +77,9 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     const card=parse(await call(base, student.token, 'get_card', { id: 'topic:m7-07-entropy' }));
     assert.match(card.content, /entropy/i);
     assert.ok(card.provenance.includes('Summer 2023'));
+    assert.equal(card.sourceMaterial, 'actual Penn State course files');
+    const misconception=parse(await call(base, student.token, 'get_card', { id: 'misc:m01-heat-energy-temperature-conflated' }));
+    assert.equal(misconception.sourceMaterial, 'cited thermodynamics education research');
     const hidden=await call(base, student.token, 'get_card', { id: 'item:exam1-2021-i-1' });
     assert.equal(hidden.isError, true);
     const saved=parse(await call(base, student.token, 'record_learning', { statement: 'I studied entropy balances today and am still practicing.', consent: true }));

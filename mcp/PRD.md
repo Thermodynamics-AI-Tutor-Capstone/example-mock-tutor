@@ -13,7 +13,7 @@ Give anyone with a Claude Free account a remote MCP connector that supplies cour
 - Explicit `record_learning` tool: only when the student asks to save a short account of what they worked on. DeepSeek classifies it against known topics and misconceptions; the server stores the student's original statement, model labels, and timestamp. The model receives no student identifier.
 - `my_learning` shows only the authenticated student's records and counts. A student can enable or disable instructor sharing. `course_trends` is instructor-only, reports aggregates for at least five distinct students, and never returns names or original statements. `shared_students` and `student_learning` show a named student record to an authenticated instructor only while that student has enabled sharing.
 - A Vercel-hosted professor dashboard offers a clearly labeled synthetic demo behind `username` / `password`. A separate instructor OAuth account shows live class trends and only the named student records whose owners enabled sharing. The dashboard uses a fixed-route Vercel function for its API calls to the Mac mini.
-- Course cards are from Dr. O'Connor's Summer 2023 sample section. Every response must identify that provenance and the card's review status. Current dates, grading and policy come from the student's own Canvas section.
+- Course and topic cards derive from real Penn State ME 300 Engineering Thermodynamics materials in Dr. O'Connor's Summer 2023 Canvas section. Misconception cards derive from cited education research. Responses should identify the source and term; `studyCardStatus` identifies the derived note's drafting status, not whether the course is real. Current dates, grading, and policy come from the student's own Canvas section.
 
 ## Out of scope
 
