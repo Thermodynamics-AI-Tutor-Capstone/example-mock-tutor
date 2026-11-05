@@ -112,6 +112,7 @@ function renderDashboard() {
   hero.append(heading,el('span',`badge ${state.mode === 'demo' ? 'demo' : ''}`,state.mode === 'demo' ? 'Demo data' : 'Live course data'));
   app.append(hero);
   if (state.mode === 'demo') app.append(el('p','notice','This is a sample dashboard. The names and records here are made up.'));
+  else app.append(el('p','notice','Students enter their own names. Kelvin has not verified their identities.'));
   const stats = el('div','stats');
   for (const [label,value] of [['Students with records',trends.students],['Saved reflections',trends.events],['Students sharing by name',data.students.length]]) {
     const stat=el('div','stat'); stat.append(el('span','',label),el('strong','',String(value))); stats.append(stat);

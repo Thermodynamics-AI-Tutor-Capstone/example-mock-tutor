@@ -1,5 +1,7 @@
 # Pilot deployment status — 2026-11-05
 
+Current student access: `/mcp` is open without sign-in, and `/mcp/account` allows anyone to create a lasting student account without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. The older invite-based pilot described below is historical.
+
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
 - Public, read-only student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp`.
 - Signed-in student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp/account`.
@@ -9,6 +11,6 @@
 - The Mac mini has no DeepSeek key configured. The existing Kelvin `.env` key returned HTTP 402 during a live classification probe; `.env.local` returned HTTP 401. Reflections still save with `classificationStatus: pending` and no inferred labels. Set up a working credential directly on the Mac mini at `~/.config/kelvin-mcp/deepseek-key` to activate classification; the launch agent reads it on start.
 - A personal test student token was generated on Lance's MacBook at `~/.config/kelvin-mcp/lance-test-token`; the Mac mini stores only its SHA-256 hash. No credential was copied between hosts.
 - On 2026-11-05, a signed-in endpoint was added at `https://mac.tailfb765c.ts.net:8443/mcp/account`. It uses OAuth authorization code with PKCE and course-issued invites tied to stable account IDs and names. The live public URL passed invite claim, token exchange, MCP account lookup, and personal tool discovery. The disposable smoke account was disabled afterward.
-- Lance's unclaimed student invite code is stored only on his MacBook at `~/.config/kelvin-mcp/lance-invite-code`; its hash is on the Mac mini. Student sharing with instructors is optional and reversible. Instructor accounts can read named records only for students who enabled sharing.
+- Student sharing with instructors is optional and reversible. Instructor accounts can read named records only for students who enabled sharing. The old unclaimed student invite code is no longer accepted by the current sign-in flow.
 - Claude.ai itself has not yet been used to connect to this server. The actual Free account setup should be checked by Lance.
 - The dashboard's live instructor OAuth flow was exercised through a headless browser against the production Vercel URL and public Mac mini endpoint. The disposable instructor account used for that check was disabled afterward. The Vercel function proxies only client registration, token exchange, and instructor dashboard reads. Its browser route was necessary because Chromium blocked direct cross-origin fetches to the Tailscale hostname on a tailnet-connected machine.

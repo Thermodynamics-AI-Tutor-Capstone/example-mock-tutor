@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes, scryptSync } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,16 +14,12 @@ async function ready(url) {
   for (let i = 0; i < 40; i++) { try { if ((await fetch(url)).ok) return; } catch {} await delay(100); }
   throw new Error('Server did not start');
 }
-test('invited student signs in through OAuth PKCE and receives private records', async () => {
+test('any student can create a lasting OAuth account without an invite', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kelvin-oauth-test-'));
   const port = 35000 + Math.floor(Math.random() * 1000);
   const origin = `http://127.0.0.1:${port}`;
   const env = { ...process.env, KELVIN_MCP_DATA_DIR: dir, PORT: String(port), KELVIN_PUBLIC_ORIGIN: origin,
     KELVIN_DASHBOARD_ORIGIN: 'https://dashboard.example' };
-  const invite = 'test-invite-secret-123456789';
-  const admin = spawn(process.execPath, ['admin.mjs', 'invite-hash', 'student-1', 'Student One', 'student', hash(invite)],
-    { cwd: import.meta.dirname + '/..', env });
-  assert.equal(await new Promise(resolve => admin.on('exit', resolve)), 0);
   const child = spawn(process.execPath, ['server.mjs'], { cwd: import.meta.dirname + '/..', env });
   try {
     await ready(`${origin}/health`);
@@ -47,10 +43,12 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const authorize = await fetch(auth, { redirect: 'manual' });
     assert.equal(authorize.status, 302);
     const loginUrl = new URL(authorize.headers.get('location'), origin);
-    assert.equal((await fetch(loginUrl)).status, 200);
+    const loginPage = await fetch(loginUrl);
+    assert.equal(loginPage.status, 200);
+    assert.match(await loginPage.text(), /No course invite is needed/);
     const login = await fetch(`${origin}/login`, { method: 'POST', redirect: 'manual',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'claim', request: loginUrl.searchParams.get('request'), invite, password: 'strong-password-123', share: 'yes' }) });
+      body: new URLSearchParams({ action: 'create', request: loginUrl.searchParams.get('request'), name: 'Student One', password: 'strong-password-123', share: 'yes' }) });
     assert.equal(login.status, 302);
     const callback = new URL(login.headers.get('location'));
     assert.equal(callback.searchParams.get('state'), 'test-state');
@@ -69,15 +67,17 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const tools = (await client.listTools()).tools.map(x => x.name);
     assert.ok(tools.includes('record_learning'));
     const account = await client.callTool({ name: 'my_account', arguments: {} });
-    assert.equal(JSON.parse(account.content[0].text).id, 'student-1');
+    const studentId = JSON.parse(account.content[0].text).id;
+    assert.match(studentId, /^student-[a-f0-9]{24}$/);
     assert.equal(JSON.parse(account.content[0].text).shareWithInstructor, true);
     const sharing = await client.callTool({ name: 'share_with_instructor', arguments: { enabled: false } });
     assert.equal(JSON.parse(sharing.content[0].text).shareWithInstructor, false);
     await client.callTool({ name: 'share_with_instructor', arguments: { enabled: true } });
     const saved = await client.callTool({ name: 'record_learning', arguments: { statement: 'I studied entropy balance today.', consent: true } });
     assert.equal(JSON.parse(saved.content[0].text).saved, true);
-    const instructorInvite = 'instructor-invite-secret-123456789';
-    const instructorAdmin = spawn(process.execPath, ['admin.mjs', 'invite-hash', 'instructor-1', 'Professor One', 'instructor', hash(instructorInvite)],
+    const instructorSalt = randomBytes(16).toString('hex');
+    const instructorHash = scryptSync('another-strong-password-123', instructorSalt, 64).toString('hex');
+    const instructorAdmin = spawn(process.execPath, ['admin.mjs', 'instructor-hash', 'instructor-1', 'Professor One', instructorSalt, instructorHash],
       { cwd: import.meta.dirname + '/..', env });
     assert.equal(await new Promise(resolve => instructorAdmin.on('exit', resolve)), 0);
     const instructorAuthorize = await fetch(auth, { redirect: 'manual' });
@@ -85,8 +85,8 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const instructorLoginUrl = new URL(instructorAuthorize.headers.get('location'), origin);
     const instructorLogin = await fetch(`${origin}/login`, { method: 'POST', redirect: 'manual',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'claim', request: instructorLoginUrl.searchParams.get('request'),
-        invite: instructorInvite, password: 'another-strong-password-123' }) });
+      body: new URLSearchParams({ action: 'sign-in', request: instructorLoginUrl.searchParams.get('request'),
+        account: 'instructor-1', password: 'another-strong-password-123' }) });
     assert.equal(instructorLogin.status, 302);
     const instructorCode = new URL(instructorLogin.headers.get('location')).searchParams.get('code');
     const instructorTokens = await fetch(`${origin}/token`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -97,8 +97,8 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const instructor = new Client({ name: 'instructor-test', version: '1.0.0' });
     await instructor.connect(new StreamableHTTPClientTransport(new URL(resource), { requestInit: { headers: { Authorization: `Bearer ${instructorAccess}` } } }));
     const students = await instructor.callTool({ name: 'shared_students', arguments: {} });
-    assert.deepEqual(JSON.parse(students.content[0].text), [{ id: 'student-1', name: 'Student One' }]);
-    const learning = await instructor.callTool({ name: 'student_learning', arguments: { student_id: 'student-1' } });
+    assert.deepEqual(JSON.parse(students.content[0].text), [{ id: studentId, name: 'Student One' }]);
+    const learning = await instructor.callTool({ name: 'student_learning', arguments: { student_id: studentId } });
     assert.equal(JSON.parse(learning.content[0].text).total, 1);
     const dashboardResource = `${origin}/dashboard-data`;
     const dashboardAuth = new URL(auth);
@@ -106,6 +106,14 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const dashboardAuthorize = await fetch(dashboardAuth, { redirect: 'manual' });
     assert.equal(dashboardAuthorize.status, 302);
     const dashboardLoginUrl = new URL(dashboardAuthorize.headers.get('location'), origin);
+    const dashboardPage = await fetch(dashboardLoginUrl);
+    assert.doesNotMatch(await dashboardPage.text(), /Create account and connect/);
+    const studentDashboardLogin = await fetch(`${origin}/login`, { method: 'POST', redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'sign-in', request: dashboardLoginUrl.searchParams.get('request'),
+        account: studentId, password: 'strong-password-123' }) });
+    assert.equal(studentDashboardLogin.status, 200);
+    assert.match(await studentDashboardLogin.text(), /An instructor account is required/);
     const dashboardLogin = await fetch(`${origin}/login`, { method: 'POST', redirect: 'manual',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ action: 'sign-in', request: dashboardLoginUrl.searchParams.get('request'),
@@ -120,15 +128,19 @@ test('invited student signs in through OAuth PKCE and receives private records',
     const dashboardResponse = await fetch(dashboardResource, { headers: { Authorization: `Bearer ${dashboardAccess}`, Origin: 'https://dashboard.example' } });
     assert.equal(dashboardResponse.status, 200);
     assert.equal(dashboardResponse.headers.get('access-control-allow-origin'), 'https://dashboard.example');
-    assert.deepEqual((await dashboardResponse.json()).students, [{ id: 'student-1', name: 'Student One' }]);
+    assert.deepEqual((await dashboardResponse.json()).students, [{ id: studentId, name: 'Student One' }]);
     const wrongAudience = await fetch(dashboardResource, { headers: { Authorization: `Bearer ${instructorAccess}` } });
     assert.equal(wrongAudience.status, 401);
     await client.callTool({ name: 'share_with_instructor', arguments: { enabled: false } });
-    const hidden = await instructor.callTool({ name: 'student_learning', arguments: { student_id: 'student-1' } });
+    const hidden = await instructor.callTool({ name: 'student_learning', arguments: { student_id: studentId } });
     assert.equal(hidden.isError, true);
-    const hiddenDashboard = await fetch(`${dashboardResource}?student_id=student-1`, { headers: { Authorization: `Bearer ${dashboardAccess}` } });
+    const hiddenDashboard = await fetch(`${dashboardResource}?student_id=${studentId}`, { headers: { Authorization: `Bearer ${dashboardAccess}` } });
     assert.equal(hiddenDashboard.status, 404);
     await instructor.close();
     await client.close();
+    const refresh = await fetch(`${origin}/token`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'refresh_token', client_id, refresh_token, resource }) });
+    assert.equal(refresh.status, 200);
+    assert.ok((await refresh.json()).refresh_token);
   } finally { child.kill(); rmSync(dir, { recursive: true, force: true }); }
 });

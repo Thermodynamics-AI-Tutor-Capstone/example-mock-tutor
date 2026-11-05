@@ -22,7 +22,7 @@ function cleaned() {
   const data = state();
   for (const [id, pending] of Object.entries(data.pending)) if (pending.expiresAt < now()) delete data.pending[id];
   for (const [id, code] of Object.entries(data.codes)) if (code.expiresAt < now()) delete data.codes[id];
-  for (const [id, token] of Object.entries(data.tokens)) if (token.refreshExpiresAt < now()) delete data.tokens[id];
+  for (const [id, token] of Object.entries(data.tokens)) if (token.refreshExpiresAt && token.refreshExpiresAt < now()) delete data.tokens[id];
   return data;
 }
 const passwordDigest = (password, salt) => scryptSync(password, salt, 64).toString('hex');
@@ -31,16 +31,16 @@ function constantEqual(a, b) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-export function addInvite(id, name, role, inviteHash) {
+export function addInstructorHash(id, name, salt, passwordHash) {
   if (!/^[a-zA-Z0-9_-]{3,80}$/.test(id)) throw new Error('Invalid account ID');
   if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120) throw new Error('Invalid name');
-  if (!['student', 'instructor'].includes(role)) throw new Error('Invalid role');
-  if (!/^[a-f0-9]{64}$/.test(inviteHash)) throw new Error('Invalid invite hash');
+  if (!/^[a-f0-9]{32}$/.test(salt) || !/^[a-f0-9]{128}$/.test(passwordHash)) throw new Error('Invalid password hash');
   const data = accounts();
-  if (data.some(a => a.id === id || a.inviteHash === inviteHash)) throw new Error('Account or invite already exists');
-  data.push({ id, name: name.trim(), role, inviteHash, passwordHash: null, salt: null, createdAt: new Date().toISOString(), disabled: false });
+  if (data.some(account => account.id === id)) throw new Error('Account ID already exists');
+  data.push({ id, name: name.trim(), role: 'instructor', salt, passwordHash,
+    createdAt: new Date().toISOString(), disabled: false });
   save(accountsPath, data);
-  return { id, name: name.trim(), role };
+  return { id, name: name.trim(), role: 'instructor' };
 }
 export function accountById(id) { return accounts().find(a => a.id === id && !a.disabled && a.passwordHash) || null; }
 export function sharedStudents() { return accounts().filter(a => a.role === 'student' && !a.disabled && a.passwordHash && a.shareWithInstructor)
@@ -54,18 +54,19 @@ export function setSharing(id, enabled) {
   save(accountsPath, data);
   return account.shareWithInstructor;
 }
-function claimInvite(invite, password, shareWithInstructor) {
-  if (password.length < 12 || password.length > 200) return null;
+function createStudent(name, password, shareWithInstructor) {
+  if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120 ||
+      typeof password !== 'string' || password.length < 12 || password.length > 200) return null;
   const data = accounts();
-  const found = data.find(a => !a.disabled && !a.passwordHash && constantEqual(a.inviteHash, hex(invite)));
-  if (!found) return null;
-  found.salt = randomBytes(16).toString('hex');
-  found.passwordHash = passwordDigest(password, found.salt);
-  found.inviteHash = null;
-  found.shareWithInstructor = found.role === 'student' && Boolean(shareWithInstructor);
-  found.sharingUpdatedAt = new Date().toISOString();
+  let id;
+  do { id = `student-${randomBytes(12).toString('hex')}`; } while (data.some(account => account.id === id));
+  const salt = randomBytes(16).toString('hex');
+  const account = { id, name: name.trim(), role: 'student',
+    passwordHash: passwordDigest(password, salt), salt, createdAt: new Date().toISOString(),
+    disabled: false, shareWithInstructor: Boolean(shareWithInstructor), sharingUpdatedAt: new Date().toISOString() };
+  data.push(account);
   save(accountsPath, data);
-  return found;
+  return account;
 }
 function signIn(id, password) {
   const account = accounts().find(a => a.id === id && !a.disabled && a.passwordHash);
@@ -82,7 +83,7 @@ export function disableAccount(id) {
 function tokenPair(data, clientId, accountId, scopes, resource) {
   const access = secret(), refresh = secret();
   data.tokens[hex(access)] = { clientId, accountId, scopes, resource, expiresAt: now() + 3600_000,
-    refreshHash: hex(refresh), refreshExpiresAt: now() + 30 * 24 * 3600_000 };
+    refreshHash: hex(refresh) };
   return { access_token: access, refresh_token: refresh, token_type: 'Bearer', expires_in: 3600, scope: scopes.join(' ') };
 }
 export function createOAuthProvider(resourceUrl, origin, otherResources = []) {
@@ -126,7 +127,7 @@ export function createOAuthProvider(resourceUrl, origin, otherResources = []) {
     async exchangeRefreshToken(client, refreshToken, scopes, requestedResource) {
       const data = cleaned();
       const [key, found] = Object.entries(data.tokens).find(([,t]) => t.refreshHash === hex(refreshToken)) || [];
-      if (!found || found.clientId !== client.client_id || found.refreshExpiresAt < now() ||
+      if (!found || found.clientId !== client.client_id || (found.refreshExpiresAt && found.refreshExpiresAt < now()) ||
           (requestedResource && requestedResource.href !== found.resource) || !accountById(found.accountId)) throw new InvalidGrantError('Invalid refresh token');
       if (scopes && scopes.some(scope => !found.scopes.includes(scope))) throw new InvalidGrantError('Invalid scope');
       delete data.tokens[key];
@@ -159,18 +160,20 @@ export function loginPage(requestId, message = '') {
   if (!pending || pending.expiresAt < now()) return null;
   const dashboard = pending.resource.endsWith('/dashboard-data');
   const title = dashboard ? 'Sign in to the Kelvin instructor dashboard' : 'Connect Kelvin to Claude';
-  const intro = dashboard ? 'Use an instructor invite or account to view ME 300 records students chose to share.' : 'Sign in to save what you work on in ME 300. You can still use the public course tools without an account.';
+  const intro = dashboard ? 'Use your instructor account to view ME 300 records students chose to share.' : 'Anyone can create a Kelvin learning account. No course invite is needed. You can also use the public course tools without an account.';
   const sharing = dashboard ? '' : '<label><input name="share" type="checkbox" value="yes">My instructor can see the reflections I save, along with my name. I can turn this off later.</label>';
-  const note = dashboard ? 'This account is separate from your Claude account.' : 'Kelvin only saves reflections you ask Claude to send to it. This account is separate from your Claude account.';
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in to Kelvin</title><style>body{font:16px system-ui;max-width:520px;margin:7vh auto;padding:24px;color:#1d2730}h1{font-size:1.7em}form{border:1px solid #ccd5dc;border-radius:12px;padding:20px;margin:18px 0}label{display:block;margin:12px 0}input{display:block;box-sizing:border-box;width:100%;padding:10px;margin-top:5px}input[type=checkbox]{display:inline;width:auto;margin-right:8px}button{background:#164a71;color:white;border:0;border-radius:7px;padding:11px 18px;cursor:pointer}.error{color:#a12626}.note{color:#59636b;font-size:.9em}</style><h1>${title}</h1><p>${intro}</p>${message ? `<p class="error">${escape(message)}</p>` : ''}<form method="post" action="/login"><h2>New here?</h2><input type="hidden" name="request" value="${escape(request)}"><label>${dashboard ? 'Instructor' : 'Course'} invite code<input name="invite" autocomplete="off" required></label><label>Create a password (12 characters or more)<input name="password" type="password" minlength="12" required></label>${sharing}<button name="action" value="claim">Create account and connect</button></form><form method="post" action="/login"><h2>Already have an account?</h2><input type="hidden" name="request" value="${escape(request)}"><label>Account ID<input name="account" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button name="action" value="sign-in">Sign in and connect</button></form><p class="note">${note}</p></html>`;
+  const note = dashboard ? 'This account is separate from your Claude account.' : 'After connecting, ask Claude for your Kelvin account ID and save it with your password. Kelvin only saves reflections you ask Claude to send.';
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in to Kelvin</title><style>body{font:16px system-ui;max-width:520px;margin:7vh auto;padding:24px;color:#1d2730}h1{font-size:1.7em}form{border:1px solid #ccd5dc;border-radius:12px;padding:20px;margin:18px 0}label{display:block;margin:12px 0}input{display:block;box-sizing:border-box;width:100%;padding:10px;margin-top:5px}input[type=checkbox]{display:inline;width:auto;margin-right:8px}button{background:#164a71;color:white;border:0;border-radius:7px;padding:11px 18px;cursor:pointer}.error{color:#a12626}.note{color:#59636b;font-size:.9em}</style><h1>${title}</h1><p>${intro}</p>${message ? `<p class="error">${escape(message)}</p>` : ''}${dashboard ? '' : `<form method="post" action="/login"><h2>New here?</h2><input type="hidden" name="request" value="${escape(request)}"><label>Your name<input name="name" autocomplete="name" minlength="2" maxlength="120" required></label><label>Create a password (12 characters or more)<input name="password" type="password" minlength="12" required></label>${sharing}<button name="action" value="create">Create account and connect</button></form>`}<form method="post" action="/login"><h2>Already have an account?</h2><input type="hidden" name="request" value="${escape(request)}"><label>Account ID<input name="account" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button name="action" value="sign-in">Sign in and connect</button></form><p class="note">${note}</p></html>`;
 }
 export function completeLogin(input) {
   const requestId = String(input.request || ''), data = cleaned(), pending = data.pending[hex(requestId)];
   if (!pending || pending.expiresAt < now()) return { error: 'This sign-in request expired. Start again in Claude.' };
   const password = String(input.password || '');
-  const account = input.action === 'claim' ? claimInvite(String(input.invite || ''), password, input.share === 'yes')
+  const dashboard = pending.resource.endsWith('/dashboard-data');
+  const account = input.action === 'create' && !dashboard ? createStudent(String(input.name || ''), password, input.share === 'yes')
     : input.action === 'sign-in' ? signIn(String(input.account || ''), password) : null;
-  if (!account) return { error: 'The account, invite, or password was not accepted.' };
+  if (!account) return { error: 'The name, account, or password was not accepted.' };
+  if (dashboard && account.role !== 'instructor') return { error: 'An instructor account is required.' };
   const code = secret();
   data.codes[hex(code)] = { ...pending, accountId: account.id, expiresAt: now() + 5 * 60_000 };
   delete data.pending[hex(requestId)];
