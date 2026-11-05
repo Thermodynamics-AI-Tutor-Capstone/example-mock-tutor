@@ -54,17 +54,17 @@ export function allEvents() {
 }
 export function deleteStudent(id) {
   const data = users();
-  if (!data.some(u => u.id === id && u.role === 'student')) throw new Error('Unknown student');
+  const legacy = data.find(u => u.id === id && u.role === 'student');
   const remaining = allEvents().filter(e => e.studentId !== id);
   const tmp = `${eventsPath}.${process.pid}.tmp`;
   writeFileSync(tmp, remaining.map(e => JSON.stringify(e)).join('\n') + (remaining.length ? '\n' : ''), { mode: 0o600 });
   renameSync(tmp, eventsPath);
-  revoke(id);
+  if (legacy) revoke(id);
 }
 export function trends(minStudents = 5) {
   const events = allEvents();
   const students = new Set(events.map(e => e.studentId));
-  if (students.size < minStudents) return { suppressed: true, minimumStudents: minStudents, students: students.size };
+  if (students.size < minStudents) return { suppressed: true, minimumStudents: minStudents, students: students.size, events: events.length };
   const counts = field => Object.entries(events.reduce((acc, e) => {
     for (const id of e[field] || []) acc[id] = (acc[id] || 0) + 1;
     return acc;

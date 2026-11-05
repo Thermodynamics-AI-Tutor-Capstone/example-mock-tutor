@@ -1,18 +1,31 @@
 import { createServer } from 'node:http';
+import express from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { mcpAuthRouter, getOAuthProtectedResourceMetadataUrl } from '@modelcontextprotocol/sdk/server/auth/router.js';
+import { requireBearerAuth } from '@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js';
 import { z } from 'zod';
 import { loadContent, metadata, provenance, searchCards } from './content.mjs';
 import { addEvent, allEvents, authenticate, trends } from './store.mjs';
 import { classify } from './classify.mjs';
+import { accountById, completeLogin, createOAuthProvider, loginPage, setSharing, sharedStudents } from './oauth.mjs';
 
 const { cards, skills } = loadContent();
 const port = Number(process.env.PORT || 3337);
+const origin = process.env.KELVIN_PUBLIC_ORIGIN || 'https://mac.tailfb765c.ts.net:8443';
+const resourceUrl = new URL('/mcp/account', origin);
+const dashboardResourceUrl = new URL('/dashboard-data', origin);
+const dashboardOrigin = process.env.KELVIN_DASHBOARD_ORIGIN || 'https://kelvin-professor-dashboard.vercel.app';
+const oauth = createOAuthProvider(resourceUrl, origin, [dashboardResourceUrl]);
 const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 const error = message => ({ content: [{ type: 'text', text: message }], isError: true });
 
 function makeMcp(user) {
   const mcp = new McpServer({ name: 'kelvin-me300', version: '0.1.0' }, { capabilities: { tools: {} } });
+  if (user.role !== 'anonymous') mcp.registerTool('my_account', { description: 'Show the Kelvin account and role attached to this authenticated connector.' },
+    () => result({ id: user.id, name: user.name || null, role: user.role,
+      shareWithInstructor: user.role === 'student' ? Boolean(accountById(user.id)?.shareWithInstructor) : undefined }));
   mcp.registerTool('course_map', { description: 'Start here for the ME 300 sample course, its module map, provenance, and review limits.' }, () =>
     result({ provenance, course: metadata(cards.get('course:me300')),
       units: [...cards.values()].filter(c => c.kind === 'unit').map(metadata) }));
@@ -35,6 +48,8 @@ function makeMcp(user) {
       return skill ? result({ name, description: skill.description, content: skill.body }) : error('Skill not found');
     });
   if (user.role === 'student') {
+    if (accountById(user.id)) mcp.registerTool('share_with_instructor', { description: 'Set whether the course instructor may see your saved learning reflections under your name. This can be changed anytime.',
+      inputSchema: { enabled: z.boolean() } }, ({ enabled }) => result({ shareWithInstructor: setSharing(user.id, enabled) }));
     mcp.registerTool('record_learning', { description: 'Save a short learning reflection and classify its topics with DeepSeek. Only call after the student explicitly asks to save what they worked on. Misconception labels are tentative, not diagnoses.',
       inputSchema: { statement: z.string().min(10).max(1000), consent: z.literal(true) } }, async ({ statement }) => {
         try {
@@ -55,28 +70,24 @@ function makeMcp(user) {
   if (user.role === 'instructor') {
     mcp.registerTool('course_trends', { description: 'Instructor-only aggregate trends from students who explicitly saved learning reflections. At least five distinct students are required; no identities or statements are returned.' },
       () => result(trends()));
+    if (accountById(user.id)) {
+      mcp.registerTool('shared_students', { description: 'List students who explicitly allowed this course instructor to see their named learning reflections.' },
+        () => result(sharedStudents()));
+      mcp.registerTool('student_learning', { description: 'Read saved learning reflections for one student who explicitly enabled instructor sharing.',
+        inputSchema: { student_id: z.string().max(80) } }, ({ student_id }) => {
+          const student = sharedStudents().find(s => s.id === student_id);
+          if (!student) return error('Student has not enabled instructor sharing');
+          const own = allEvents().filter(e => e.studentId === student_id);
+          const records = own.slice(-20).reverse()
+            .map(({ studentId, ...event }) => event);
+          return result({ student, total: own.length, recent: records });
+        });
+    }
   }
   return mcp;
 }
 
-const server = createServer(async (req, res) => {
-  const path = new URL(req.url || '/', 'http://localhost').pathname;
-  if (path === '/health' && req.method === 'GET') {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, service: 'kelvin-mcp', cards: cards.size }));
-    return;
-  }
-  if (path !== '/mcp' || !['POST', 'GET', 'DELETE'].includes(req.method)) {
-    res.writeHead(404); res.end('Not found'); return;
-  }
-  const authorization = req.headers.authorization || '';
-  const token = /^Bearer (.+)$/i.exec(authorization)?.[1];
-  const user = token ? authenticate(token) : { role: 'anonymous' };
-  if (authorization && (!token || !user)) {
-    res.writeHead(401, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Invalid bearer token' }));
-    return;
-  }
+async function handleMcp(req, res, user) {
   if (Number(req.headers['content-length'] || 0) > 32768) {
     res.writeHead(413); res.end('Request too large'); return;
   }
@@ -92,5 +103,59 @@ const server = createServer(async (req, res) => {
     await transport.close();
     await mcp.close();
   }
+}
+
+const app = express();
+app.set('trust proxy', 'loopback');
+app.get('/health', (_req, res) => res.json({ ok: true, service: 'kelvin-mcp', cards: cards.size }));
+app.use(mcpAuthRouter({ provider: oauth, issuerUrl: new URL(origin), resourceServerUrl: resourceUrl,
+  scopesSupported: ['mcp:tools'], resourceName: 'Kelvin ME 300 learning account' }));
+app.get('/login', (req, res) => {
+  const page = loginPage(req.query.request);
+  res.set('Cache-Control', 'no-store');
+  return page ? res.type('html').send(page) : res.status(400).send('This sign-in request expired. Start again in Claude.');
 });
+app.post('/login', express.urlencoded({ extended: false, limit: '8kb' }), rateLimit({ windowMs: 15 * 60_000, limit: 10 }), (req, res) => {
+  const outcome = completeLogin(req.body);
+  res.set('Cache-Control', 'no-store');
+  if (outcome.redirect) return res.redirect(302, outcome.redirect);
+  const page = loginPage(req.body.request, outcome.error);
+  return page ? res.type('html').send(page) : res.status(400).send(outcome.error);
+});
+app.use('/dashboard-data', (req, res, next) => {
+  res.set('Vary', 'Origin');
+  if (req.headers.origin === dashboardOrigin) res.set('Access-Control-Allow-Origin', dashboardOrigin);
+  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  return next();
+});
+app.get('/dashboard-data', requireBearerAuth({ verifier: oauth, requiredScopes: ['mcp:tools'], expectedResource: dashboardResourceUrl }), (req, res) => {
+  const account = accountById(req.auth?.extra?.accountId);
+  if (account?.role !== 'instructor') return res.status(403).json({ error: 'Instructor account required' });
+  const studentId = String(req.query.student_id || '');
+  if (studentId) {
+    const student = sharedStudents().find(s => s.id === studentId);
+    if (!student) return res.status(404).json({ error: 'Student has not enabled instructor sharing' });
+    const own = allEvents().filter(e => e.studentId === studentId);
+    return res.json({ student, total: own.length, recent: own.slice(-20).reverse()
+      .map(({ studentId: _id, ...event }) => event) });
+  }
+  return res.json({ instructor: { id: account.id, name: account.name }, trends: trends(), students: sharedStudents() });
+});
+app.all('/mcp/account', requireBearerAuth({ verifier: oauth, requiredScopes: ['mcp:tools'],
+  resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(resourceUrl), expectedResource: resourceUrl }),
+  (req, res) => {
+    const account = accountById(req.auth?.extra?.accountId);
+    if (!account) return res.status(401).json({ error: 'Account is unavailable' });
+    return handleMcp(req, res, { id: account.id, name: account.name, role: account.role });
+  });
+app.all('/mcp', (req, res) => {
+  const authorization = req.headers.authorization || '';
+  const token = /^Bearer (.+)$/i.exec(authorization)?.[1];
+  const user = token ? authenticate(token) : { role: 'anonymous' };
+  if (authorization && (!token || !user)) return res.status(401).json({ error: 'Invalid bearer token' });
+  return handleMcp(req, res, user);
+});
+const server = createServer(app);
 server.listen(port, '127.0.0.1', () => console.log(`Kelvin MCP listening on 127.0.0.1:${port}`));

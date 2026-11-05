@@ -1,9 +1,14 @@
-# Pilot deployment status — 2026-11-03
+# Pilot deployment status — 2026-11-05
 
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
-- Student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp`.
+- Public, read-only student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp`.
+- Signed-in student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp/account`.
+- Professor dashboard: `https://kelvin-professor-dashboard.vercel.app`, deployed to Vercel with a synthetic `username` / `password` demo and a separate instructor OAuth sign-in for live data.
 - Existing Tailscale Serve service on port 443 remains tailnet-only.
 - Public endpoint tested with the MCP SDK: initialization, tool listing, course search, and a saved reflection. The synthetic reflection was removed after the check. Course help is now anonymous; student and instructor records still require individual tokens. An unauthenticated MCP initialization also succeeded through Tailscale's public relay IP.
 - The Mac mini has no DeepSeek key configured. The existing Kelvin `.env` key returned HTTP 402 during a live classification probe; `.env.local` returned HTTP 401. Reflections still save with `classificationStatus: pending` and no inferred labels. Set up a working credential directly on the Mac mini at `~/.config/kelvin-mcp/deepseek-key` to activate classification; the launch agent reads it on start.
 - A personal test student token was generated on Lance's MacBook at `~/.config/kelvin-mcp/lance-test-token`; the Mac mini stores only its SHA-256 hash. No credential was copied between hosts.
-- Claude.ai itself has not yet been used to connect to this server. Its documented custom connector accepts remote MCP URLs and fixed request headers, but the actual Free account setup should be checked by Lance.
+- On 2026-11-05, a signed-in endpoint was added at `https://mac.tailfb765c.ts.net:8443/mcp/account`. It uses OAuth authorization code with PKCE and course-issued invites tied to stable account IDs and names. The live public URL passed invite claim, token exchange, MCP account lookup, and personal tool discovery. The disposable smoke account was disabled afterward.
+- Lance's unclaimed student invite code is stored only on his MacBook at `~/.config/kelvin-mcp/lance-invite-code`; its hash is on the Mac mini. Student sharing with instructors is optional and reversible. Instructor accounts can read named records only for students who enabled sharing.
+- Claude.ai itself has not yet been used to connect to this server. The actual Free account setup should be checked by Lance.
+- The dashboard's live instructor OAuth flow was exercised through a headless browser against the production Vercel URL and public Mac mini endpoint. The disposable instructor account used for that check was disabled afterward. The Vercel function proxies only client registration, token exchange, and instructor dashboard reads. Its browser route was necessary because Chromium blocked direct cross-origin fetches to the Tailscale hostname on a tailnet-connected machine.
