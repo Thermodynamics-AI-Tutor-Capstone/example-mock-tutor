@@ -1,13 +1,15 @@
 # Pilot deployment status — 2026-11-05
 
-Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign-in and has no OAuth discovery. Personal records use the separate `https://kelvin-mcp-account.vercel.app/mcp/account` hostname; anyone can create a student account there without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
+Current student access: `https://kelvin-thermodynamics-mcp.vercel.app/mcp` is open without sign-in and has no OAuth discovery. Personal records use the separate `https://kelvin-mcp-account.vercel.app/mcp/account` hostname; anyone can create a student account there without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
+
+On 2026-11-05, a new public-only hostname was deployed after ChatGPT opened `/authenticate` on the earlier public hostname. The old hostname had advertised OAuth before the public/account split. The new hostname was verified with an MCP SDK handshake and tool listing: all five tools report `noauth`, and OAuth discovery and sign-in paths return 404. ChatGPT connection behavior on Lance’s account still needs a fresh UI test with **No authentication** selected. The earlier public hostname remains online for existing connections.
 
 Discovery update: the live MCP handshake now names Penn State ME 300 Engineering Thermodynamics, provides server instructions for using the course map, topic search, and card reader, and all five public tool descriptions explicitly identify thermodynamics. The live gateway returned the new metadata and course map in an MCP SDK check. Claude's own tool-use choice in a fresh chat still needs Lance's observation.
 
 Course-source correction: Lance confirmed this is real, verified course material. Public MCP wording now identifies the actual Penn State ME 300 Summer 2023 Canvas source and removes the earlier "sample" and "unverified course" framing. Topic cards come from course files; misconception cards cite education research. The `studyCardStatus` field describes preparation of a derived note. Current section dates and policies still require that section's Canvas.
 
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
-- Public, read-only student MCP URL: `https://kelvin-mcp.vercel.app/mcp`.
+- Public, read-only student MCP URL: `https://kelvin-thermodynamics-mcp.vercel.app/mcp`.
 - Signed-in student MCP URL: `https://kelvin-mcp-account.vercel.app/mcp/account`.
 - Professor dashboard: `https://kelvin-professor-dashboard.vercel.app`, deployed to Vercel with a synthetic `username` / `password` demo and a separate instructor OAuth sign-in for live data.
 - Existing Tailscale Serve service on port 443 remains tailnet-only.
