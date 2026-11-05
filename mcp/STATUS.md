@@ -1,10 +1,10 @@
 # Pilot deployment status — 2026-11-05
 
-Current student access: `/mcp` is open without sign-in, and `/mcp/account` allows anyone to create a lasting student account without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. The older invite-based pilot described below is historical.
+Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign-in, and `/mcp/account` on the same host allows anyone to create a lasting student account without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed MCP/OAuth routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
 
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
-- Public, read-only student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp`.
-- Signed-in student MCP URL: `https://mac.tailfb765c.ts.net:8443/mcp/account`.
+- Public, read-only student MCP URL: `https://kelvin-mcp.vercel.app/mcp`.
+- Signed-in student MCP URL: `https://kelvin-mcp.vercel.app/mcp/account`.
 - Professor dashboard: `https://kelvin-professor-dashboard.vercel.app`, deployed to Vercel with a synthetic `username` / `password` demo and a separate instructor OAuth sign-in for live data.
 - Existing Tailscale Serve service on port 443 remains tailnet-only.
 - Public endpoint tested with the MCP SDK: initialization, tool listing, course search, and a saved reflection. The synthetic reflection was removed after the check. Course help is now anonymous; student and instructor records still require individual tokens. An unauthenticated MCP initialization also succeeded through Tailscale's public relay IP.
@@ -14,3 +14,4 @@ Current student access: `/mcp` is open without sign-in, and `/mcp/account` allow
 - Student sharing with instructors is optional and reversible. Instructor accounts can read named records only for students who enabled sharing. The old unclaimed student invite code is no longer accepted by the current sign-in flow.
 - Claude.ai itself has not yet been used to connect to this server. The actual Free account setup should be checked by Lance.
 - The dashboard's live instructor OAuth flow was exercised through a headless browser against the production Vercel URL and public Mac mini endpoint. The disposable instructor account used for that check was disabled afterward. The Vercel function proxies only client registration, token exchange, and instructor dashboard reads. Its browser route was necessary because Chromium blocked direct cross-origin fetches to the Tailscale hostname on a tailnet-connected machine.
+- Claude rejected the Mac mini URL on port 8443 as unreachable. Anthropic states its cloud connector uses port 443 for MCP and OAuth. The new Vercel gateway on 443 passed live public MCP, OAuth metadata, open student signup, private MCP, refresh, and dashboard instructor sign-in checks; disposable accounts were disabled. Claude UI reconnection on the new URL still needs Lance's confirmation.

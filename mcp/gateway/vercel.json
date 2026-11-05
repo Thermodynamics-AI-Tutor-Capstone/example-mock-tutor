@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/gateway?route=mcp" },
+    { "source": "/mcp/account", "destination": "/api/gateway?route=account" },
+    { "source": "/.well-known/oauth-authorization-server", "destination": "/api/gateway?route=authMetadata" },
+    { "source": "/.well-known/oauth-protected-resource/mcp/account", "destination": "/api/gateway?route=resourceMetadata" },
+    { "source": "/authorize", "destination": "/api/gateway?route=authorize" },
+    { "source": "/login", "destination": "/api/gateway?route=login" },
+    { "source": "/register", "destination": "/api/gateway?route=register" },
+    { "source": "/token", "destination": "/api/gateway?route=token" },
+    { "source": "/revoke", "destination": "/api/gateway?route=revoke" },
+    { "source": "/dashboard-data", "destination": "/api/gateway?route=dashboardData" }
+  ]
+}

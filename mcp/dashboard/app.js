@@ -1,4 +1,4 @@
-const API = 'https://mac.tailfb765c.ts.net:8443';
+const API = 'https://kelvin-mcp.vercel.app';
 const resource = `${API}/dashboard-data`;
 const proxy = action => `/api/kelvin?action=${action}`;
 const app = document.querySelector('#app');

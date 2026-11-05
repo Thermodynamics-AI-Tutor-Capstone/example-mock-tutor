@@ -6,7 +6,7 @@ Give anyone with a Claude Free account a remote MCP connector that supplies cour
 
 ## Pilot scope
 
-- One HTTPS Streamable HTTP endpoint at `/mcp`, hosted on Lance's Mac mini and reachable by Claude's cloud service.
+- One HTTPS Streamable HTTP endpoint at `/mcp`, exposed on port 443 through a Vercel gateway that forwards to Lance's Mac mini.
 - Public read-only course and teaching tools need no sign-in at `/mcp`. The authenticated `/mcp/account` endpoint uses OAuth authorization code with PKCE. Claude discovers the authorization server and sends a scoped access token after the student signs in.
 - Any student can create an account with a self-entered name and password. The server assigns a random stable account ID. Passwords and tokens are stored as hashes. No course invite, Penn State identity check, or roster enrollment is required.
 - Deterministic discovery: search card metadata, then fetch a specific course, unit, topic, or misconception card. Expose selected teaching skills on demand. No Jev, calculator, answer bank, or general chat model in the MCP.
@@ -28,7 +28,7 @@ Give anyone with a Claude Free account a remote MCP connector that supplies cour
 2. Search returns metadata only; `get_card` loads a named card. Hidden audiences and assessment items are never returned.
 3. A student can save a learning statement and retrieve only their own history. DeepSeek failure saves the statement as pending without fabricating a classification.
 4. Instructor trends suppress cohorts with fewer than five students and contain no statements or identities. Named records are returned only when the student has enabled sharing; turning it off blocks later reads.
-5. A Mac mini service survives restart; Tailscale Funnel uses port 8443 so the existing private service on port 443 stays private.
+5. A Mac mini service survives restart; Tailscale Funnel uses port 8443 so the existing private service on the Mac mini's port 443 stays private. The Vercel gateway exposes the connector and OAuth endpoints on public port 443 for Claude.
 6. The Vercel dashboard demo login reveals sample data only. An operator-created instructor can sign in through OAuth, load live trends, and open a named record only while its student has enabled sharing.
 
 ## Data handling and limits
