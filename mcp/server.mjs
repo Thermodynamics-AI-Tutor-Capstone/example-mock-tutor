@@ -22,17 +22,20 @@ const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value)
 const error = message => ({ content: [{ type: 'text', text: message }], isError: true });
 
 function makeMcp(user) {
-  const mcp = new McpServer({ name: 'kelvin-me300', version: '0.1.0' }, { capabilities: { tools: {} } });
+  const mcp = new McpServer({ name: 'kelvin-thermodynamics-me300', title: 'Kelvin: Penn State ME 300 Engineering Thermodynamics', version: '0.1.0' }, {
+    capabilities: { tools: {} },
+    instructions: 'Kelvin is the course-specific reference for Penn State ME 300 Engineering Thermodynamics. For substantive thermodynamics questions, use course_map to orient once per conversation, then search_course and get_card for the relevant topic or misconception before answering. Use teaching skills when they fit the task. The cards reflect an unverified Summer 2023 section; check the student’s current syllabus or Canvas for dates, grading, and policies. Do not save a learning reflection unless the student explicitly asks.'
+  });
   if (user.role !== 'anonymous') mcp.registerTool('my_account', { description: 'Show the Kelvin account and role attached to this authenticated connector.' },
     () => result({ id: user.id, name: user.name || null, role: user.role,
       shareWithInstructor: user.role === 'student' ? Boolean(accountById(user.id)?.shareWithInstructor) : undefined }));
-  mcp.registerTool('course_map', { description: 'Start here for the ME 300 sample course, its module map, provenance, and review limits.' }, () =>
-    result({ provenance, course: metadata(cards.get('course:me300')),
+  mcp.registerTool('course_map', { title: 'ME 300 thermodynamics course map', description: 'For thermodynamics questions, start here once per conversation. This is Penn State ME 300 Engineering Thermodynamics: systems, properties, phase change, first and second laws, entropy, control volumes, and cycles. Returns the course map and provenance so you can choose the right topic card. Based on an unverified Summer 2023 section; current policies belong to the student’s own syllabus.' }, () =>
+    result({ subject: 'Penn State ME 300 Engineering Thermodynamics', use: 'For a thermodynamics topic, search_course for matching cards, then get_card before explaining or tutoring. Check current Canvas for dates and policies.', provenance, course: metadata(cards.get('course:me300')),
       units: [...cards.values()].filter(c => c.kind === 'unit').map(metadata) }));
-  mcp.registerTool('search_course', { description: 'Find relevant ME 300 course, module, topic, or misconception card metadata. Search first, then get_card by exact ID.',
+  mcp.registerTool('search_course', { title: 'Search thermodynamics topics and misconceptions', description: 'Use this for each substantive thermodynamics or ME 300 question to find the relevant course topic, concept, equation context, or common misconception. Search terms such as entropy, vapor tables, first law, turbines, refrigeration, or Carnot. Returns brief metadata; call get_card on the matching ID for the actual content before answering.',
     inputSchema: { query: z.string().max(160), kind: z.enum(['course', 'unit', 'topic', 'misconception']).optional() } },
   ({ query, kind }) => result({ provenance, matches: searchCards(cards, query, kind) }));
-  mcp.registerTool('get_card', { description: 'Read one exact ME 300 course, module, topic, or misconception card. Cards are from a Summer 2023 sample section and have their own review status.',
+  mcp.registerTool('get_card', { title: 'Read a thermodynamics course card', description: 'After search_course, read the exact Penn State ME 300 Engineering Thermodynamics topic or misconception card before explaining the concept or guiding a problem. Returns the card content, related concepts, sources, provenance, and review status. The Summer 2023 material is not a current syllabus or verified course policy.',
     inputSchema: { id: z.string().max(120) } }, ({ id }) => {
       const card = cards.get(id);
       if (!card) return error('Card not found or not available to students');
@@ -40,9 +43,9 @@ function makeMcp(user) {
         related: { misconceptions: card.misconceptions || [], topics: card.topics || [], equations: card.equations || [] },
         sources: card.sources || [], content: card.body.slice(0, 16000) });
     });
-  mcp.registerTool('list_teaching_skills', { description: 'List selected ME 300 teaching moves and procedures; load one by name only when relevant.' }, () =>
+  mcp.registerTool('list_teaching_skills', { title: 'Thermodynamics tutoring approaches', description: 'When tutoring a thermodynamics problem, list the available ME 300 teaching approaches, including property-table work, control-volume energy balances, next-step hints, and misconception repair. Then load the useful one with get_teaching_skill.' }, () =>
     result([...skills].map(([name, s]) => ({ name, description: s.description }))));
-  mcp.registerTool('get_teaching_skill', { description: 'Load a selected teaching move or procedure when it matches the student request.',
+  mcp.registerTool('get_teaching_skill', { title: 'Read a thermodynamics tutoring approach', description: 'Read a named ME 300 thermodynamics tutoring procedure when helping with property tables, control-volume energy balances, step-by-step reasoning, or a misconception. Call list_teaching_skills first to choose a valid name.',
     inputSchema: { name: z.string().max(80) } }, ({ name }) => {
       const skill = skills.get(name);
       return skill ? result({ name, description: skill.description, content: skill.body }) : error('Skill not found');
@@ -109,7 +112,7 @@ const app = express();
 app.set('trust proxy', 'loopback');
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'kelvin-mcp', cards: cards.size }));
 app.use(mcpAuthRouter({ provider: oauth, issuerUrl: new URL(origin), resourceServerUrl: resourceUrl,
-  scopesSupported: ['mcp:tools'], resourceName: 'Kelvin ME 300 learning account' }));
+  scopesSupported: ['mcp:tools'], resourceName: 'Kelvin: Penn State ME 300 Engineering Thermodynamics learning account' }));
 app.get('/login', (req, res) => {
   const page = loginPage(req.query.request);
   res.set('Cache-Control', 'no-store');

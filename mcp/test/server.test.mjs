@@ -53,7 +53,13 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     assert.equal(publicMap.units.length, 9);
     const publicClient = new Client({ name: 'public-test', version: '1.0.0' });
     await publicClient.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
-    const publicTools = (await publicClient.listTools()).tools.map(x => x.name);
+    assert.match(publicClient.getServerVersion().title, /Engineering Thermodynamics/);
+    assert.match(publicClient.getInstructions(), /thermodynamics questions.*course_map.*search_course.*get_card/i);
+    const listedTools = (await publicClient.listTools()).tools;
+    const publicTools = listedTools.map(x => x.name);
+    for (const name of ['course_map', 'search_course', 'get_card']) {
+      assert.match(listedTools.find(tool => tool.name === name).description, /thermodynamics/i);
+    }
     assert.ok(publicTools.includes('search_course'));
     assert.ok(!publicTools.includes('record_learning'));
     assert.ok(!publicTools.includes('course_trends'));

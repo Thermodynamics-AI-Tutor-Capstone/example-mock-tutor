@@ -2,6 +2,8 @@
 
 Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign-in, and `/mcp/account` on the same host allows anyone to create a lasting student account without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed MCP/OAuth routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
 
+Discovery update: the live MCP handshake now names Penn State ME 300 Engineering Thermodynamics, provides server instructions for using the course map, topic search, and card reader, and all five public tool descriptions explicitly identify thermodynamics. The live gateway returned the new metadata and course map in an MCP SDK check. Claude's own tool-use choice in a fresh chat still needs Lance's observation.
+
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
 - Public, read-only student MCP URL: `https://kelvin-mcp.vercel.app/mcp`.
 - Signed-in student MCP URL: `https://kelvin-mcp.vercel.app/mcp/account`.

@@ -6,6 +6,10 @@ The professor dashboard is at `https://kelvin-professor-dashboard.vercel.app`. T
 
 The server offers course cards, misconception cards, and selected teaching skills from `../agent/` to everyone. A self-registered student can explicitly save a learning reflection; a direct DeepSeek API call classifies it when configured. The server never sees ordinary Claude messages unless Claude invokes a tool with that text. Instructors receive aggregates from at least five students, plus named records only for students who enabled instructor sharing. Student names are self-entered and unverified.
 
+## How Claude discovers thermodynamics content
+
+The MCP handshake identifies the server as **Kelvin: Penn State ME 300 Engineering Thermodynamics** and explains the workflow: use `course_map` once to orient, then `search_course` and `get_card` for the relevant thermodynamics concept or misconception. The five public tool descriptions also name thermodynamics and state when to call each tool. The course map repeats the subject and marks the cards as an unverified Summer 2023 section. Tool descriptions and server instructions can guide Claude's selection, but Claude controls whether it calls a tool in a given conversation.
+
 ## Local run
 
 Use Node 22+ and `npm ci` in this directory. Set `DEEPSEEK_API_KEY` in the process environment using the existing Kelvin secret source. Set `KELVIN_MCP_DATA_DIR` to a private persistent directory. Run `node admin.mjs provision-student ID` to generate a test token, then `npm start`. Keep the token out of logs and chat. The server binds to `127.0.0.1:3337` by default.
