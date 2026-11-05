@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -51,6 +51,8 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     const base=`http://127.0.0.1:${port}`;
     const publicMap=parse(await call(base, null, 'course_map'));
     assert.equal(publicMap.units.length, 9);
+    const getProbe = await fetch(`${base}/mcp`, { headers: { Accept: 'text/event-stream' } });
+    assert.equal(getProbe.status, 405);
     assert.match(publicMap.provenance, /real Penn State ME 300 Engineering Thermodynamics materials/);
     assert.equal(publicMap.course.sourceMaterial, 'actual Penn State course files');
     const publicClient = new Client({ name: 'public-test', version: '1.0.0' });
@@ -88,6 +90,12 @@ test('MCP authenticates, reads cards, isolates students, and suppresses small co
     assert.equal(parse(await call(base, other.token, 'my_learning')).total, 0);
     assert.equal(parse(await call(base, student.token, 'my_learning')).total, 1);
     assert.equal(parse(await call(base, instructor.token, 'course_trends')).suppressed, true);
+    const logPath = join(dir, 'request-logs', `${new Date().toISOString().slice(0, 10)}.jsonl`);
+    assert.equal(existsSync(logPath), true);
+    const log = readFileSync(logPath, 'utf8');
+    assert.match(log, /"rpcMethod":"tools\/call"/);
+    assert.match(log, /"tool":"course_map"/);
+    assert.doesNotMatch(log, /fake-test-key|I studied entropy balances today/);
   } finally {
     child.kill(); model.close(); rmSync(dir, { recursive: true, force: true });
   }

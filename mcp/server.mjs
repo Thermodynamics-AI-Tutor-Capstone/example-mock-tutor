@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -9,6 +10,7 @@ import { z } from 'zod';
 import { loadContent, metadata, provenance, searchCards } from './content.mjs';
 import { addEvent, allEvents, authenticate, trends } from './store.mjs';
 import { classify } from './classify.mjs';
+import { writeRequestLog } from './request-log.mjs';
 import { accountById, completeLogin, createOAuthProvider, loginPage, setSharing, sharedStudents } from './oauth.mjs';
 
 const { cards, skills } = loadContent();
@@ -98,7 +100,7 @@ async function handleMcp(req, res, user) {
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   try {
     await mcp.connect(transport);
-    await transport.handleRequest(req, res);
+    await transport.handleRequest(req, res, req.body);
   } catch (e) {
     console.error('MCP request failed:', e.message);
     if (!res.headersSent) { res.writeHead(500); res.end('MCP request failed'); }
@@ -110,6 +112,30 @@ async function handleMcp(req, res, user) {
 
 const app = express();
 app.set('trust proxy', 'loopback');
+app.use((req, res, next) => {
+  const started = Date.now();
+  const requestId = /^[a-f0-9-]{36}$/.test(String(req.headers['x-kelvin-request-id'] || ''))
+    ? String(req.headers['x-kelvin-request-id']) : randomUUID();
+  res.set('X-Kelvin-Request-Id', requestId);
+  let logged = false;
+  const log = outcome => {
+    if (logged) return;
+    logged = true;
+    const body = req.body && typeof req.body === 'object' ? req.body : null;
+    writeRequestLog({ event: 'request', at: new Date().toISOString(), requestId,
+      method: req.method, path: req.path, status: res.statusCode, outcome, durationMs: Date.now() - started,
+      remoteIp: req.socket.remoteAddress, gatewayClientIp: req.headers['x-kelvin-client-ip'] || null,
+      userAgent: String(req.headers['user-agent'] || '').slice(0, 300), contentLength: Number(req.headers['content-length'] || 0),
+      accountId: req.auth?.extra?.accountId || null,
+      rpcMethod: typeof body?.method === 'string' ? body.method : null,
+      tool: body?.method === 'tools/call' && typeof body.params?.name === 'string' ? body.params.name : null,
+      loginAction: req.path === '/login' && ['create', 'sign-in'].includes(body?.action) ? body.action : null });
+  };
+  res.once('finish', () => log('finished'));
+  res.once('close', () => log('closed'));
+  next();
+});
+app.use(['/mcp', '/mcp/account'], express.json({ limit: '32kb', type: 'application/json' }));
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'kelvin-mcp', cards: cards.size }));
 app.use(mcpAuthRouter({ provider: oauth, issuerUrl: new URL(origin), resourceServerUrl: resourceUrl,
   scopesSupported: ['mcp:tools'], resourceName: 'Kelvin: Penn State ME 300 Engineering Thermodynamics learning account' }));
@@ -154,6 +180,7 @@ app.all('/mcp/account', requireBearerAuth({ verifier: oauth, requiredScopes: ['m
     return handleMcp(req, res, { id: account.id, name: account.name, role: account.role });
   });
 app.all('/mcp', (req, res) => {
+  if (req.method !== 'POST') return res.set('Allow', 'POST').status(405).json({ error: 'Use MCP Streamable HTTP POST' });
   const authorization = req.headers.authorization || '';
   const token = /^Bearer (.+)$/i.exec(authorization)?.[1];
   const user = token ? authenticate(token) : { role: 'anonymous' };

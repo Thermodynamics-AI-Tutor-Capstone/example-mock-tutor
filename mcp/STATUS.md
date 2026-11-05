@@ -1,6 +1,6 @@
 # Pilot deployment status — 2026-11-05
 
-Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign-in, and `/mcp/account` on the same host allows anyone to create a lasting student account without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed MCP/OAuth routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
+Current student access: `https://kelvin-mcp.vercel.app/mcp` is open without sign-in and has no OAuth discovery. Personal records use the separate `https://kelvin-mcp-account.vercel.app/mcp/account` hostname; anyone can create a student account there without an invite. New student IDs are random; names are self-entered and unverified. OAuth refresh tokens rotate without a fixed expiry while the account is enabled. Vercel provides standard HTTPS port 443 and forwards fixed routes to the Mac mini Funnel on 8443. The older invite-based pilot described below is historical.
 
 Discovery update: the live MCP handshake now names Penn State ME 300 Engineering Thermodynamics, provides server instructions for using the course map, topic search, and card reader, and all five public tool descriptions explicitly identify thermodynamics. The live gateway returned the new metadata and course map in an MCP SDK check. Claude's own tool-use choice in a fresh chat still needs Lance's observation.
 
@@ -8,7 +8,7 @@ Course-source correction: Lance confirmed this is real, verified course material
 
 - Mac mini (`mac`): launch agent `com.kelvin.mcp`, local port 3337, public Tailscale Funnel HTTPS port 8443.
 - Public, read-only student MCP URL: `https://kelvin-mcp.vercel.app/mcp`.
-- Signed-in student MCP URL: `https://kelvin-mcp.vercel.app/mcp/account`.
+- Signed-in student MCP URL: `https://kelvin-mcp-account.vercel.app/mcp/account`.
 - Professor dashboard: `https://kelvin-professor-dashboard.vercel.app`, deployed to Vercel with a synthetic `username` / `password` demo and a separate instructor OAuth sign-in for live data.
 - Existing Tailscale Serve service on port 443 remains tailnet-only.
 - Public endpoint tested with the MCP SDK: initialization, tool listing, course search, and a saved reflection. The synthetic reflection was removed after the check. Course help is now anonymous; student and instructor records still require individual tokens. An unauthenticated MCP initialization also succeeded through Tailscale's public relay IP.
@@ -19,3 +19,4 @@ Course-source correction: Lance confirmed this is real, verified course material
 - Claude.ai itself has not yet been used to connect to this server. The actual Free account setup should be checked by Lance.
 - The dashboard's live instructor OAuth flow was exercised through a headless browser against the production Vercel URL and public Mac mini endpoint. The disposable instructor account used for that check was disabled afterward. The Vercel function proxies only client registration, token exchange, and instructor dashboard reads. Its browser route was necessary because Chromium blocked direct cross-origin fetches to the Tailscale hostname on a tailnet-connected machine.
 - Claude rejected the Mac mini URL on port 8443 as unreachable. Anthropic states its cloud connector uses port 443 for MCP and OAuth. The new Vercel gateway on 443 passed live public MCP, OAuth metadata, open student signup, private MCP, refresh, and dashboard instructor sign-in checks; disposable accounts were disabled. Claude UI reconnection on the new URL still needs Lance's confirmation.
+- ChatGPT tried OAuth against the combined public/account hostname. Its Vercel request logs showed `/mcp` GET probes returning 406, OAuth metadata requests, client registration, and `/authorize` redirects; the Mac mini's old logs did not record the request details. On 2026-11-05 the public hostname was made anonymous-only, with OAuth moved to `kelvin-mcp-account.vercel.app`. The public endpoint now returns 405 promptly for GET and ignores bearer headers. Both gateways write structured request metadata to Vercel logs, and the Mac mini writes daily JSONL request logs. Live public MCP, new account OAuth, and dashboard instructor sign-in passed after the split.

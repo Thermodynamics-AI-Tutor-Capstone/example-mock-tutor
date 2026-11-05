@@ -1,4 +1,4 @@
-const API = 'https://kelvin-mcp.vercel.app';
+const API = 'https://kelvin-mcp-account.vercel.app';
 const resource = `${API}/dashboard-data`;
 const proxy = action => `/api/kelvin?action=${action}`;
 const app = document.querySelector('#app');
